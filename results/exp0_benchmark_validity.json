@@ -1,0 +1,54 @@
+{
+  "experiment": "exp0_benchmark_validity",
+  "preset": "smoke",
+  "seed": 0,
+  "n": 40,
+  "preregistered_prediction": {
+    "scope_probe_accuracy": ">= 0.90 on marker-present claims",
+    "scope_probe_on_stripped": "<= chance (0.20), because the cue is absent",
+    "ngram_vs_model_gap": "small; the corpus is template-generated",
+    "interpretation": "if the probe matches the model, the scope head adds nothing and the claim must be re-scoped to 'the model learns a surface marker', not 'the model represents scope'"
+  },
+  "conditions": {
+    "scope_probe": {
+      "probe_acc": 1.0,
+      "majority_acc": 0.2,
+      "n_test": 40
+    },
+    "scope_probe_stripped": {
+      "probe_acc": 0.725,
+      "majority_acc": 0.2,
+      "n_test": 40
+    },
+    "epistemic_probe": {
+      "probe_acc": 0.95,
+      "majority_acc": 0.775,
+      "n_test": 40
+    },
+    "heldout_scope_probe": null,
+    "ngram_logprob_test": -0.6899111828753148,
+    "ngram_logprob_heldout": -0.7009689694387014,
+    "exact_duplicate_rate": 0.11,
+    "model": {
+      "scope_acc": 0.20000000298023224,
+      "epistemic_acc": 0.7749999761581421
+    }
+  },
+  "summary": {
+    "scope_surface_solvable": true,
+    "benchmark_usable": false
+  },
+  "notes": [
+    "Scope is surface-solvable: a linear probe reaches 1.00. The scope head cannot be claimed to represent scope; at best it learns the marker token.",
+    "11.0% of test documents are exact duplicates of training documents. Deduplicate before reporting repair results.",
+    "Model scope head is -0.800 relative to the probe; a negative gap means the architecture is worse than a linear probe.",
+    "Epistemic status is also surface-solvable (probe 0.95). The head is recovering template form, not epistemic state."
+  ],
+  "timestamp": "2026-10-24T21:31:07",
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.5.0+cpu",
+    "cuda": false,
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

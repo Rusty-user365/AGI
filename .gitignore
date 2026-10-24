@@ -1,0 +1,19 @@
+# binary weights: large, and reproduced deterministically by smoke.py / kaggle_run.py
+checkpoints/
+
+# transient run logs (the JSON results and paper_tables.md are the source of truth)
+*.log
+
+# python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# editor / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

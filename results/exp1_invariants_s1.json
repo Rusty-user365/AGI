@@ -1,0 +1,44 @@
+{
+  "experiment": "exp1_invariants",
+  "preset": "smoke",
+  "seed": 1,
+  "n": 40,
+  "preregistered_prediction": {
+    "null_property": "100/100 bit-identical",
+    "rollback": "100/100 bit-identical",
+    "negative_control": "the leaky memory MUST fail the null test",
+    "gradient_masking": "0 updates on verified-wrong, across 50 repeats",
+    "isolation": "no Linear layer in the reasoner projects to vocab"
+  },
+  "conditions": {
+    "empty_memory": {
+      "bit_identical": true,
+      "n": 40
+    },
+    "empty_memory_repeated": {
+      "bit_identical": true,
+      "n": 40
+    }
+  },
+  "summary": {
+    "null_property": true,
+    "negative_control_detected_leak": true,
+    "rollback": true,
+    "memory_has_effect": true,
+    "gradient_masking_repeats_unchanged": 50,
+    "masking_has_power": true,
+    "reasoner_vocab_leaks": [],
+    "all_passed": true
+  },
+  "notes": [
+    "These are design invariants, not empirical findings. They belong in a 'Design invariants' subsection, not in \u00a75's results tables.",
+    "The null property is guaranteed by the code path that skips the memory read when the store is empty. The negative control shows the test detects a leak, so the guarantee is not vacuous."
+  ],
+  "timestamp": "2026-10-24T21:32:17",
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.5.0+cpu",
+    "cuda": false,
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

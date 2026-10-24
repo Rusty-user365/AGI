@@ -1,0 +1,98 @@
+{
+  "experiment": "exp6_structural_guard",
+  "preset": "smoke",
+  "seed": 1,
+  "n": 40,
+  "preregistered_prediction": {
+    "A": "max |grad| on plastic_a/plastic_b == 0.0 exactly for a verified-wrong-only batch; a value in (0, 1e-8) is ambiguous",
+    "B": "plastic tensors bit-identical (torch.equal) after the update",
+    "C": "update_memory(verified=False) returns -1 and creates no entry",
+    "D": "gate gradient > 1e-8: the rejection path is supervised, so the safeguard does not also disable the learning it should allow",
+    "unguarded_control": "A, B and C must FAIL on the same wrong claims treated as verified",
+    "verified_right_control": "gradient flows, parameters change, entry created"
+  },
+  "preregistration": "PAPER_REVISION.md \u00a75.5, written before the run",
+  "tolerance": 1e-08,
+  "checks": {
+    "A": {
+      "n": 40,
+      "n_kept": 0,
+      "plastic_grad_max": 0.0,
+      "plastic_grad_norm": 0.0,
+      "plastic_unchanged": true,
+      "gate_grad_norm": 1.3951318857994695,
+      "policy_supervised": true,
+      "stepped": true,
+      "stats": {
+        "n_total": 40,
+        "n_updated": 0,
+        "n_masked": 40,
+        "stepped": true,
+        "n_rejected": 40,
+        "policy_supervised": true,
+        "loss_policy": 0.03880017250776291
+      }
+    },
+    "C_memory": {
+      "returned": -1,
+      "before": 0,
+      "after": 0,
+      "created": false
+    }
+  },
+  "verdicts": {
+    "A": "pass",
+    "B": "pass",
+    "D": "pass",
+    "C": "pass"
+  },
+  "controls": {
+    "unguarded": {
+      "A_fails": true,
+      "B_fails": true,
+      "C_fails": true,
+      "grad_max": 0.13821932673454285,
+      "drifted": true,
+      "entry_created": true
+    },
+    "verified_right": {
+      "gradient_flows": true,
+      "parameters_change": true,
+      "entry_created": true,
+      "grad_max": 0.1678820699453354
+    }
+  },
+  "extra_checks": {
+    "note": "not pre-registered; reported as diagnostics, not pass/fail",
+    "A2_mixed_vs_right_only_max_grad_diff": 0.0,
+    "A2_holds": true,
+    "A2_row_aligned": true,
+    "A2_width_matched": true,
+    "A2_mixed_n": 80,
+    "A2_kept": 40,
+    "B2_adamw_wd": {
+      "grad_none_moves": false,
+      "grad_zeros_moves": true
+    },
+    "B2_note": "PyTorch AdamW decays only parameters with a non-None grad. Masking leaves plastic grads as None, so decay cannot move the substrate. If any code path touches the substrate and yields a zero tensor instead, decay does move it; a production optimizer should exclude the plastic parameters from weight decay."
+  },
+  "summary": {
+    "c1_pass": true,
+    "c1_ambiguous": false,
+    "instrument_valid": true,
+    "memory_guard_enforced": true,
+    "rejection_learning_supervised": true
+  },
+  "notes": [
+    "C1 passes with a valid instrument: verified-wrong examples leave the plastic substrate bit-identical and create no memory entry, while the gate still receives a rejection gradient. This is a structural guarantee about the pipeline and is independent of whether the editor can generate good repairs.",
+    "B2 (not pre-registered): under AdamW with weight decay, a *zero-tensor* gradient still moves the parameter, because decay is applied whenever grad is not None. Masking leaves the plastic grad as None, which AdamW skips, so the guard holds on this path \u2014 but a production optimizer should exclude the plastic parameters from weight decay rather than rely on that.",
+    "C2 (does the guard improve held-out behaviour?) is a different claim and is unresolved: exp2's NLL diff-in-diff is within its minimum detectable effect at this scale. C1 does not depend on it."
+  ],
+  "timestamp": "2026-10-24T21:32:54",
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.5.0+cpu",
+    "cuda": false,
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

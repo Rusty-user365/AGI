@@ -1,0 +1,9 @@
+# Runtime dependencies.
+# Deliberately minimal: no model downloads, no tokenizer downloads, no
+# internet access required at any point. The fixed external embedding is a
+# hashed bag-of-words, not a pretrained sentence encoder.
+torch>=2.1
+numpy>=1.24
+
+# Development / tests.
+pytest>=7.0

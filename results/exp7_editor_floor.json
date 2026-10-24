@@ -1,0 +1,139 @@
+{
+  "experiment": "exp7_editor_floor",
+  "preset": "smoke",
+  "seed": 0,
+  "n": 10,
+  "preregistered_prediction": {
+    "budget_artefact": "task ability rises with optimizer steps, then plateaus or falls; specificity may stay at zero",
+    "capacity_limit": "task ability stays 0.000 at every budget",
+    "coherence_without_specificity": "c_edit rises but quality stays 0.000",
+    "copy_fidelity_is_not_a_gate": "byte-identical restore is ~0.000 at every budget and is reported only as a diagnostic"
+  },
+  "budgets": [
+    {
+      "stage_a": 2,
+      "stage_b": 1
+    },
+    {
+      "stage_a": 10,
+      "stage_b": 5
+    },
+    {
+      "stage_a": 20,
+      "stage_b": 10
+    },
+    {
+      "stage_a": 40,
+      "stage_b": 20
+    }
+  ],
+  "conditions": [
+    {
+      "budget": "2+1",
+      "opt_steps": 75,
+      "train_secs": null,
+      "exact": 0.0,
+      "parses": 0.0,
+      "on_thesis": 0.0,
+      "specific": 0.0,
+      "noop_parses": 1.0,
+      "noop_on_thesis": 1.0,
+      "scanned": 11,
+      "skipped": 1,
+      "local_c_edit": 0.0,
+      "local_noop_c_edit": 1.0,
+      "local_quality": 0.0,
+      "local_noop_quality": 0.0,
+      "cross_c_edit": 0.0,
+      "cross_noop_c_edit": 0.0,
+      "cross_quality": 0.0,
+      "cross_noop_quality": 0.0
+    },
+    {
+      "budget": "10+5",
+      "opt_steps": 375,
+      "train_secs": null,
+      "exact": 0.0,
+      "parses": 0.4,
+      "on_thesis": 0.4,
+      "specific": 0.0,
+      "noop_parses": 1.0,
+      "noop_on_thesis": 1.0,
+      "scanned": 11,
+      "skipped": 1,
+      "local_c_edit": 0.2,
+      "local_noop_c_edit": 1.0,
+      "local_quality": 0.0,
+      "local_noop_quality": 0.0,
+      "cross_c_edit": 0.04,
+      "cross_noop_c_edit": 0.0,
+      "cross_quality": 0.0,
+      "cross_noop_quality": 0.0
+    },
+    {
+      "budget": "20+10",
+      "opt_steps": 750,
+      "train_secs": null,
+      "exact": 0.0,
+      "parses": 0.6,
+      "on_thesis": 0.6,
+      "specific": 0.0,
+      "noop_parses": 1.0,
+      "noop_on_thesis": 1.0,
+      "scanned": 11,
+      "skipped": 1,
+      "local_c_edit": 0.0,
+      "local_noop_c_edit": 1.0,
+      "local_quality": 0.0,
+      "local_noop_quality": 0.0,
+      "cross_c_edit": 0.07333333333333333,
+      "cross_noop_c_edit": 0.0,
+      "cross_quality": 0.0,
+      "cross_noop_quality": 0.0
+    },
+    {
+      "budget": "40+20",
+      "opt_steps": 1500,
+      "train_secs": null,
+      "exact": 0.0,
+      "parses": 0.5,
+      "on_thesis": 0.5,
+      "specific": 0.0,
+      "noop_parses": 1.0,
+      "noop_on_thesis": 1.0,
+      "scanned": 11,
+      "skipped": 1,
+      "local_c_edit": 0.3,
+      "local_noop_c_edit": 1.0,
+      "local_quality": 0.0,
+      "local_noop_quality": 0.0,
+      "cross_c_edit": 0.05,
+      "cross_noop_c_edit": 0.0,
+      "cross_quality": 0.0,
+      "cross_noop_quality": 0.0
+    }
+  ],
+  "summary": {
+    "ability_rises_with_budget": true,
+    "specificity_rises": false,
+    "local_repair_rises": false,
+    "cross_repair_rises": false,
+    "best_budget": "20+10",
+    "best_on_thesis": 0.6,
+    "copy_fidelity_is_not_a_gate": true
+  },
+  "notes": [
+    "BUDGET, NOT CAPACITY: on-thesis infill rises to 60% at 20+10 (750 optimizer steps), from 0% at 2+1 (75 steps). The smoke preset's 75 steps are below the ability floor; the earlier 0.000 was a property of the budget, not of the architecture.",
+    "COHERENCE WITHOUT SPECIFICITY: the editor produces parseable, on-thesis blocks but never a specific reason (quality 0.000 at every budget). This is a narrower and more useful result than 'the editor cannot edit': it can restore label consistency, and it cannot restore the specificity that defines the local defect. A local-repair claim needs the specificity number, not c_edit.",
+    "On the actual local repair task, quality stays at the no-op baseline (0.000): the model does not repair specificity even when it can infill a clean block. Do not read c_edit on local defects as a repair result; a no-op already scores 1.000 there.",
+    "On the actual cross-block task, c_edit stays at its no-op floor: clean-block infill ability does not transfer to revising every editable block against a locked intro. The editor is above the infill floor and still below the repair floor.",
+    "Byte-identical restore is reported as a diagnostic only. A masked-diffusion infill regenerates the span, so exact copy is ~0 by construction and cannot be the precondition for interpreting the repair grid. exp4 now gates on on-thesis output and reports both."
+  ],
+  "timestamp": "2026-10-24T21:33:13",
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.5.0+cpu",
+    "cuda": false,
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "exp0_benchmark_validity.py": {
+    "status": "ok",
+    "seconds": 4.3,
+    "returncode": 0
+  },
+  "exp1_invariants.py": {
+    "status": "ok",
+    "seconds": 6.3,
+    "returncode": 0
+  },
+  "exp2_scope_and_pressure.py": {
+    "status": "ok",
+    "seconds": 8.8,
+    "returncode": 0
+  },
+  "exp3_shuffle.py": {
+    "status": "ok",
+    "seconds": 5.5,
+    "returncode": 0
+  },
+  "exp4_repair_taxonomy.py": {
+    "status": "ok",
+    "seconds": 12.2,
+    "returncode": 0
+  },
+  "exp5_gate_triage.py": {
+    "status": "ok",
+    "seconds": 4.6,
+    "returncode": 0
+  },
+  "exp6_structural_guard.py": {
+    "status": "ok",
+    "seconds": 5.9,
+    "returncode": 0
+  }
+}

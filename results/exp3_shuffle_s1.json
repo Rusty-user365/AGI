@@ -1,0 +1,69 @@
+{
+  "experiment": "exp3_shuffle",
+  "preset": "smoke",
+  "seed": 1,
+  "n": 40,
+  "preregistered_prediction": {
+    "full_vs_shuffled": "full better than shuffled if reasoning is causal",
+    "shuffled_vs_constant": "shuffled ~ constant if content is irrelevant",
+    "none": "worst, if the channel contributes at all",
+    "oracle": "oracle better than full => channel can carry information",
+    "interpretation": "a null shuffled result is only interpretable if oracle shows the channel can carry information"
+  },
+  "conditions": {
+    "full": {
+      "denoise_loss": 3.104569435119629,
+      "value_mae": 0.07874374836683273
+    },
+    "shuffled": {
+      "denoise_loss": 3.2500016689300537,
+      "value_mae": 0.07833755761384964
+    },
+    "constant": {
+      "denoise_loss": 3.2594945430755615,
+      "value_mae": 0.06718342006206512
+    },
+    "none": {
+      "denoise_loss": 3.8417088985443115,
+      "value_mae": 0.06472381949424744
+    },
+    "oracle": {
+      "denoise_loss": 3.1533710956573486,
+      "value_mae": 0.10035935789346695
+    }
+  },
+  "summary": {
+    "losses": {
+      "full": 3.104569435119629,
+      "shuffled": 3.2500016689300537,
+      "constant": 3.2594945430755615,
+      "none": 3.8417088985443115,
+      "oracle": 3.1533710956573486
+    },
+    "repair_consistency": {
+      "full": 0.0,
+      "shuffled": 0.0,
+      "constant": 0.0,
+      "none": 0.0,
+      "oracle": 0.0
+    },
+    "full_vs_shuffled_mean_diff": 0.14586342573165895,
+    "full_vs_shuffled_ci": [
+      0.10599758625030517,
+      0.18897135853767394
+    ],
+    "mde": 0.059417530252272144,
+    "channel_carries_information": false,
+    "reasoning_causal": true
+  },
+  "notes": [
+    "The positive control did not beat `full`: the steering vector could not carry information the input lacked. A null shuffle result is therefore uninterpretable and must not be reported as 'reasoning is decorative'."
+  ],
+  "timestamp": "2026-10-24T21:32:31",
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.5.0+cpu",
+    "cuda": false,
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

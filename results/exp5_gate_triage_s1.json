@@ -1,0 +1,154 @@
+{
+  "experiment": "exp5_gate_triage",
+  "preset": "smoke",
+  "seed": 1,
+  "n": 120,
+  "preregistered_prediction": {
+    "histogram": "ANS/VER/REP/REV/DEF dominate; REORD and UPD absent because the curriculum never offers them; DELIB appears only if marker-stripped claims are in the eval set",
+    "gate_accuracy": "> 0.8 against the scaffolding policy",
+    "overrides": "surprise fires rarely; risk ladder fires on low-confidence claims",
+    "triage": "triage >= sequential if predicted tau is informative; triage ~ random if not"
+  },
+  "conditions": {
+    "histogram_model": {
+      "ANS": 0.3333333333333333,
+      "DEF": 0.06666666666666667,
+      "DELIB": 0.13333333333333333,
+      "REP": 0.15833333333333333,
+      "REV": 0.175,
+      "VER": 0.13333333333333333
+    },
+    "histogram_oracle": {
+      "ANS": 0.3333333333333333,
+      "DEF": 0.06666666666666667,
+      "DELIB": 0.13333333333333333,
+      "REP": 0.16666666666666666,
+      "REV": 0.16666666666666666,
+      "VER": 0.13333333333333333
+    },
+    "by_condition": {
+      "clean doc": {
+        "n": 40,
+        "acc": 1.0,
+        "model": {
+          "ANS": 1.0
+        },
+        "oracle": {
+          "ANS": 1.0
+        }
+      },
+      "claim": {
+        "n": 40,
+        "acc": 1.0,
+        "model": {
+          "DEF": 0.2,
+          "DELIB": 0.4,
+          "VER": 0.4
+        },
+        "oracle": {
+          "DEF": 0.2,
+          "DELIB": 0.4,
+          "VER": 0.4
+        }
+      },
+      "repair: local": {
+        "n": 20,
+        "acc": 0.8999999761581421,
+        "model": {
+          "REP": 0.9,
+          "REV": 0.1
+        },
+        "oracle": {
+          "REP": 1.0
+        }
+      },
+      "repair: cross_block": {
+        "n": 20,
+        "acc": 0.949999988079071,
+        "model": {
+          "REP": 0.05,
+          "REV": 0.95
+        },
+        "oracle": {
+          "REV": 1.0
+        }
+      }
+    },
+    "gate_accuracy": 0.9750000238418579,
+    "overrides": {
+      "surprise": 0.0,
+      "risk_ladder": 0.0,
+      "none": 1.0
+    },
+    "cost_per_correct_model": 3.4070796460176993,
+    "cost_per_correct_oracle": 3.3628318584070795,
+    "triage": {
+      "budget": 24,
+      "sequential": 24,
+      "triage": 24,
+      "random_mean": 22.414,
+      "random_ci": [
+        22.314,
+        22.516
+      ],
+      "hardest": 16,
+      "max_attainable": 24,
+      "gain": 1.5859999999999985,
+      "normalized_gain": 1.0,
+      "permutation_p": 0.19560878243512975,
+      "sequential_is_arrival_artifact": true,
+      "truth_solvable_rate": 0.9333333333333333
+    }
+  },
+  "summary": {
+    "unused_actions": [
+      "REORD",
+      "UPD"
+    ],
+    "never_offered": [
+      "REORD",
+      "UPD"
+    ],
+    "offered_not_learned": [],
+    "triage_beats_random": false,
+    "triage_normalized_gain": 1.0,
+    "triage_truth_source": "labels.value>0.5 (not model prediction)",
+    "gate_matches_scaffold": true,
+    "separates_defects": true,
+    "head_health": {
+      "scope": {
+        "ece": 0.0196697860956192,
+        "acc": 0.949999988079071,
+        "conf_mean": 0.933388352394104,
+        "conf_sd": 0.17984214425086975
+      },
+      "epistemic": {
+        "ece": 0.0065607428550720215,
+        "acc": 1.0,
+        "conf_mean": 0.993439257144928,
+        "conf_sd": 0.01758475974202156
+      },
+      "value": {
+        "sd": 0.2282991260290146,
+        "mean": 0.8351698517799377
+      },
+      "tau": {
+        "sd": 0.2750004827976227,
+        "mean": 1.3525397777557373
+      },
+      "scope_epistemic_conf_corr": 0.048927389085292816
+    }
+  },
+  "notes": [
+    "Never offered by the curriculum: ['REORD', 'UPD']. These have no training signal; report the effective action space, not the nominal eight.",
+    "Triage does not establish an advantage over random (triage 24, random mean 22.4, CI [22.3, 22.5]; gain +1.59 of an attainable 1.59 = 100%; permutation p=0.196; budget 24 of 120, solvable base rate 0.93). Report the null, and note the ceiling: with this mix the metric can only move by 1.6 marks.",
+    "'Sequential' scores the maximum (24) because the eval set is concatenated docs-then-claims; it is an artefact of arrival order, not evidence about any policy. Compare triage to random only."
+  ],
+  "timestamp": "2026-10-24T21:32:48",
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.5.0+cpu",
+    "cuda": false,
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}

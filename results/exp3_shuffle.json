@@ -1,0 +1,70 @@
+{
+  "experiment": "exp3_shuffle",
+  "preset": "smoke",
+  "seed": 0,
+  "n": 40,
+  "preregistered_prediction": {
+    "full_vs_shuffled": "full better than shuffled if reasoning is causal",
+    "shuffled_vs_constant": "shuffled ~ constant if content is irrelevant",
+    "none": "worst, if the channel contributes at all",
+    "oracle": "oracle better than full => channel can carry information",
+    "interpretation": "a null shuffled result is only interpretable if oracle shows the channel can carry information"
+  },
+  "conditions": {
+    "full": {
+      "denoise_loss": 3.38552188873291,
+      "value_mae": 0.059425316751003265
+    },
+    "shuffled": {
+      "denoise_loss": 3.640476703643799,
+      "value_mae": 0.061521876603364944
+    },
+    "constant": {
+      "denoise_loss": 3.4919002056121826,
+      "value_mae": 0.06178688257932663
+    },
+    "none": {
+      "denoise_loss": 4.9073710441589355,
+      "value_mae": 0.13865244388580322
+    },
+    "oracle": {
+      "denoise_loss": 3.483978748321533,
+      "value_mae": 0.06299199908971786
+    }
+  },
+  "summary": {
+    "losses": {
+      "full": 3.38552188873291,
+      "shuffled": 3.640476703643799,
+      "constant": 3.4919002056121826,
+      "none": 4.9073710441589355,
+      "oracle": 3.483978748321533
+    },
+    "repair_consistency": {
+      "full": 0.0,
+      "shuffled": 0.0,
+      "constant": 0.0,
+      "none": 0.0,
+      "oracle": 0.0
+    },
+    "full_vs_shuffled_mean_diff": 0.24743255376815795,
+    "full_vs_shuffled_ci": [
+      0.14917978048324584,
+      0.3582369744777679
+    ],
+    "mde": 0.15347464590955118,
+    "channel_carries_information": false,
+    "reasoning_causal": true
+  },
+  "notes": [
+    "The positive control did not beat `full`: the steering vector could not carry information the input lacked. A null shuffle result is therefore uninterpretable and must not be reported as 'reasoning is decorative'.",
+    "shuffled ~ constant: content is irrelevant, only the presence of a steering vector matters."
+  ],
+  "timestamp": "2026-10-24T21:31:41",
+  "env": {
+    "python": "3.10.11",
+    "torch": "2.5.0+cpu",
+    "cuda": false,
+    "platform": "Windows-10-10.0.26100-SP0"
+  }
+}
