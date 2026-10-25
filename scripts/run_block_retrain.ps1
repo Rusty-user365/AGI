@@ -9,8 +9,10 @@
 #
 # Restart-safe: a run whose train_summary.json exists is skipped, and an
 # interrupted run resumes from its own last checkpoint instead of starting over.
-# A resumed run still executes the full 4A+1B schedule, so it has seen more than
-# five epochs in total; the checkpoint records `resumed_from` so this is visible.
+# train.py reads train_progress.json from the output directory and skips epochs
+# already completed, so a resumed run finishes the 4A+1B schedule rather than
+# repeating it. The checkpoint records `resumed_from` and `prior_epochs` so the
+# total number of epochs actually seen is visible in the summary.
 
 $ErrorActionPreference = "Stop"
 $env:PYTHONUNBUFFERED = "1"
