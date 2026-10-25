@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import random
 import time
 from pathlib import Path
@@ -72,6 +73,24 @@ def build_episodes(cfg: Config, tok: TokenizerLike, splits: dict,
 # --------------------------------------------------------------------------
 # Train
 # --------------------------------------------------------------------------
+
+def _atomic_torch_save(obj, path: Path) -> None:
+    """Write a checkpoint without leaving a truncated file on power loss.
+
+    `torch.save` to the final path means an interrupted write destroys the only
+    recovery point. Writing to a sibling temp file and renaming is atomic on
+    the same volume, so a crash leaves either the old checkpoint or the new one.
+    """
+    tmp = path.with_name(path.name + ".tmp")
+    torch.save(obj, tmp)
+    os.replace(tmp, path)
+
+
+def _atomic_text(text: str, path: Path) -> None:
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
 
 def pick_device(name: str | None = None) -> torch.device:
     """Resolve a device name. `None`/"auto" means CUDA when it is available.
@@ -219,17 +238,17 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
         seconds and makes `--resume <out>/stage_b.pt` an honest continuation.
         """
         state = {k: v.detach().cpu() for k, v in system.state_dict().items()}
-        torch.save({"model": state,
-                    "cfg": cfg.__dict__,
-                    "tokenizer": tok.spec(),
-                    "n_params": system.n_params()}, out / "stage_b.pt")
+        _atomic_torch_save({"model": state,
+                            "cfg": cfg.__dict__,
+                            "tokenizer": tok.spec(),
+                            "n_params": system.n_params()},
+                           out / "stage_b.pt")
         tok.save(out / "tokenizer.json")
         cfg.to_json(out / "config.json")
-        (out / "train_progress.json").write_text(
-            json.dumps({"history": hist, "n_episodes": len(episodes),
-                        "elapsed_s": prior_elapsed + (time.time() - t0)},
-                       indent=2),
-            encoding="utf-8")
+        _atomic_text(json.dumps(
+            {"history": hist, "n_episodes": len(episodes),
+             "elapsed_s": prior_elapsed + (time.time() - t0)}, indent=2),
+            out / "train_progress.json")
 
     def run_epoch(epoch: int, stage: str) -> dict:
         epoch_t0 = time.perf_counter()
@@ -330,13 +349,9 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
 
     # Saved on CPU so a checkpoint trained on a GPU loads on a CPU-only runner
     # without a `map_location` dance, and so the file is device-agnostic.
-    state = {k: v.detach().cpu() for k, v in system.state_dict().items()}
-    torch.save({"model": state,
-                "cfg": cfg.__dict__,
-                "tokenizer": tok.spec(),
-                "n_params": system.n_params()}, out / "stage_b.pt")
-    tok.save(out / "tokenizer.json")
-    cfg.to_json(out / "config.json")
+    # Reuse the same atomic path as the periodic save: the final checkpoint is
+    # the one most likely to be written while the host is shutting down.
+    save_checkpoint()
 
     summary = {"elapsed_s": time.time() - t0,
                "elapsed_s_total": prior_elapsed + (time.time() - t0),
