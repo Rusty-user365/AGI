@@ -86,6 +86,28 @@ These four conditions are **exploratory**, not pre-registered, and `test` is now
 a selection set. A directional confirmation on `unseen` would be needed before
 any of them is stated as a finding.
 
+## Addendum (same day): the control in its own distribution
+
+The constant arm was re-evaluated with `--cond-mode learned`, which feeds the
+`const_cond` it was trained with instead of `cond=0`:
+
+| Split | constant, `cond=0` | constant, `cond=const_cond` | CGR steered |
+|---|---|---|---|
+| test | 0.350 | **0.380** | 0.385 |
+| unseen | 0.210 | **0.155** (below floor) | 0.290 |
+
+On `test` the fair control is **0.380**, so CGR's 0.385 is **+0.005**
+(marginal, unpaired; the paired run against this control has not been done). The
+retraction above is strengthened: the control had been handicapped by
+out-of-distribution evaluation, and once that is corrected the decision split
+shows no difference at all.
+
+On `unseen` the control scores 0.155 in its own mode, below the 0.20 floor and
+worse than no conditioning at all. It is degenerate on that split and cannot
+serve as a comparator, so the `unseen` positive is uninterpretable rather than
+disproven. See
+[unseen-confirmation](2026-10-26-unseen-confirmation.md).
+
 ## What this does not support
 
 - No claim that the CGR system repairs better than LoRA-only task adaptation.

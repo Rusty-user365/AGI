@@ -17,15 +17,19 @@ are recorded in the same entry rather than quietly deleted.
 | 2026-10-25 | [exp8-paired-test](2026-10-25-exp8-paired-test.md) | Paired +0.135 on local/one_block only; CGR is worse on quality in four conditions; no generalisation |
 | 2026-10-25 | [fixup-steering-gate](2026-10-25-fixup-steering-gate.md) | Both arms live; all six gate cells clear 0.20; steering is +0.050 test / +0.060 unseen but unpaired |
 | 2026-10-25 | [steering-capacity-control](2026-10-25-steering-capacity-control.md) | **The +0.135 CGR advantage was capacity**: against a matched 22.3M control it is +0.035 [-0.045, 0.115], not significant |
+| 2026-10-26 | [unseen-confirmation](2026-10-26-unseen-confirmation.md) | Global-scope trade replicated 4/4 on unseen; gate condition null on test (+0.005 vs a fair control) and uninterpretable on unseen (control below floor) |
 
 Open gaps, tracked here so they are not forgotten:
 
-- The gate is cleared, but no capacity-matched result shows CGR beating a
-  control on the gate condition. The earlier +0.135 is retracted to a capacity
-  effect.
-- Steering does show a measurable trade on `global` rewrites (+0.058 / +0.037
-  `c_target`, -0.102 / -0.116 quality). These are exploratory and `test` is a
-  selection set; they need a directional `unseen` confirmation.
+- **No steering claim survives.** On the decision split a fairly-evaluated
+  capacity-matched control matches CGR (0.380 vs 0.385). On `unseen` that
+  control is degenerate (0.155, below floor), so the split cannot adjudicate.
+- The `global`-scope trade replicated directionally on both splits, but both
+  measurements used a free-mode control that is demonstrably handicapped on
+  `test`. Confirming it needs `exp8 --baseline-cond-mode learned`.
 - Nothing yet distinguishes "CGR as an architecture" from "more trainable
   parameters". The two-arm design showed the difference is not the side
   channel; whether the extra adapters themselves matter is untested.
+- **Durable methodological finding:** the same control moves the answer by 0.030
+  (`test`) and 0.055 (`unseen`) purely from evaluation mode. A capacity-matched
+  control is not matched until its evaluation mode is matched too.
