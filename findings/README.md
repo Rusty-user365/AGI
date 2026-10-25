@@ -18,6 +18,7 @@ are recorded in the same entry rather than quietly deleted.
 | 2026-10-25 | [fixup-steering-gate](2026-10-25-fixup-steering-gate.md) | Both arms live; all six gate cells clear 0.20; steering is +0.050 test / +0.060 unseen but unpaired |
 | 2026-10-25 | [steering-capacity-control](2026-10-25-steering-capacity-control.md) | **The +0.135 CGR advantage was capacity**: against a matched 22.3M control it is +0.035 [-0.045, 0.115], not significant |
 | 2026-10-26 | [unseen-confirmation](2026-10-26-unseen-confirmation.md) | Global-scope trade replicated 4/4 on unseen; gate condition null on test (+0.005 vs a fair control) and uninterpretable on unseen (control below floor) |
+| 2026-10-26 | [chapter-close](2026-10-26-chapter-close.md) | What is and is not established; why the next step is explicit control flow, not more FiLM |
 
 Open gaps, tracked here so they are not forgotten:
 
