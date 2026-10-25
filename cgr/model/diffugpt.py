@@ -154,6 +154,12 @@ class _Block(nn.Module):
 class DiffuGPTBackbone(nn.Module):
     """DiffuGPT-S with the CGR side channel and the plastic adapter attached."""
 
+    #: This backbone implements whole-block masking. The canvas model does not,
+    #: and `train.py` must not pass mask-policy kwargs to a method that would
+    #: ignore them: silently training a different objective is worse than
+    #: refusing to start.
+    supports_block_mask = True
+
     def __init__(self, cfg: ModelConfig, mask_id: int, pad_id: int,
                  path: str | Path | None = None, load_weights: bool = True):
         super().__init__()

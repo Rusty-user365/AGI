@@ -160,7 +160,33 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
     if dev.type == "cuda":
         torch.cuda.reset_peak_memory_stats(dev)
 
+    # A crash (host restart, power loss, driver reset) must not force the whole
+    # schedule to restart. The checkpoint carries the weights; this file carries
+    # how much of the schedule is already done. Without it, `--resume` would
+    # re-run 4A+1B from epoch 0 and a resumed run would silently train for more
+    # epochs than configured. A mid-epoch checkpoint loses at most the steps
+    # since the last save (500), because the partially completed epoch is simply
+    # re-run.
     hist = {"stage_a": [], "stage_b": []}
+    done_a = done_b = 0
+    prior_elapsed = 0.0
+    progress_path = out / "train_progress.json"
+    if resume and progress_path.exists():
+        try:
+            prior = json.loads(progress_path.read_text(encoding="utf-8"))
+            hist = {"stage_a": list(prior.get("history", {}).get("stage_a", [])),
+                    "stage_b": list(prior.get("history", {}).get("stage_b", []))}
+            done_a, done_b = len(hist["stage_a"]), len(hist["stage_b"])
+            prior_elapsed = float(prior.get("elapsed_s", 0.0) or 0.0)
+            if verbose:
+                print(f"[train] resuming after {done_a} Stage-A and "
+                      f"{done_b} Stage-B completed epochs")
+        except (json.JSONDecodeError, OSError, TypeError, ValueError) as exc:
+            hist = {"stage_a": [], "stage_b": []}
+            done_a = done_b = 0
+            if verbose:
+                print(f"[train] could not read {progress_path} ({exc}); "
+                      f"starting the schedule from epoch 0")
     t0 = time.time()
 
     # The masking distribution is part of the objective, not a sampler detail:
@@ -174,6 +200,16 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
         "block_mask_max": getattr(cfg.train, "block_mask_max", 20),
         "sep_id": tok.sep_id,
     }
+    if not getattr(system.backbone, "supports_block_mask", False):
+        # The canvas backbone has no block-mask implementation. Passing the
+        # kwargs would raise; dropping them silently would train a different
+        # objective than the one the command line asked for. So refuse unless
+        # the request is the default token mask.
+        if mask_kwargs["mask_mode"] != "token":
+            raise ValueError(
+                f"backbone {type(system.backbone).__name__} does not support "
+                f"mask_mode={mask_kwargs['mask_mode']!r}")
+        mask_kwargs = {}
 
     def save_checkpoint() -> None:
         """Save the current weights so an interrupted run can be resumed.
@@ -191,7 +227,8 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
         cfg.to_json(out / "config.json")
         (out / "train_progress.json").write_text(
             json.dumps({"history": hist, "n_episodes": len(episodes),
-                        "elapsed_s": time.time() - t0}, indent=2),
+                        "elapsed_s": prior_elapsed + (time.time() - t0)},
+                       indent=2),
             encoding="utf-8")
 
     def run_epoch(epoch: int, stage: str) -> dict:
@@ -265,7 +302,7 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
         agg["stage"] = stage
         return agg
 
-    for ep in range(cfg.train.stage_a_epochs):
+    for ep in range(done_a, cfg.train.stage_a_epochs):
         h = run_epoch(ep, "A")
         hist["stage_a"].append(h)
         save_checkpoint()
@@ -273,7 +310,7 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
             gate_acc = (f"{h['gate_acc']:.3f}" if h["gate_acc"] is not None
                         else "n/a")
             print(f"[A {ep}] loss={h['loss']:.4f} gate_acc={gate_acc}")
-    for ep in range(cfg.train.stage_b_epochs):
+    for ep in range(done_b, cfg.train.stage_b_epochs):
         h = run_epoch(ep, "B")
         hist["stage_b"].append(h)
         save_checkpoint()
@@ -301,7 +338,9 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
     tok.save(out / "tokenizer.json")
     cfg.to_json(out / "config.json")
 
-    summary = {"elapsed_s": time.time() - t0, "params": system.n_params(),
+    summary = {"elapsed_s": time.time() - t0,
+               "elapsed_s_total": prior_elapsed + (time.time() - t0),
+               "params": system.n_params(),
                "history": hist, "vocab": tok.vocab_size,
                "device": str(dev), "n_episodes": len(episodes),
                "freeze_backbone": bool(getattr(cfg.train, "freeze_backbone",
@@ -309,6 +348,7 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
                "lora_rank": int(getattr(cfg.model, "lora_rank", 0)),
                "objective": objective,
                "resumed_from": str(resume) if resume else None,
+               "prior_epochs": {"stage_a": done_a, "stage_b": done_b},
                "cuda_memory": cuda_memory}
     (out / "train_summary.json").write_text(json.dumps(summary, indent=2),
                                             encoding="utf-8")
