@@ -351,7 +351,10 @@ class DiffuGPTBackbone(nn.Module):
             {"lm_head.weight"}  # tied to embed_tokens, never stored separately
             | {f"h.{i}.film.weight" for i in range(self.cfg.n_layers)}
             | {f"h.{i}.film.bias" for i in range(self.cfg.n_layers)}
-            | {"plastic_a", "plastic_b"})
+            | {"plastic_a", "plastic_b",
+               # Added for the matched control; the base weights predate it and
+               # it is initialised in __init__, so its absence is expected.
+               "const_cond"})
         bad = {n for n in missing
                if n not in allowed_missing and ".lora_" not in n}
         if bad or unexpected:

@@ -1,0 +1,22 @@
+﻿[train] resumed weights from checkpoints/diffugpt_5k_e10_cgr_blockft/stage_b.pt (optimizer state is reset); initialised 1 new side-channel key(s) from their init
+[train] frozen pre-trained base; trainable=22,324,637 of 138,382,080 backbone params (LoRA rank 8)
+python : Traceback (most recent call last):
+At line:1 char:26
++ ...  research"; python -u -m cgr.train --preset diffugpt --stage-a-epochs ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Traceback (most recent call last)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  File "C:\Program 
+Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\runpy.py", line 196, in 
+_run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "C:\Program 
+Files\WindowsApps\PythonSoftwareFoundation.Python.3.10_3.10.3056.0_x64__qbz5n2kfra8p0\lib\runpy.py", line 86, in 
+_run_code
+    exec(code, run_globals)
+  File "D:\kaggle research\cgr\train.py", line 606, in <module>
+    train(cfg, args.out, device=args.device, objective=args.objective,
+  File "D:\kaggle research\cgr\train.py", line 331, in train
+    probe_cond = torch.randn(1, cfg.model.d_model, device=dev,
+RuntimeError: Expected a 'cuda' device type for generator but found 'cpu'

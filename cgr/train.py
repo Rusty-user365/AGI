@@ -328,8 +328,10 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
                 tok.encode(probe_text, add_bos=False, add_eos=False)
                 [:cfg.model.max_len], device=dev).unsqueeze(0)
             g = torch.Generator().manual_seed(cfg.train.seed)
-            probe_cond = torch.randn(1, cfg.model.d_model, device=dev,
-                                     generator=g)
+            # The generator is a CPU generator; sample there and move, rather
+            # than asking for a CUDA generator that was never created.
+            probe_cond = torch.randn(1, cfg.model.d_model,
+                                     generator=g).to(dev)
         ref["reasoner"] = [p.detach().clone()
                            for p in system.reasoner.parameters()]
 

@@ -49,6 +49,16 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="auto")
     ap.add_argument("--steps", type=int, default=8)
+    ap.add_argument("--cgr-cond-mode", default="reasoner",
+                    choices=["none", "reasoner", "learned"],
+                    help="what drives the CGR arm's side channel")
+    ap.add_argument("--baseline-cond-mode", default="none",
+                    choices=["none", "reasoner", "learned"],
+                    help="what drives the baseline arm's side channel. The "
+                         "matched control for a cond_mode=learned checkpoint "
+                         "is 'learned', which feeds its own const_cond; 'none' "
+                         "feeds cond=0 and evaluates that arm outside the "
+                         "distribution it was trained in.")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
@@ -89,10 +99,12 @@ def main() -> int:
                     task, task.texts(), specificity_defined=spec_defined))
                 for name, system in (("cgr", cgr), ("backbone", baseline)):
                     spent = matched_budgets(task, n_tok)[method]
+                    mode = (args.cgr_cond_mode if name == "cgr"
+                            else args.baseline_cond_mode)
                     out, changed = run_model(
                         system, task, method, spent, n_tok, tok,
                         steps=args.steps, seed=args.seed,
-                        use_reasoner=(name == "cgr"))
+                        reasoning_mode=mode)
                     score = score_document(task, out,
                                            specificity_defined=spec_defined)
                     score["blocks_changed"] = len(changed)
@@ -139,6 +151,8 @@ def main() -> int:
         "selection": selection, "requested_n": args.n,
         "cgr_checkpoint": args.cgr_checkpoint,
         "baseline_checkpoint": args.baseline_checkpoint,
+        "cgr_cond_mode": args.cgr_cond_mode,
+        "baseline_cond_mode": args.baseline_cond_mode,
         "comparison": "trained CGR reasoner conditioning vs LoRA-only masked-denoising baseline",
         "limits": [
             "The decoder and edit scopes are identical between conditions.",

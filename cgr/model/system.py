@@ -305,7 +305,8 @@ class CGRSystem(nn.Module):
     # ------------------------------------------------------------------
     def repair(self, blocks: list[str], target_block: int, mode: str = "local",
                steps: int = 6, seed: int | None = None,
-               use_reasoner: bool = False) -> list[str]:
+               use_reasoner: bool = False,
+               reasoning_mode: str | None = None) -> list[str]:
         """Repair a corrupted document.
 
         Modes, with their contract implications:
@@ -330,7 +331,19 @@ class CGRSystem(nn.Module):
         t = torch.tensor(ids, device=self.device).unsqueeze(0)
         order = getattr(self.cfg.model, "infill_order", "confidence")
         with torch.no_grad():
-            cond = self.encode(t)[1] if use_reasoner else None
+            # `reasoning_mode` wins when given. `use_reasoner` is the older
+            # boolean and still means full steering vs none, so existing
+            # callers keep their behaviour. The matched control needs the third
+            # option: `learned` feeds the backbone's own `const_cond`, which is
+            # the distribution that arm was trained in. Evaluating a
+            # constant-conditioning checkpoint with cond=0 is out of
+            # distribution and would understate it.
+            if reasoning_mode is None:
+                reasoning_mode = "full" if use_reasoner else "none"
+            # Skip the extra backbone pass entirely when there is no side
+            # channel, as the pre-existing reasoner-free path did.
+            cond = (None if reasoning_mode == "none"
+                    else self.encode(t, reasoning_mode)[1])
             if mode == "local":
                 gen = self.backbone.infill(t, [spans[target_block]],
                                            cond=cond, steps=steps, seed=seed,

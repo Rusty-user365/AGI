@@ -1,5 +1,15 @@
 # exp8: paired CGR vs LoRA-only repair comparison on `test` (2026-10-25)
 
+> **Superseded on the headline claim (same day).** The +0.135 on
+> `local/one_block` below compares an 8.1M-parameter arm against a
+> 0.44M-parameter one. Re-run against a capacity-matched control that received
+> the same training and 22.3M trainable parameters, the difference is
+> **+0.035 [-0.045, 0.115], not significant**, while the control's own score
+> rose from 0.245 to 0.350. The advantage was capacity, not the conditioning
+> path. See
+> [steering-capacity-control](2026-10-25-steering-capacity-control.md). The
+> quality-degradation findings below stand and are if anything reinforced.
+
 ## Question
 
 On the same 200 documents, does the CGR checkpoint repair better than the

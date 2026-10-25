@@ -97,14 +97,15 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
 
 @torch.no_grad()
 def block_infill_rate(system, tok, tasks, steps=8, seed=0,
-                      use_reasoner=False):
+                      use_reasoner=False, reasoning_mode=None):
     """Counts of one-block repairs that parse, and that parse on-thesis."""
     parseable = on_thesis = 0
     for t in tasks:
         blocks = list(t.corrupt_blocks)
         out = system.repair(blocks, t.target_block, mode="local",
                             steps=steps, seed=seed,
-                            use_reasoner=use_reasoner)
+                            use_reasoner=use_reasoner,
+                            reasoning_mode=reasoning_mode)
         if t.target_block == 0:
             role = "intro"
         elif t.target_block == len(blocks) - 1:
@@ -133,6 +134,14 @@ def main() -> int:
                     help="condition the infill on the CGR reasoner, as the "
                          "deployed CGR editor does; the default is the "
                          "reasoner-free path used for the original gate")
+    ap.add_argument("--cond-mode", default=None,
+                    choices=["none", "reasoner", "learned"],
+                    help="what drives the FiLM side channel. 'none' feeds "
+                         "cond=0, 'reasoner' feeds the per-document steering "
+                         "vector, 'learned' feeds the checkpoint's own "
+                         "const_cond, which is the only in-distribution path "
+                         "for a cond_mode=learned checkpoint. Overrides "
+                         "--use-reasoner when given.")
     ap.add_argument("--device", default="auto",
                     help="cpu, cuda, or auto")
     ap.add_argument("--json-out", default=None,
@@ -201,12 +210,15 @@ def main() -> int:
         fits=lambda texts: len(blocked_spans(texts, tok)[0])
         <= cfg.model.max_len)
     local = tasks["local"]
+    # Resolve the flag once so the run, the log line and the JSON all describe
+    # the same conditioning path.
+    cond_mode = args.cond_mode or ("reasoner" if args.use_reasoner else "none")
     parseable, on_thesis, n = block_infill_rate(
         system, tok, local, steps=args.steps, seed=args.seed,
-        use_reasoner=args.use_reasoner)
+        reasoning_mode=cond_mode)
     p_lo, p_hi = wilson(parseable, n)
     t_lo, t_hi = wilson(on_thesis, n)
-    print(f"\nsplit {args.split}  reasoner={args.use_reasoner}")
+    print(f"\nsplit {args.split}  cond={cond_mode}")
     print(f"local block infill: parseable {parseable / max(n, 1):.3f} "
           f"[{p_lo:.3f}, {p_hi:.3f}]  "
           f"on-thesis {on_thesis / max(n, 1):.3f} "
@@ -220,6 +232,7 @@ def main() -> int:
             "preset": cfg.preset_name,
             "split": args.split,
             "use_reasoner": bool(args.use_reasoner),
+            "cond_mode": cond_mode,
             "n": n,
             "steps": args.steps,
             "seed": args.seed,

@@ -195,12 +195,19 @@ def n_tokens_of(tok):
 
 def run_model(system, task, method: str, budget, n_tok, tok,
               steps: int = 6, seed: int = 0,
-              use_reasoner: bool = False) -> tuple[list[str], list[int]]:
+              use_reasoner: bool = False,
+              reasoning_mode: str | None = None) -> tuple[list[str], list[int]]:
     """Apply one method to one task without exceeding its budget.
 
     `repeated_local` uses a ground-truth detector (worst block first). That
     deliberately favours local repair: if it still loses to global revision,
     the loss is a scope effect, not a detection artifact.
+
+    `reasoning_mode` selects what drives the FiLM side channel: `none` (cond=0),
+    `full` (per-document reasoner vector) or `learned` (the checkpoint's own
+    `const_cond`). The last one is the in-distribution path for a checkpoint
+    trained with `cond_mode=learned`; without it that control is evaluated
+    outside the distribution it was trained in.
     """
     out = task.texts()
     changed: list[int] = []
@@ -209,7 +216,8 @@ def run_model(system, task, method: str, budget, n_tok, tok,
         i = task.target_block
         if budget.can_spend(1, n_tok(out[i])):
             new = system.repair(out, i, mode="local", steps=steps, seed=seed,
-                                use_reasoner=use_reasoner)
+                                use_reasoner=use_reasoner,
+                                reasoning_mode=reasoning_mode)
             budget.spend_or_flag(1, n_tok(new[i]))
             out, changed = new, [i]
 
@@ -218,7 +226,8 @@ def run_model(system, task, method: str, budget, n_tok, tok,
         cost = sum(n_tok(out[i]) for i in idx)
         if budget.can_spend(len(idx), cost):
             new = system.repair(out, 0, mode="editable", steps=steps, seed=seed,
-                                use_reasoner=use_reasoner)
+                                use_reasoner=use_reasoner,
+                                reasoning_mode=reasoning_mode)
             budget.spend_or_flag(len(idx), sum(n_tok(new[i]) for i in idx))
             out, changed = new, list(idx)
 
@@ -232,7 +241,8 @@ def run_model(system, task, method: str, budget, n_tok, tok,
             if not budget.can_spend(1, n_tok(out[i])):
                 break
             new = system.repair(out, i, mode="local", steps=steps, seed=seed,
-                                use_reasoner=use_reasoner)
+                                use_reasoner=use_reasoner,
+                                reasoning_mode=reasoning_mode)
             budget.spend_or_flag(1, n_tok(new[i]))
             out, changed = new, changed + [i]
             if coherence(task_from_blocks(out, task.authoritative).blocks,

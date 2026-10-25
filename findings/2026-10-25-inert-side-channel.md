@@ -89,3 +89,56 @@ denoising loss is zero at step 1.
 - It does not show that a live side channel would help. That is an open
   experiment, and it needs the constant-conditioning control trained on the
   identical schedule; otherwise any gain is confounded with extra training.
+
+## Resolution: the fix-up run confirms the channel is live
+
+Fix-up arm 1 (`cond_mode=reasoner`, 2 epochs from the 0.380 checkpoint).
+`train_diagnostics.json` written at step 500 of the first epoch:
+
+| Field | Value | Was (dead channel) |
+|---|---|---|
+| `film_max_abs` | 0.00965 | 0.0 |
+| `film_l2` | 4.349 | 0.0 |
+| `film_grad_max` | 0.00422 | 0.0 |
+| `reasoner_l2_delta` | 4.534 | 0.0 |
+| `cond_abs_mean` | 0.0314 | 0.0 |
+| `cond_probe_delta` | **6.554** | **0.0** |
+| `side_channel_live` | **true** | false |
+
+`cond_probe_delta` is the decisive number: replacing `cond` with a random
+vector now changes the backbone's output by 6.55 (max absolute logit
+difference), where it previously changed nothing at all. FiLM has left its zero
+init and receives gradient, and the reasoner has moved.
+
+The channel keeps strengthening rather than saturating, across the first epoch:
+
+| Step | `film_max_abs` | `film_l2` | `cond_abs_mean` | `cond_probe_delta` |
+|---|---|---|---|---|
+| 500 | 0.00965 | 4.349 | 0.0314 | 6.554 |
+| 1000 | 0.01666 | 6.740 | 0.0187 | 9.981 |
+| 1719 (end of A0) | 0.02389 | 9.053 | 0.0437 | 12.593 |
+| 3438 (end of A1) | 0.02468 | 10.251 | 0.0923 | 15.089 |
+
+Both epochs: loss 1.0286 then 0.9122 (`gate_acc` 0.999 then 1.000, an
+auxiliary label metric, not the repair score), against 1.2564 for the first
+epoch of the original fine-tune. Training with 22.3M trainable parameters is
+stable and the checkpoint is complete (`train_summary.json`, 4025 s).
+
+Do not over-read the `cond_abs_mean` column. It fell from 0.0314 to 0.0187 at
+step 1000 and then rose again to 0.0923 by the end of A1. A single interval is
+not a trend, and this quantity is not a designed diagnostic; the load-bearing
+numbers are `cond_probe_delta` and `film_l2`, which both grew monotonically
+across every checkpoint (6.55 to 15.09, and 4.35 to 10.25).
+
+Two consequences to keep straight:
+
+1. This proves the path is **connected and trained**. It does not prove that it
+   **helps**. That requires the paired comparison against the
+   `cond_mode=learned` arm, which trains for the same epochs with the same
+   parameters but a conditioning vector that carries no input information.
+2. Because `film(0)` is now a learned bias rather than zero, the
+   **reasoner-free** gate path is also affected. Any movement in the
+   reasoner-free number is not evidence of steering; the steering effect is the
+   difference between the reasoner and reasoner-free paths on the same
+   checkpoint, and the difference between the two arms.
+
