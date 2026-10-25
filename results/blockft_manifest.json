@@ -1,0 +1,88 @@
+{
+  "purpose": "fine-tune existing 5k checkpoints with mixed token/block masking (one factor vs token-only training)",
+  "config": {
+    "model": {
+      "backbone": "diffugpt",
+      "backbone_path": "DiffuGPT-S",
+      "tokenizer": "gpt2",
+      "vocab_size": 50258,
+      "d_model": 768,
+      "n_layers": 12,
+      "n_heads": 12,
+      "d_ff": 3072,
+      "max_len": 128,
+      "dropout": 0.1,
+      "activation": "gelu_new",
+      "lora_rank": 8,
+      "lora_alpha": 16.0,
+      "infill_order": "left_to_right",
+      "d_latent": 256,
+      "n_blocks": 4,
+      "latent_steps": 4,
+      "guidance_weight": 0.5,
+      "d_head": 128,
+      "d_outcome": 4,
+      "n_epistemic": 4,
+      "n_scope": 5,
+      "n_source": 3,
+      "n_actions": 8,
+      "gumbel_tau": 1.0,
+      "mem_dim": 128,
+      "mem_capacity": 100000,
+      "embed_dim": 256
+    },
+    "data": {
+      "n_docs": 5000,
+      "n_val": 500,
+      "n_test": 500,
+      "n_reasons_min": 2,
+      "n_reasons_max": 4,
+      "holdout_frac": 0.15,
+      "n_heldout_theses": 2,
+      "seed": 0
+    },
+    "train": {
+      "stage_a_epochs": 4,
+      "stage_b_epochs": 1,
+      "batch_size": 8,
+      "lr": 0.0001,
+      "weight_decay": 0.01,
+      "warmup": 100,
+      "grad_clip": 1.0,
+      "mask_ratio_min": 0.15,
+      "mask_ratio_max": 0.85,
+      "mask_mode": "block",
+      "block_mask_prob": 0.5,
+      "block_mask_min": 15,
+      "block_mask_max": 20,
+      "head_weights": {
+        "value": 1.0,
+        "outcome": 1.0,
+        "tau": 1.0,
+        "epistemic": 1.0,
+        "scope": 1.0,
+        "source": 1.0,
+        "disagreement": 1.0
+      },
+      "kl_leash": 0.1,
+      "lr_schedule": "warmup_cosine",
+      "device": "auto",
+      "freeze_backbone": true,
+      "seed": 0
+    },
+    "preset_name": "diffugpt"
+  },
+  "corpus": {
+    "path": "data/processed/diffugpt_train.jsonl",
+    "sha256": "0267257927ddafb42180aa652bbe184f9869f022e44b5d689379544b089669c7",
+    "manifest": "data/processed/diffugpt_train.jsonl.manifest.json"
+  },
+  "resume": {
+    "cgr": "checkpoints/diffugpt_5k_e10_cgr/stage_b.pt",
+    "backbone": "checkpoints/diffugpt_5k_e10_backbone/stage_b.pt"
+  },
+  "commands": {
+    "cgr": "python -m cgr.train --preset diffugpt --stage-a-epochs 4 --stage-b-epochs 1 --mask-mode block --block-mask-prob 0.5 --device cuda --resume checkpoints/diffugpt_5k_e10_cgr/stage_b.pt --out checkpoints/diffugpt_5k_e10_cgr_blockft --log-every 100",
+    "backbone": "python -m cgr.train --preset diffugpt --stage-a-epochs 4 --stage-b-epochs 1 --mask-mode block --block-mask-prob 0.5 --objective backbone --device cuda --resume checkpoints/diffugpt_5k_e10_backbone/stage_b.pt --out checkpoints/diffugpt_5k_e10_backbone_blockft --log-every 100"
+  }
+}

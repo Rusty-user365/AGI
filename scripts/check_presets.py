@@ -38,6 +38,8 @@ def check(name: str) -> dict:
     batch = collate(episodes[:4], tok, cfg.model.max_len)
 
     system = CGRSystem(cfg, tok)
+    if getattr(cfg.train, "freeze_backbone", False):
+        system.freeze_backbone_base()
     system.train()  # grads must flow; we are checking reachability, not accuracy
 
     # Seed the memory so the read path (and memory.alpha) is actually exercised.
@@ -76,9 +78,10 @@ def check(name: str) -> dict:
 
 
 if __name__ == "__main__":
-    rows = [check(n) for n in ("smoke", "dev", "paper")]
+    names = sys.argv[1:] or ["smoke", "dev", "paper"]
+    rows = [check(n) for n in names]
     print()
     for r in rows:
-        print(f"{r['preset']:6s} {r['params']:>10,}")
+        print(f"{r['preset']:9s} {r['params']:>10,}")
     bad = [r["preset"] for r in rows if r["gradless"]]
     sys.exit(1 if bad else 0)

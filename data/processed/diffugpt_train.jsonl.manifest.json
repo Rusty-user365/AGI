@@ -1,0 +1,22 @@
+{
+  "preset": "diffugpt",
+  "split": [
+    "train"
+  ],
+  "counts": {
+    "train": 5000
+  },
+  "data_seed": 0,
+  "tokenizer": {
+    "kind": "gpt2",
+    "path": "DiffuGPT-S"
+  },
+  "template_counts": {
+    "intro": 8,
+    "body": 8,
+    "conclusion": 8
+  },
+  "n_theses": 6,
+  "n_heldout_theses": 2,
+  "source": "deterministic CGR synthetic generator"
+}

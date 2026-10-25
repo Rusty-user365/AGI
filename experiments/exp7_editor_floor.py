@@ -67,9 +67,15 @@ def parse_budgets(s: str) -> list[tuple[int, int]]:
     return out
 
 
-def diagnose(system, cfg, tok, splits, n: int, seed: int) -> dict:
+def diagnose(system, cfg, tok, splits, n: int, seed: int,
+             split: str = "test") -> dict:
     system.eval()
-    recs = splits["test"]
+    recs = splits[split]
+    if not recs:
+        raise SystemExit(
+            f"split {split!r} is empty. `unseen` requires "
+            f"DataConfig.n_heldout_theses > 0 and an open-vocabulary "
+            f"tokenizer (the `diffugpt` preset sets both).")
 
     # ---- 1. clean-block infill sanity ---------------------------------
     exact = parse_ok = thesis_ok = specific = 0
@@ -99,39 +105,53 @@ def diagnose(system, cfg, tok, splits, n: int, seed: int) -> dict:
         fits=lambda blocks: len(blocked_spans(blocks, tok)[0])
         <= cfg.model.max_len, stats=stats)
 
-    def score(task, blocks_text: list[str]) -> tuple[float, float]:
+    def score(task, blocks_text: list[str],
+              specificity_defined: bool = True) -> tuple[float, float | None]:
         """Coherence and specificity on the blocks the task actually edits.
 
         Scoring the whole document would credit the untouched siblings: on a
         local defect the other bodies are still specific, so a degenerate edit
         inherits their quality. The edited blocks are the only honest unit.
+
+        On the `unseen` split a local defect's specificity is undefined: the
+        degraded block's reason was replaced and the thesis's reason pool never
+        appeared in training. It is returned as None, not 0, for the same
+        reason exp4 does it.
         """
         blocks = task_from_blocks(blocks_text, task.authoritative).blocks
         idx = task.edited or [task.target_block]
         c = sum(1 for i in idx
                 if blocks[i].thesis_id == task.authoritative) / len(idx)
+        if not specificity_defined:
+            return c, None
         q = sum(block_quality(blocks[i], task.authoritative)
                 for i in idx) / len(idx)
         return c, q
 
     repair = {}
-    for defect, mode in (("local", "local"), ("cross_block", "editable")):
+    for defect, mode in (("local", "local"),
+                         ("cross_block", "editable"),
+                         ("cross_block_partial", "editable")):
+        spec_ok = not (split == "unseen" and defect == "local")
         rows = []
         for task in tasks[defect]:
-            before_c, before_q = score(task, task.corrupt_blocks)
+            before_c, before_q = score(task, task.corrupt_blocks, spec_ok)
             target = task.target_block
             new = system.repair(task.corrupt_blocks, target, mode=mode,
                                 steps=6, seed=seed)
-            c, q = score(task, new)
+            c, q = score(task, new, spec_ok)
             rows.append({"before_c": before_c, "before_q": before_q,
                          "c_edit": c, "quality": q})
         m2 = max(len(rows), 1)
+        qs = [r["quality"] for r in rows if r["quality"] is not None]
+        bq = [r["before_q"] for r in rows if r["before_q"] is not None]
         repair[defect] = {
             "n": len(rows),
             "noop_c_edit": sum(r["before_c"] for r in rows) / m2,
-            "noop_quality": sum(r["before_q"] for r in rows) / m2,
+            "noop_quality": (sum(bq) / len(bq)) if bq else None,
             "c_edit": sum(r["c_edit"] for r in rows) / m2,
-            "quality": sum(r["quality"] for r in rows) / m2,
+            "quality": (sum(qs) / len(qs)) if qs else None,
+            "n_quality": len(qs),
             "c_edit_1": sum(1 for r in rows if r["c_edit"] == 1.0) / m2,
         }
 
@@ -176,7 +196,8 @@ def main() -> int:
             secs = None
         system, cfg = get_system(args.preset, seed=args.seed,
                                  checkpoint=str(ckpt), verbose=False)
-        d = diagnose(system, cfg, tok, splits, n=n, seed=args.seed)
+        d = diagnose(system, cfg, system.tok, splits, n=n, seed=args.seed,
+                     split=args.split)
         steps = (a + b) * (400 // cfg.train.batch_size)
         row = {"budget": f"{a}+{b}", "opt_steps": steps,
                "train_secs": secs, **d["infill"], **d["tasks"],
@@ -187,26 +208,35 @@ def main() -> int:
                "cross_c_edit": d["repair"]["cross_block"]["c_edit"],
                "cross_noop_c_edit": d["repair"]["cross_block"]["noop_c_edit"],
                "cross_quality": d["repair"]["cross_block"]["quality"],
-               "cross_noop_quality": d["repair"]["cross_block"]["noop_quality"]}
+               "cross_noop_quality": d["repair"]["cross_block"]["noop_quality"],
+               "partial_c_edit": d["repair"]["cross_block_partial"]["c_edit"],
+               "partial_noop_c_edit":
+                   d["repair"]["cross_block_partial"]["noop_c_edit"],
+               "partial_quality":
+                   d["repair"]["cross_block_partial"]["quality"],
+               "partial_noop_quality":
+                   d["repair"]["cross_block_partial"]["noop_quality"]}
         rows.append(row)
         print(json.dumps({k: v for k, v in row.items()
                           if k in ("budget", "opt_steps", "on_thesis",
                                    "specific", "local_c_edit",
                                    "local_quality", "cross_c_edit",
-                                   "cross_quality")}))
+                                   "cross_quality", "partial_c_edit",
+                                   "partial_quality")}))
 
     table(rows, ["budget", "opt_steps", "exact", "parses", "on_thesis",
                  "specific", "local_c_edit", "local_quality", "cross_c_edit",
-                 "cross_quality"])
+                 "cross_quality", "partial_c_edit", "partial_quality"])
 
     best = max(rows, key=lambda r: r["on_thesis"])
     ability_rises = best["on_thesis"] > 0.2
     specificity_rises = max(r["specific"] for r in rows) > 0.0
-    local_repair_rises = max(r["local_quality"] for r in rows) > 0.0
+    local_repair_rises = max((r["local_quality"] or 0.0) for r in rows) > 0.0
     # Same 0.2 ability threshold as exp4's precondition. A cross-block c_target
     # of 0.07 is ~3 of 40 edited blocks: above the no-op floor of 0, but not a
     # repair. Calling that "rises" would let noise open the gate.
     cross_repair_rises = max(r["cross_c_edit"] for r in rows) >= 0.2
+    partial_repair_rises = max(r["partial_c_edit"] for r in rows) >= 0.2
 
     notes = []
     if not ability_rises:
@@ -232,17 +262,34 @@ def main() -> int:
             "it cannot restore the specificity that defines the local defect. "
             "A local-repair claim needs the specificity number, not c_edit.")
     if ability_rises and not local_repair_rises:
-        notes.append(
-            "On the actual local repair task, quality stays at the no-op "
-            "baseline (0.000): the model does not repair specificity even "
-            "when it can infill a clean block. Do not read c_edit on local "
-            "defects as a repair result; a no-op already scores 1.000 there.")
+        if args.split == "unseen":
+            notes.append(
+                "Local specificity is undefined on the unseen split and is "
+                "reported as None, not 0: the degraded block's reason was "
+                "replaced and the unseen thesis's reason pool never appeared "
+                "in training. The local row's c_edit is still defined, but it "
+                "cannot distinguish a repair from a no-op (a no-op already "
+                "scores 1.000 on a local defect).")
+        else:
+            notes.append(
+                "On the actual local repair task, quality stays at the no-op "
+                "baseline (0.000): the model does not repair specificity even "
+                "when it can infill a clean block. Do not read c_edit on local "
+                "defects as a repair result; a no-op already scores 1.000 "
+                "there.")
     if ability_rises and not cross_repair_rises:
         notes.append(
             "On the actual cross-block task, c_edit stays at its no-op floor: "
             "clean-block infill ability does not transfer to revising every "
             "editable block against a locked intro. The editor is above the "
             "infill floor and still below the repair floor.")
+    if ability_rises and not partial_repair_rises:
+        notes.append(
+            "On the partial cross-block task (wrong thesis on a strict "
+            "majority of editable blocks), c_edit stays below 0.2. This is the "
+            "hardest distractor: a majority-vote heuristic sides with the "
+            "corruption, so success requires using the locked intro as the "
+            "anchor.")
     notes.append(
         "Byte-identical restore is reported as a diagnostic only. A "
         "masked-diffusion infill regenerates the span, so exact copy is ~0 by "
@@ -252,6 +299,7 @@ def main() -> int:
     write_result("exp7_editor_floor", {
         "experiment": "exp7_editor_floor",
         "preset": args.preset, "seed": args.seed, "n": n,
+        "split": args.split,
         "preregistered_prediction": PREDICTION,
         "budgets": [{"stage_a": a, "stage_b": b} for a, b in budgets],
         "conditions": rows,
@@ -260,6 +308,7 @@ def main() -> int:
             "specificity_rises": bool(specificity_rises),
             "local_repair_rises": bool(local_repair_rises),
             "cross_repair_rises": bool(cross_repair_rises),
+            "partial_repair_rises": bool(partial_repair_rises),
             "best_budget": best["budget"],
             "best_on_thesis": best["on_thesis"],
             "copy_fidelity_is_not_a_gate": True,

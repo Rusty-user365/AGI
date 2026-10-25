@@ -137,8 +137,16 @@ class MaskedDiffusionLM(nn.Module):
     @torch.no_grad()
     def infill(self, ids: torch.Tensor, spans: list[tuple[int, int]],
                cond: torch.Tensor | None = None, steps: int = 6,
-               temperature: float = 1.0, seed: int | None = None) -> torch.Tensor:
-        """Mask the given spans and denoise them, leaving other tokens fixed."""
+               temperature: float = 1.0, seed: int | None = None,
+               order: str = "confidence") -> torch.Tensor:
+        """Mask the given spans and denoise them, leaving other tokens fixed.
+
+        `order` selects which masked positions are committed each round:
+        `confidence` (most confident first, the v0.3 behaviour) or
+        `left_to_right`. The canvas has no shift convention, so both are
+        in-distribution here; the option exists because the DiffuGPT backbone
+        does have one and the comparison must use the same code path.
+        """
         dev = ids.device
         g = torch.Generator(device=dev)
         if seed is not None:
@@ -148,12 +156,16 @@ class MaskedDiffusionLM(nn.Module):
         for s, e in spans:
             target[:, s:e] = True
         out[target] = self.mask_id
-        return self._unmask(out, cond, steps, temperature, g, fixed=~target)
+        return self._unmask(out, cond, steps, temperature, g, fixed=~target,
+                            order=order)
 
     @torch.no_grad()
     def _unmask(self, ids: torch.Tensor, cond: torch.Tensor | None, steps: int,
                 temperature: float, g: torch.Generator,
-                fixed: torch.Tensor | None = None) -> torch.Tensor:
+                fixed: torch.Tensor | None = None,
+                order: str = "confidence") -> torch.Tensor:
+        if order not in ("confidence", "left_to_right"):
+            raise ValueError(f"unknown commit order {order!r}")
         ids = ids.clone()
         for _ in range(steps):
             logits = self.forward(ids, cond)
@@ -162,15 +174,18 @@ class MaskedDiffusionLM(nn.Module):
             masked = ids.eq(self.mask_id)
             if not masked.any():
                 break
-            # unmask a proportional slice, most confident first
+            # unmask a proportional slice
             frac = 1.0 / max(steps, 1)
             k = max(1, int(masked.float().sum() / masked.shape[0] * frac))
             for b in range(ids.shape[0]):
                 idx = masked[b].nonzero(as_tuple=True)[0]
                 if idx.numel() == 0:
                     continue
-                c = conf[b, idx]
-                take = idx[torch.argsort(c, descending=True)[:k]]
+                if order == "left_to_right":
+                    take = idx[:k]
+                else:
+                    c = conf[b, idx]
+                    take = idx[torch.argsort(c, descending=True)[:k]]
                 ids[b, take] = pred[b, take]
         # any residual masks -> argmax fill
         if ids.eq(self.mask_id).any():
@@ -181,17 +196,27 @@ class MaskedDiffusionLM(nn.Module):
         return ids
 
     # ------------------------------------------------------------------
+    def token_nll(self, ids: torch.Tensor,
+                  cond: torch.Tensor | None = None) -> torch.Tensor:
+        """Per-position NLL of batch element 0.
+
+        The canvas predicts token `i` from `logits[i]`. The DiffuGPT backbone
+        predicts token `i` from `logits[i-1]`, because that is how the
+        checkpoint was trained. `metrics._token_nll` delegates here so the
+        difference cannot silently leak into a cross-backbone comparison.
+        """
+        logits = self.forward(ids, cond)
+        logp = logits.log_softmax(-1)
+        lp = logp.gather(-1, ids.unsqueeze(-1)).squeeze(-1)
+        return -lp[0]
+
     def span_nll(self, ids: torch.Tensor, spans: list[tuple[int, int]],
                  cond: torch.Tensor | None = None) -> torch.Tensor:
         """Mean NLL of the given spans under the model, used for seam/fluency."""
-        logits = self.forward(ids, cond)
-        logp = logits.log_softmax(-1)
-        vals = []
-        for s, e in spans:
-            tgt = ids[:, s:e]
-            lp = logp[:, s:e, :].gather(-1, tgt.unsqueeze(-1)).squeeze(-1)
-            vals.append(-lp.mean())
-        return torch.stack(vals).mean() if vals else torch.zeros((), device=ids.device)
+        nll = self.token_nll(ids, cond)
+        vals = [nll[s:e].mean() for s, e in spans if e > s]
+        return torch.stack(vals).mean() if vals else torch.zeros(
+            (), device=ids.device)
 
     def n_params(self) -> int:
         return sum(p.numel() for p in self.parameters())

@@ -19,10 +19,11 @@ import torch
 from cgr.config import Config
 from cgr.data.corpus import build_corpus, corrupt_local, corrupt_nonlocal
 from cgr.data.documents import (Budget, anchor_ok, block_quality, coherence,
-                                degrade_local, make_block, matched_budgets,
-                                oracle_repair, quality, retarget,
-                                task_from_blocks, task_from_record,
-                                validate_cross_block, validate_local,
+                                corrupt_cross_block, degrade_local, make_block,
+                                matched_budgets, oracle_repair, quality,
+                                retarget, task_from_blocks, task_from_record,
+                                validate_cross_block,
+                                validate_cross_block_partial, validate_local,
                                 validate_task)
 from cgr.data.facts import (make_claim, make_claim_set,
                             make_counting_ontology_claims,
@@ -118,6 +119,46 @@ def test_cross_block_defect_is_not_single_block_solvable(setup):
     assert coherence(task_from_blocks(out, ex.authoritative).blocks,
                      ex.authoritative)["c_edit"] == 1.0
     assert anchor_ok(ex.texts(), out, [0])
+
+
+def test_partial_cross_block_is_harder_than_the_full_defect(setup):
+    """The third family: a *majority* wrong thesis, one body still correct.
+
+    Two properties make it a genuinely harder distractor rather than the full
+    defect with fewer edits:
+
+    1. a majority-vote heuristic over editable blocks picks W, so the locked
+       intro is the only cue for T*;
+    2. a single local repair still leaves coherence < 1.
+    """
+    _, _, splits, _ = setup
+    rng = random.Random(0)
+    for r in splits["train"][:40]:
+        ex = corrupt_cross_block(task_from_record(r), rng, partial=True)
+        assert ex.defect == "cross_block_partial"
+        assert validate_cross_block_partial(task_from_record(r), ex) == []
+        assert anchor_ok(r.blocks, ex.corrupt_blocks, [0])
+        editable = ex.editable_indices
+        assert 2 <= len(ex.edited) < len(editable)
+        # strict majority of editable blocks is wrong
+        assert len(ex.edited) > len(editable) - len(ex.edited)
+        # the conclusion is part of the corruption
+        assert len(ex.blocks) - 1 in ex.edited
+        coh = coherence(ex.blocks, ex.authoritative)
+        assert 0.0 < coh["c_edit"] < 1.0
+        # one-block repair cannot reach full coherence
+        for i in ex.edited:
+            out = ex.texts()
+            out[i] = ex.clean_blocks[i]
+            fixed = coherence(task_from_blocks(out, ex.authoritative).blocks,
+                              ex.authoritative)
+            assert fixed["c_edit"] < 1.0
+        # the full-defect validator must reject a partial document, and the
+        # partial validator must reject the full defect: the two contracts are
+        # not interchangeable.
+        assert validate_cross_block(task_from_record(r), ex) != []
+        full = corrupt_cross_block(task_from_record(r), rng)
+        assert validate_cross_block_partial(task_from_record(r), full) != []
 
 
 def test_validators_can_fail(setup):

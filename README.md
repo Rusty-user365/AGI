@@ -32,6 +32,24 @@ Read [`results/paper_tables.md`](results/paper_tables.md) for generated tables.
 | Experiments 0–7 | working |
 | Stage C (RL on verified outcomes) | **not implemented** — specified only |
 
+The active DiffuGPT branch adds benchmark hardening: eight intro, eight
+conclusion, and eight body templates; an unseen-thesis split; and a partial
+cross-block distractor. These are controlled, exactly parsed templates, not
+open-ended paraphrases. `exp8_architecture_ablation.py` compares
+reasoner-conditioned repair with a LoRA-only denoising baseline; it does not
+test the gate or a DAG. Its short smoke result is pipeline evidence only.
+The DiffuGPT preset now uses 5,000 training documents. The reproducible JSONL
+export and split manifest are in `data/processed/`.
+
+The repair benchmark masks one contiguous block, so the training objective now
+supports a mixed mask distribution: `--mask-mode block --block-mask-prob 0.5`
+masks a whole block in half the examples and keeps the original random-token
+mask in the other half. This is a targeted fix for the objective/evaluation
+mismatch; it does not by itself establish that the editor clears the 0.20
+repair floor. See `scripts/diagnose_repair.py` for the per-block failure
+taxonomy and `scripts/run_block_retrain.ps1` for the matched CGR/baseline
+fine-tune.
+
 Everything runs on CPU at the `smoke` preset in about 20 seconds. The `dev`
 and `paper` presets are sized for a free Kaggle T4.
 
@@ -61,6 +79,9 @@ For a real run:
 ```bash
 # measured parameter counts + a check that no parameter is dead weight
 python scripts/check_presets.py
+
+# materialize the deterministic 5,000-document DiffuGPT training corpus
+python scripts/export_corpus.py --preset diffugpt --out data/processed/diffugpt_train.jsonl
 
 # two seeds; the tables grow a `seed` column instead of hiding one run
 python experiments/run_all.py --preset smoke --n 30
@@ -100,6 +121,7 @@ experiments/
   exp3_shuffle.py              side-channel causality + positive control
   exp4_repair_taxonomy.py      scope under a matched budget (oracle gate + grid)
   exp5_gate_triage.py          action usage, overrides, triage
+  exp8_architecture_ablation.py paired unseen-thesis reasoner ablation
   aggregate.py                 results/*.json -> paper_tables.md (per-seed)
 scripts/smoke.py               end-to-end verification
 scripts/check_presets.py       parameter counts + dead-parameter check

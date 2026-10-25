@@ -36,7 +36,15 @@ def load_all(name: str) -> list[tuple[int, dict]]:
     return sorted(runs, key=lambda r: r[0])
 
 
+def _pair(row: dict, key: str, field: str):
+    """Read one field of a paired-CI block, tolerating an undefined comparison."""
+    block = row.get(key)
+    return None if not block else block.get(field)
+
+
 def fmt(v) -> str:
+    if v is None:
+        return "n/a"
     if isinstance(v, bool):
         return "yes" if v else "NO"
     if isinstance(v, float):
@@ -110,6 +118,40 @@ def main() -> int:
                       f"- exact duplicate rate test→train: "
                       f"{fmt(d['conditions']['exact_duplicate_rate'])}")
         md += note_lines(e0, multi)
+        md.append("")
+    else:
+        md.append("_(not run)_\n")
+
+    # ------------------------------------------------------------------
+    # Editor gate. These JSON files come from scripts/check_backbone.py and are
+    # the precondition for exp8: if one-block infill cannot reach 0.20
+    # on-thesis, a repair comparison is measuring noise.
+    gates = sorted(RESULTS.glob("gate_*.json"))
+    md += ["## Table 0b — Editor gate (one-block infill)", "",
+           "Gate: on-thesis rate >= 0.20. `test` and `unseen` are separate "
+           "runs and must not be pooled. Wilson 95% intervals.", ""]
+    if gates:
+        rows = []
+        for p in gates:
+            d = json.loads(p.read_text(encoding="utf-8"))
+            rows.append({
+                "condition": p.stem[len("gate_"):],
+                "split": d.get("split"),
+                "reasoner": d.get("use_reasoner"),
+                "n": d.get("n"),
+                "parseable": d.get("parseable_rate"),
+                "parse_lo": (d.get("parseable_ci95") or [None, None])[0],
+                "parse_hi": (d.get("parseable_ci95") or [None, None])[1],
+                "on_thesis": d.get("on_thesis_rate"),
+                "thesis_lo": (d.get("on_thesis_ci95") or [None, None])[0],
+                "thesis_hi": (d.get("on_thesis_ci95") or [None, None])[1],
+                "floor": d.get("floor"),
+                "clears": d.get("clears_floor"),
+            })
+        md.append(table(rows, ["condition", "split", "reasoner", "n",
+                               "parseable", "parse_lo", "parse_hi",
+                               "on_thesis", "thesis_lo", "thesis_hi",
+                               "floor", "clears"]))
         md.append("")
     else:
         md.append("_(not run)_\n")
@@ -248,12 +290,13 @@ def main() -> int:
                 rows.append({**base, **g, "condition": f"{defect}/gate_selected"})
         md.append(table(rows, (["seed"] if multi else [])
                         + ["condition", "anchor", "c_edit", "c_all",
-                           "quality", "blocks_changed", "tokens_spent",
-                           "consistent", "improvement", "preservation", "seam",
-                           "n"]))
+                           "c_target", "q_target", "quality", "blocks_changed",
+                           "tokens_spent", "consistent", "improvement",
+                           "preservation", "seam", "n", "n_quality"]))
         for seed, d in e4:
             s = d["summary"]
             pre = f"[s{seed}] " if multi else ""
+            md.append(f"- {pre}split: {d.get('split', 'test')}")
             md.append(f"- {pre}oracle solvability gate: "
                       f"{fmt(d.get('oracle_gate', {}).get('solvable'))}")
             md.append(f"- {pre}infill sanity (exact block restore): "
@@ -387,9 +430,10 @@ def main() -> int:
     multi = len(e7) > 1
     md += ["## Table 7 — Editor floor: training budget vs capacity", "",
            "Two questions were conflated by the earlier byte-identical gate. "
-           "`on_thesis` is clean-block infill ability; `local_*` and `cross_*` "
-           "are scored on the blocks the task actually edits, with the no-op "
-           "baseline shown. Copy fidelity (`exact`) is a diagnostic only.",
+           "`on_thesis` is clean-block infill ability; `local_*`, `cross_*` and "
+           "`partial_*` are scored on the blocks the task actually edits, with "
+           "the no-op baseline shown. Copy fidelity (`exact`) is a diagnostic "
+           "only.",
            "",
            "**Seed 0 only, n=10 tasks per defect.** This is a budget curve, "
            "not a multi-seed result; the non-monotonicity between 750 and 1500 "
@@ -410,21 +454,73 @@ def main() -> int:
                              "local_noop_q": c["local_noop_quality"],
                              "cross_c": c["cross_c_edit"],
                              "cross_q": c["cross_quality"],
-                             "cross_noop_c": c["cross_noop_c_edit"]})
+                             "cross_noop_c": c["cross_noop_c_edit"],
+                             "partial_c": c.get("partial_c_edit"),
+                             "partial_q": c.get("partial_quality"),
+                             "partial_noop_c": c.get("partial_noop_c_edit")})
         md.append(table(rows, (["seed"] if multi else [])
                         + ["budget", "opt_steps", "exact", "on_thesis",
                            "specific", "local_c", "local_q", "local_noop_c",
                            "local_noop_q", "cross_c", "cross_q",
-                           "cross_noop_c"]))
+                           "cross_noop_c", "partial_c", "partial_q",
+                           "partial_noop_c"]))
         for seed, d in e7:
             s = d["summary"]
             pre = f"[s{seed}] " if multi else ""
+            md.append(f"- {pre}split: {d.get('split', 'test')}")
             md.append(f"- {pre}ability rises with budget: "
                       f"{fmt(s['ability_rises_with_budget'])}; specificity "
                       f"rises: {fmt(s['specificity_rises'])}; local repair "
                       f"rises: {fmt(s['local_repair_rises'])}; cross-block "
-                      f"repair rises: {fmt(s['cross_repair_rises'])}\n")
+                      f"repair rises: {fmt(s['cross_repair_rises'])}; "
+                      f"partial cross-block repair rises: "
+                      f"{fmt(s.get('partial_repair_rises'))}\n")
         md += note_lines(e7, multi)
+        md.append("")
+    else:
+        md.append("_(not run)_\n")
+
+    # ------------------------------------------------------------------
+    # Architecture ablation. This file is named with the split, so the generic
+    # `load_all` matcher does not see it; glob explicitly.
+    e8 = []
+    for p in sorted(RESULTS.glob("exp8_architecture_ablation_*.json")):
+        e8.append((0, json.loads(p.read_text(encoding="utf-8"))))
+    md += ["## Table 8 — CGR vs LoRA-only on unseen theses", "",
+           "Both conditions use the same backbone, tokenizer, tasks, decoder, "
+           "edit scopes and token/block budgets. The CGR condition has 8.15M "
+           "trainable parameters and the LoRA-only control has 442k; this is a "
+           "matched-task comparison, **not** a matched-compute or "
+           "matched-capacity one. The gate and a DAG do not participate in "
+           "either repair path, so this table cannot validate them.", ""]
+    if e8:
+        rows = []
+        for _, d in e8:
+            for cond, r in d.get("conditions", {}).items():
+                rows.append({
+                    "split": d.get("split"), "condition": cond,
+                    "n": r.get("n"),
+                    "cgr_c": r.get("cgr_mean_c_target"),
+                    "base_c": r.get("backbone_mean_c_target"),
+                    "cgr_doc_consistent": r.get("cgr_doc_consistent_rate"),
+                    "base_doc_consistent": r.get("backbone_doc_consistent_rate"),
+                    "cgr_pres": r.get("cgr_mean_preservation"),
+                    "base_pres": r.get("backbone_mean_preservation"),
+                    "c_diff": _pair(r, "c_target_cgr_minus_backbone", "mean_diff"),
+                    "c_lo": _pair(r, "c_target_cgr_minus_backbone", "lo"),
+                    "c_hi": _pair(r, "c_target_cgr_minus_backbone", "hi"),
+                    "q_diff": _pair(r, "q_target_cgr_minus_backbone", "mean_diff"),
+                    "q_lo": _pair(r, "q_target_cgr_minus_backbone", "lo"),
+                    "q_hi": _pair(r, "q_target_cgr_minus_backbone", "hi"),
+                    "pres_diff": _pair(r, "preservation_cgr_minus_backbone", "mean_diff"),
+                    "pres_lo": _pair(r, "preservation_cgr_minus_backbone", "lo"),
+                    "pres_hi": _pair(r, "preservation_cgr_minus_backbone", "hi"),
+                })
+        md.append(table(rows, ["split", "condition", "n", "cgr_c", "base_c",
+                               "cgr_doc_consistent", "base_doc_consistent",
+                               "cgr_pres", "base_pres", "c_diff", "c_lo", "c_hi",
+                               "q_diff", "q_lo", "q_hi", "pres_diff",
+                               "pres_lo", "pres_hi"]))
         md.append("")
     else:
         md.append("_(not run)_\n")

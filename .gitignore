@@ -1,6 +1,12 @@
 # binary weights: large, and reproduced deterministically by smoke.py / kaggle_run.py
 checkpoints/
 
+# the downloaded DiffuGPT-S checkpoint and tokenizer are an external asset
+DiffuGPT-S/
+
+# ad-hoc probes and their outputs; not part of the reproducible pipeline
+scratch/
+
 # transient run logs (the JSON results and paper_tables.md are the source of truth)
 *.log
 

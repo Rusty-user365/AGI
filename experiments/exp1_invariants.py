@@ -39,6 +39,24 @@ def bit_identical(a: torch.Tensor, b: torch.Tensor) -> bool:
     return torch.equal(a, b)
 
 
+def forward_chunked(system, x, clock, memory_texts=None, chunk: int = 16):
+    """Run ``forward_episodes`` in slices and concatenate the per-example output.
+
+    The batch elements do not interact, so slicing is exact. It is necessary
+    here: at n=100 a single batch needs more host memory than the machine has
+    while a training run is resident, and the process dies before it can print
+    anything. Slicing keeps the invariant test at the pre-registered n.
+    """
+    feats, values = [], []
+    for s in range(0, len(x), chunk):
+        sl = slice(s, min(s + chunk, len(x)))
+        texts = None if memory_texts is None else memory_texts[sl]
+        out = system.forward_episodes(x[sl], clock[sl], memory_texts=texts)
+        feats.append(out["feats"])
+        values.append(out["preds"]["value"])
+    return torch.cat(feats), torch.cat(values)
+
+
 def main() -> int:
     ap = arg_parser("Experiment 1: design invariants")
     args = ap.parse_args()
@@ -46,7 +64,8 @@ def main() -> int:
 
     banner("Experiment 1 — design invariants")
     system, cfg = get_system(args.preset, seed=args.seed,
-                             checkpoint=args.checkpoint)
+                             checkpoint=args.checkpoint,
+                             device=args.device)
     system.eval()
     tok, splits = build_corpus(cfg)
 
@@ -66,18 +85,14 @@ def main() -> int:
     # ------------------------------------------------------------------
     system.memory.clear()
     with torch.no_grad():
-        base = system.forward_episodes(x, clock, memory_texts=None)
+        base_feats, base_value = forward_chunked(system, x, clock)
     results = {}
-    for name, fn in [
-        ("empty_memory", lambda: system.forward_episodes(
-            x, clock, memory_texts=["x y z"] * len(x))),
-        ("empty_memory_repeated", lambda: system.forward_episodes(
-            x, clock, memory_texts=["x y z"] * len(x))),
-    ]:
+    for name in ("empty_memory", "empty_memory_repeated"):
         with torch.no_grad():
-            out = fn()
-        ok = bit_identical(base["feats"], out["feats"]) and \
-            bit_identical(base["preds"]["value"], out["preds"]["value"])
+            out_feats, out_value = forward_chunked(
+                system, x, clock, ["x y z"] * len(x))
+        ok = bit_identical(base_feats, out_feats) and \
+            bit_identical(base_value, out_value)
         results[name] = {"bit_identical": ok, "n": len(x)}
 
     # ------------------------------------------------------------------
@@ -98,8 +113,9 @@ def main() -> int:
                                  allow_unverified=True)
     system.memory.recall = leaky_recall
     with torch.no_grad():
-        leaky = system.forward_episodes(x, clock, memory_texts=["x y z"] * len(x))
-    leak_detected = not bit_identical(base["feats"], leaky["feats"])
+        leaky_feats, _ = forward_chunked(
+            system, x, clock, ["x y z"] * len(x))
+    leak_detected = not bit_identical(base_feats, leaky_feats)
     system.memory.recall = real_recall
     system.memory.clear()
 
@@ -110,15 +126,15 @@ def main() -> int:
     added = [system.update_memory(f"memory entry number {i}", verified=True)
              for i in range(20)]
     with torch.no_grad():
-        populated = system.forward_episodes(x, clock,
-                                            memory_texts=["memory entry number 3"] * len(x))
+        populated_feats, _ = forward_chunked(
+            system, x, clock, ["memory entry number 3"] * len(x))
     for eid in added:
         system.memory.remove(eid)
     with torch.no_grad():
-        after = system.forward_episodes(x, clock,
-                                        memory_texts=["memory entry number 3"] * len(x))
-    rollback_ok = bit_identical(base["feats"], after["feats"])
-    memory_has_effect = not bit_identical(base["feats"], populated["feats"])
+        after_feats, _ = forward_chunked(
+            system, x, clock, ["memory entry number 3"] * len(x))
+    rollback_ok = bit_identical(base_feats, after_feats)
+    memory_has_effect = not bit_identical(base_feats, populated_feats)
 
     # ------------------------------------------------------------------
     # 3. gradient masking, repeated
@@ -134,10 +150,21 @@ def main() -> int:
                            advantage=[1.0] * len(x), optim=opt)
         unchanged += int(system.plastic_unchanged(snap))
 
-    # positive control: same call with verified=True must move it
+    # positive control: same call with verified=True must move it.
+    #
+    # The control runs on a small slice rather than the full batch. A
+    # verified-right call is the only one in this experiment that builds a
+    # backward graph over the whole batch; at n=100 that exceeds host memory on
+    # a CPU run and the process dies before printing anything. The property
+    # under test is "a verified-right update moves the substrate", which one
+    # step on 10 examples tests as well as one step on 100, and the masking
+    # test above still uses all n examples.
+    ctrl = min(10, len(x))
     snap = system.plastic_snapshot()
-    system.consolidate(x, clock, batch["labels"], verified=[True] * len(x),
-                       advantage=[1.0] * len(x), optim=opt)
+    system.consolidate(x[:ctrl], clock[:ctrl],
+                       {k: v[:ctrl] for k, v in batch["labels"].items()},
+                       verified=[True] * ctrl,
+                       advantage=[1.0] * ctrl, optim=opt)
     masking_has_power = not system.plastic_unchanged(snap)
 
     # ------------------------------------------------------------------
@@ -169,7 +196,9 @@ def main() -> int:
     table(rows, ["invariant", "result", "n", "note"])
 
     passed = all(r["result"] for r in rows)
-    write_result("exp1_invariants", {
+    result_name = ("exp1_invariants" if cfg.model.backbone == "canvas"
+                   else f"exp1_invariants_{cfg.model.backbone}")
+    write_result(result_name, {
         "experiment": "exp1_invariants",
         "preset": args.preset, "seed": args.seed, "n": len(x),
         "preregistered_prediction": PREDICTION,

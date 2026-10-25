@@ -8,10 +8,16 @@ whichever solution happens to look coherent:
 
 Defect types are different in kind:
 
-  local        one body block loses specificity/completeness but still
-               supports T*. Coherence is intact; the defect is quality.
-  cross_block  the locked intro states T*, while every editable block supports
-               a single wrong thesis W. The defect is coherence.
+  local                one body block loses specificity/completeness but still
+                       supports T*. Coherence is intact; the defect is quality.
+  cross_block          the locked intro states T*, while every editable block
+                       supports a single wrong thesis W. The defect is
+                       coherence.
+  cross_block_partial  the harder distractor: W is on a *strict majority* of
+                       the editable blocks (always including the conclusion)
+                       while at least one body still supports T*. A
+                       majority-vote heuristic therefore sides with the
+                       corruption, and only the locked intro identifies T*.
 
 Methods, all measured against the same contract:
 
@@ -55,6 +61,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# `_common` lives next to the experiment scripts, not in the package. Adding
+# the directory explicitly is what lets `experiments/exp8_...py` import this
+# module as `experiments.exp4_repair_taxonomy`; without it the import fails
+# with `ModuleNotFoundError: _common` even though the script works when run
+# directly.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import torch
 
@@ -68,7 +80,7 @@ from cgr.metrics import bootstrap_ci, paired_bootstrap, score_repair
 from cgr.model.gate import ACTIONS
 
 METHODS = ("one_block", "global", "repeated_local")
-DEFECTS = ("local", "cross_block")
+DEFECTS = ("local", "cross_block", "cross_block_partial")
 
 PREDICTION = {
     "local/one_block": "c_edit -> 1.0 and quality -> 1.0 at a one-block budget",
@@ -82,6 +94,17 @@ PREDICTION = {
                                    "detector and a matched budget it may also "
                                    "reach 1.0; if so the claim is about cost "
                                    "and scope, not possibility",
+    "cross_block_partial/one_block": "c_edit stays < 1.0 as well: the wrong "
+                                     "thesis is on a strict majority of "
+                                     "editable blocks, so fixing one leaves "
+                                     "the rest wrong",
+    "cross_block_partial/global": "c_edit = 1.0: the locked intro is the only "
+                                  "block that identifies T*, so a revision "
+                                  "must take it as given",
+    "cross_block_partial/repeated_local": "MEASURED. May reach 1.0 if the "
+                                          "budget allows one edit per wrong "
+                                          "block; if so the difference from "
+                                          "global is cost, not possibility",
     "anchor": "preserved in every condition; editing the intro is a contract "
               "violation, not a repair",
     "gate": "the trained gate's choice is at least as good as always-one-block "
@@ -97,6 +120,9 @@ ORACLE_EXPECT = {
     ("cross_block", "one_block"): {"c_edit_lt": 1.0},
     ("cross_block", "global"): {"c_edit": 1.0, "quality": 1.0},
     ("cross_block", "repeated_local"): {"c_edit": 1.0, "quality": 1.0},
+    ("cross_block_partial", "one_block"): {"c_edit_lt": 1.0},
+    ("cross_block_partial", "global"): {"c_edit": 1.0, "quality": 1.0},
+    ("cross_block_partial", "repeated_local"): {"c_edit": 1.0, "quality": 1.0},
 }
 
 
@@ -104,7 +130,8 @@ ORACLE_EXPECT = {
 # Scoring a produced document
 # --------------------------------------------------------------------------
 
-def score_document(task, texts: list[str]) -> dict:
+def score_document(task, texts: list[str],
+                   specificity_defined: bool = True) -> dict:
     """Score the *actual* document. Roles are positional, block 0 is locked.
 
     Two families of numbers, because they answer different questions:
@@ -119,6 +146,15 @@ def score_document(task, texts: list[str]) -> dict:
                          for a cross-block defect it is every editable block.
                          This is the only pair that can attribute a repair to
                          the editor rather than to the siblings it left alone.
+
+    `specificity_defined=False` is for one case only: a local defect on the
+    `unseen` split. The degraded block's reason was replaced, and the thesis's
+    reason pool never appeared in training, so a model cannot know which
+    strings count as specific. A repair could still score by copying a sibling
+    block's reason, but that measures evidence reuse rather than specificity,
+    and reporting 0.0 would read as "the editor cannot repair this" when the
+    task is under-specified for it. The value is therefore reported as
+    undefined (None) with the reason attached, not as zero.
     """
     blocks = task_from_blocks(texts, task.authoritative).blocks
     coh = coherence(blocks, task.authoritative)
@@ -126,8 +162,14 @@ def score_document(task, texts: list[str]) -> dict:
     edited = task.edited or [task.target_block]
     c_target = sum(1 for i in edited
                    if blocks[i].thesis_id == task.authoritative) / len(edited)
-    q_target = sum(block_quality(blocks[i], task.authoritative)
-                   for i in edited) / len(edited)
+    if specificity_defined:
+        q_target = sum(block_quality(blocks[i], task.authoritative)
+                       for i in edited) / len(edited)
+        q_all = quality(blocks, task.authoritative)
+        q_target_block = quality(blocks, task.authoritative,
+                                 [task.target_block] if bodies else [])
+    else:
+        q_target = q_all = q_target_block = None
     return {
         "anchor": bool(anchor_ok(task.texts(), texts, task.locked_indices)),
         "c_all": coh["c_all"],
@@ -135,9 +177,8 @@ def score_document(task, texts: list[str]) -> dict:
         "floor_all": coh["floor_all"],
         "c_target": c_target,
         "q_target": q_target,
-        "quality": quality(blocks, task.authoritative),
-        "quality_target": quality(blocks, task.authoritative,
-                                  [task.target_block] if bodies else []),
+        "quality": q_all,
+        "quality_target": q_target_block,
         "consistent": bool(is_consistent(texts)),
         "off_thesis_editable": len(coh["off_thesis_editable"]),
         "n_editable": coh["n_editable"],
@@ -153,7 +194,8 @@ def n_tokens_of(tok):
 # --------------------------------------------------------------------------
 
 def run_model(system, task, method: str, budget, n_tok, tok,
-              steps: int = 6, seed: int = 0) -> tuple[list[str], list[int]]:
+              steps: int = 6, seed: int = 0,
+              use_reasoner: bool = False) -> tuple[list[str], list[int]]:
     """Apply one method to one task without exceeding its budget.
 
     `repeated_local` uses a ground-truth detector (worst block first). That
@@ -166,7 +208,8 @@ def run_model(system, task, method: str, budget, n_tok, tok,
     if method == "one_block":
         i = task.target_block
         if budget.can_spend(1, n_tok(out[i])):
-            new = system.repair(out, i, mode="local", steps=steps, seed=seed)
+            new = system.repair(out, i, mode="local", steps=steps, seed=seed,
+                                use_reasoner=use_reasoner)
             budget.spend_or_flag(1, n_tok(new[i]))
             out, changed = new, [i]
 
@@ -174,7 +217,8 @@ def run_model(system, task, method: str, budget, n_tok, tok,
         idx = task.editable_indices
         cost = sum(n_tok(out[i]) for i in idx)
         if budget.can_spend(len(idx), cost):
-            new = system.repair(out, 0, mode="editable", steps=steps, seed=seed)
+            new = system.repair(out, 0, mode="editable", steps=steps, seed=seed,
+                                use_reasoner=use_reasoner)
             budget.spend_or_flag(len(idx), sum(n_tok(new[i]) for i in idx))
             out, changed = new, list(idx)
 
@@ -187,7 +231,8 @@ def run_model(system, task, method: str, budget, n_tok, tok,
         for i in sorted(task.editable_indices, key=badness):
             if not budget.can_spend(1, n_tok(out[i])):
                 break
-            new = system.repair(out, i, mode="local", steps=steps, seed=seed)
+            new = system.repair(out, i, mode="local", steps=steps, seed=seed,
+                                use_reasoner=use_reasoner)
             budget.spend_or_flag(1, n_tok(new[i]))
             out, changed = new, changed + [i]
             if coherence(task_from_blocks(out, task.authoritative).blocks,
@@ -237,7 +282,8 @@ def summarise(rows: list[dict]) -> dict:
     n = max(len(rows), 1)
 
     def mean(k):
-        return sum(r.get(k, 0.0) for r in rows) / n
+        vals = [r[k] for r in rows if r.get(k) is not None]
+        return sum(vals) / len(vals) if vals else None
 
     return {
         "anchor": mean("anchor"), "quality": mean("quality"),
@@ -254,6 +300,9 @@ def summarise(rows: list[dict]) -> dict:
         "seam": mean("seam"),
         "over_budget": mean("over_budget"),
         "n": len(rows),
+        # how many rows actually contributed a specificity score; < n only on
+        # the local/unseen condition, where the target is under-specified.
+        "n_quality": len([r for r in rows if r.get("quality") is not None]),
     }
 
 
@@ -275,17 +324,44 @@ def main() -> int:
     system, cfg = get_system(args.preset, seed=args.seed,
                              checkpoint=args.checkpoint)
     system.eval()
-    tok, splits = build_corpus(cfg)
+    # Use the checkpoint's tokenizer, not a freshly built one: for the word
+    # tokenizer the vocabulary is derived from the training documents, so a
+    # corpus rebuilt after a grammar change would disagree with the weights.
+    # For the pre-trained BPE tokenizer this is a no-op.
+    tok, splits = build_corpus(cfg, tok=system.tok)
     n_tok = n_tokens_of(tok)
 
     selection: dict = {}
+    split = getattr(args, "split", "test")
+    records = splits.get(split) or []
+    if not records:
+        raise SystemExit(
+            f"split {split!r} is empty. `unseen` requires "
+            f"DataConfig.n_heldout_theses > 0 and an open-vocabulary "
+            f"tokenizer (the `diffugpt` preset sets both). The blank canvas "
+            f"builds a word vocabulary from train and cannot encode an unseen "
+            f"thesis, so it has no unseen split by construction.")
     tasks = make_task_set(
-        splits["test"], n, seed=args.seed,
+        records, n, seed=args.seed,
         fits=lambda texts: len(blocked_spans(texts, tok)[0])
         <= cfg.model.max_len,
         stats=selection)
+    selection["split"] = split
     n_used = {d: len(tasks[d]) for d in DEFECTS}
     n_dropped = {d: n - n_used[d] for d in DEFECTS}
+
+    def score(task, texts):
+        """Specificity is under-specified for a local defect on unseen theses.
+
+        The degraded block's reason was replaced and the thesis's reason pool
+        never appeared in training, so the model cannot know which strings are
+        specific. See `score_document` for why this is reported as undefined
+        rather than zero.
+        """
+        return score_document(
+            task, texts,
+            specificity_defined=not (split == "unseen"
+                                     and task.defect == "local"))
 
     # ------------------------------------------------------------------
     # 1. oracle solvability gate — before any model number is reported
@@ -333,8 +409,8 @@ def main() -> int:
                 before = task.texts()
                 out, changed = run_model(system, task, method, budget, n_tok,
                                          tok, seed=args.seed)
-                sc = score_document(task, out)
-                noop = score_document(task, before)
+                sc = score(task, out)
+                noop = score(task, before)
                 sc["noop_c_target"] = noop["c_target"]
                 sc["noop_q_target"] = noop["q_target"]
                 sc["blocks_changed"] = len(changed)
@@ -363,8 +439,8 @@ def main() -> int:
                 out, changed = run_model(system, task, method, budget, n_tok,
                                          tok, seed=args.seed)
                 spent, over = budget.tokens_used, budget.over_budget
-            sc = score_document(task, out)
-            noop = score_document(task, before)
+            sc = score(task, out)
+            noop = score(task, before)
             sc["noop_c_target"] = noop["c_target"]
             sc["noop_q_target"] = noop["q_target"]
             sc["blocks_changed"] = len(changed)
@@ -408,6 +484,12 @@ def main() -> int:
             "cross_block", "repeated_local", "global"),
         "cross_block/repeated_local_minus_one_block": paired(
             "cross_block", "one_block", "repeated_local"),
+        "cross_block_partial/global_minus_one_block": paired(
+            "cross_block_partial", "one_block", "global"),
+        "cross_block_partial/repeated_local_minus_global": paired(
+            "cross_block_partial", "repeated_local", "global"),
+        "cross_block_partial/repeated_local_minus_one_block": paired(
+            "cross_block_partial", "one_block", "repeated_local"),
         "local/repeated_local_minus_global": paired(
             "local", "repeated_local", "global"),
     }
@@ -436,9 +518,9 @@ def main() -> int:
     # like.
     from cgr.data.grammar import parse_block
 
-    sanity_n = min(20, len(splits["test"]))
+    sanity_n = min(20, len(records))
     exact = parse_ok = thesis_ok = 0
-    for r in splits["test"][:sanity_n]:
+    for r in records[:sanity_n]:
         idx = 1
         new_blocks = system.repair(r.blocks, idx, mode="local", steps=6,
                                    seed=args.seed)
@@ -455,7 +537,7 @@ def main() -> int:
     # construction, which is why the gate below is on *on-thesis* output and
     # why the absolute number is reported with this baseline attached.
     noop_parse = noop_thesis = 0
-    for r in splits["test"][:sanity_n]:
+    for r in records[:sanity_n]:
         tid, _, _ = parse_block(r.blocks[1], "body")
         noop_parse += int(tid is not None)
         noop_thesis += int(tid == r.thesis_id)
@@ -488,23 +570,34 @@ def main() -> int:
         notes.append(
             f"Context filter: {selection['skipped']} of "
             f"{selection['scanned']} scanned documents were skipped because "
-            f"the clean, local or cross-block variant exceeds the model's "
-            f"{cfg.model.max_len}-token context. The filter is applied to all "
-            f"three variants together, so the defect conditions stay paired. "
-            f"Kept: {n_used}. This is a selection effect and is reported.")
+            f"a clean, local, cross-block or partial-cross-block variant "
+            f"exceeds the model's {cfg.model.max_len}-token context. The "
+            f"filter is applied to all variants together, so the defect "
+            f"conditions stay paired. Kept: {n_used}. This is a selection "
+            f"effect and is reported.")
     if any(v > 0 for v in n_dropped.values()):
         notes.append(
-            f"The test pool was exhausted before reaching n={n} per "
+            f"The {split} pool was exhausted before reaching n={n} per "
             f"condition: {n_used}. Report the realized n, not the requested n.")
+    if split == "unseen" and tasks["local"]:
+        notes.append(
+            "Specificity (q_target/quality) is undefined for local defects on "
+            "the unseen split and is reported as None, not 0. The degraded "
+            "block's reason was replaced and the unseen thesis's reason pool "
+            "never appeared in training, so no model could know which strings "
+            "are specific. Coherence (c_target/c_edit) is still defined, and "
+            "the oracle gate below still scores specificity because it has "
+            "ground truth.")
     if not oracle_solvable:
         failed = [k for k, v in gate.items() if not v]
         notes.append(
             f"ORACLE GATE FAILED ({failed}). The task or the budget is broken; "
             f"the model grid below is not interpretable. Do not report it as a "
             f"model result.")
-    if not gate["cross_block/one_block"]:
+    if not (gate["cross_block/one_block"]
+            and gate["cross_block_partial/one_block"]):
         notes.append(
-            "The cross-block generator is not actually non-local: a one-block "
+            "A cross-block generator is not actually non-local: a one-block "
             "oracle repair restored full coherence. The defect definition must "
             "be fixed before the comparison means anything.")
     if not informative:
@@ -534,13 +627,17 @@ def main() -> int:
     # can inherit that credit. This is the same class of bug as the earlier
     # preservation artefact: a metric that cannot isolate the change it claims
     # to measure.
+    def beats(a, k, nk):
+        x, y = a.get(k), a.get(nk)
+        return x is not None and y is not None and x > y + 1e-9
+
     beats_noop = {}
     for defect in DEFECTS:
         for method in METHODS:
             a = model_agg[f"{defect}/{method}"]
             beats_noop[f"{defect}/{method}"] = (
-                a["c_target"] > a["noop_c_target"] + 1e-9
-                or a["q_target"] > a["noop_q_target"] + 1e-9)
+                beats(a, "c_target", "noop_c_target")
+                or beats(a, "q_target", "noop_q_target"))
     if not any(beats_noop.values()):
         notes.append(
             "On the edited blocks, no method beats doing nothing (c_target and "
@@ -548,7 +645,9 @@ def main() -> int:
             "The document-level c_edit/quality numbers therefore come from "
             "blocks the method left untouched, not from a repair. Do not read "
             "the model grid as an editor result.")
-    elif not all(beats_noop[f"cross_block/{m}"] for m in METHODS):
+    elif not all(beats_noop[f"{d}/{m}"]
+                 for d in ("cross_block", "cross_block_partial")
+                 for m in METHODS):
         notes.append(
             "The editor beats no-op on the edited blocks for at least one "
             "condition, but not for every cross-block method. Read the "
@@ -609,9 +708,22 @@ def main() -> int:
                 f"editor and budget, scope is load-bearing beyond the number "
                 f"of edits.")
 
+        pg = comps["cross_block_partial/global_minus_one_block"]
+        prg = comps["cross_block_partial/repeated_local_minus_global"]
+        notes.append(
+            f"Hard-distractor condition (wrong thesis on a strict majority of "
+            f"editable blocks, at least one body still supporting T*): global "
+            f"minus one-block c_edit is {pg['mean_diff']:+.2f} "
+            f"[{pg['lo']:+.2f}, {pg['hi']:+.2f}], repeated-local minus global "
+            f"{prg['mean_diff']:+.2f} [{prg['lo']:+.2f}, {prg['hi']:+.2f}]. "
+            f"Because the wrong thesis is the majority, a majority-vote "
+            f"heuristic sides with the corruption; only the locked intro "
+            f"identifies T*.")
+
         notes.append(
             f"Gate-selected choices (cross-block): "
-            f"{gate_agg['cross_block']['choices']}. Compare its c_edit "
+            f"{gate_agg['cross_block']['choices']}; (partial): "
+            f"{gate_agg['cross_block_partial']['choices']}. Compare its c_edit "
             f"{gate_agg['cross_block']['c_edit']:.2f} against always-one-block "
             f"{model_agg['cross_block/one_block']['c_edit']:.2f} and "
             f"always-global {model_agg['cross_block/global']['c_edit']:.2f}. "
@@ -619,7 +731,7 @@ def main() -> int:
 
     write_result("exp4_repair_taxonomy", {
         "experiment": "exp4_repair_taxonomy",
-        "preset": args.preset, "seed": args.seed, "n": n,
+        "preset": args.preset, "seed": args.seed, "n": n, "split": split,
         "n_used": n_used, "n_dropped_context_filter": n_dropped,
         "selection": selection,
         "preregistered_prediction": PREDICTION,
@@ -627,11 +739,20 @@ def main() -> int:
             "authoritative_thesis": "given per task (T*), not inferred",
             "intro": "locked; editing it is a contract violation",
             "editable": "body and conclusion blocks",
+            "cross_block_partial": "a strict majority of editable blocks "
+                                   "(always including the conclusion) support "
+                                   "the wrong thesis; at least one body still "
+                                   "supports T*",
             "budgets": "one_block = 1 block; global and repeated_local get "
                        "identical block and token allowances",
             "c_all_floor": "1/n_required, because the locked intro always "
                            "matches T*",
             "coherence": "synthetic label-consistency, not semantic coherence",
+            "specificity_on_unseen_local": "undefined (None), not 0: the "
+                                           "degraded block's reason was "
+                                           "replaced and the unseen thesis's "
+                                           "reason pool never appeared in "
+                                           "training",
         },
         "oracle_gate": {"conditions": oracle_agg, "checks": gate,
                         "solvable": bool(oracle_solvable)},

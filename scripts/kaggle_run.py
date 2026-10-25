@@ -19,7 +19,8 @@ sys.path.insert(0, str(ROOT))
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--preset", default="dev", choices=["smoke", "dev", "paper"])
+    ap.add_argument("--preset", default="dev",
+                    choices=["smoke", "dev", "paper", "diffugpt"])
     ap.add_argument("--n", type=int, default=200)
     ap.add_argument("--seeds", default="0")
     ap.add_argument("--skip-train", action="store_true")

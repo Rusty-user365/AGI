@@ -43,8 +43,9 @@ import random
 from dataclasses import dataclass, field
 from typing import Callable
 
-from .grammar import (CONCLUSION_TEMPLATES, THESES, THESIS_POOL, Block,
-                      is_consistent, parse_block)
+from .grammar import (BODY_TEMPLATES, CONCLUSION_TEMPLATES, THESES, THESIS_POOL,
+                      Block, concl_parts, is_consistent, parse_block,
+                      parse_block_tmpl, render_body, render_concl)
 
 ROLES = ("intro", "body", "conclusion")
 EDITABLE_ROLES = ("body", "conclusion")
@@ -64,7 +65,8 @@ def make_block(text: str, role: str, *, locked: bool = False,
     tid, reason, ridx = parse_block(text, role)
     return Block(text=text, role=role, thesis_id=tid, reason=reason,
                  reason_index=ridx, locked=locked,
-                 quality_target=quality_target)
+                 quality_target=quality_target,
+                 tmpl=parse_block_tmpl(text, role))
 
 
 @dataclass
@@ -244,8 +246,9 @@ def degrade_local(task: Task, rng: random.Random,
     if b.reason is None or b.reason_index is None or b.thesis_id is None:
         raise ValueError(f"block {idx} is not parseable, cannot degrade it")
     new_reason = LOCAL_OPERATORS[op](b.reason)
-    text = (f"reason {b.reason_index} : {new_reason} , "
-            f"so {THESES[b.thesis_id][0]} .")
+    tmpl = b.tmpl if b.tmpl is not None else 0
+    text = render_body(tmpl, b.reason_index, new_reason,
+                       THESES[b.thesis_id][0])
     blocks = list(task.blocks)
     blocks[idx] = make_block(text, "body", quality_target="vague")
     out = Task(task_id=task.task_id, blocks=blocks,
@@ -260,15 +263,10 @@ def degrade_local(task: Task, rng: random.Random,
 
 def _concl_parts(text: str) -> tuple[int, int, str]:
     """Return (template_index, n_declared, thesis) for a conclusion block."""
-    from .grammar import _CONCL_RES
-    for i, rx in enumerate(_CONCL_RES):
-        m = rx.search(text)
-        if not m:
-            continue
-        if i == 1:
-            return i, int(m.group(2)), m.group(1)
-        return i, int(m.group(1)), m.group(2)
-    raise ValueError(f"unparseable conclusion: {text!r}")
+    p = concl_parts(text)
+    if p is None:
+        raise ValueError(f"unparseable conclusion: {text!r}")
+    return p
 
 
 def retarget(text: str, role: str, new_thesis: int) -> str:
@@ -278,28 +276,53 @@ def retarget(text: str, role: str, new_thesis: int) -> str:
     `text.replace(old_thesis, new_thesis)` is wrong whenever the thesis phrase
     also occurs inside the reason, and it silently produces a block that no
     longer parses.
+
+    The surface template is preserved. If the corruption also changed the
+    sentence shape, a repair model could detect the defect from the style alone
+    and the experiment would measure template matching rather than dependency
+    reasoning.
     """
     t = THESES[new_thesis][0]
     if role == "intro":
         raise ValueError("the introduction is locked and must never be retargeted")
     if role == "body":
-        tid, reason, ridx = parse_block(text, "body")
-        if reason is None or ridx is None:
-            raise ValueError(f"unparseable body: {text!r}")
-        return f"reason {ridx} : {reason} , so {t} ."
+        tmpl, reason, ridx, _ = body_parts_or_raise(text)
+        return render_body(tmpl, ridx, reason, t)
     tmpl, n, _ = _concl_parts(text)
-    return CONCLUSION_TEMPLATES[tmpl].format(T=t, N=n)
+    return render_concl(tmpl, t, n)
+
+
+def body_parts_or_raise(text: str) -> tuple[int, str, int, str]:
+    from .grammar import body_parts
+    p = body_parts(text)
+    if p is None:
+        raise ValueError(f"unparseable body: {text!r}")
+    return p
 
 
 def corrupt_cross_block(task: Task, rng: random.Random,
                         wrong_thesis: int | None = None,
-                        k: int | None = None) -> Task:
+                        k: int | None = None,
+                        partial: bool = False) -> Task:
     """Contract: the locked intro is untouched; editable blocks support W != T*.
 
     Default `k` is *all* editable blocks, so the document is maximally
     inconsistent and a one-block repair leaves |editable|-1 contradictions.
     A single wrong thesis W is used throughout, so the defect is "the document
     argues for the wrong thesis" and not "the document is a random mess".
+
+    `partial=True` produces the harder distractor. A *strict majority* of the
+    editable blocks (always including the conclusion) support W, while the
+    remaining editable blocks still support T*. The majority constraint is the
+    point: with the wrong thesis on more editable blocks than the right one, a
+    "keep the majority thesis" heuristic sides with the corruption, and only
+    the locked intro identifies T*. That makes the intro anchor load-bearing
+    rather than decorative, and it is checked by the validator rather than
+    left to chance.
+
+    `partial` still edits at least two blocks, so a single local repair cannot
+    restore coherence. A one-block mismatch would be a local defect wearing a
+    cross-block label, which is exactly the conflation this module removed.
     """
     editable = task.editable_indices
     if len(editable) < 2:
@@ -309,7 +332,16 @@ def corrupt_cross_block(task: Task, rng: random.Random,
         wrong_thesis = rng.choice([i for i in range(len(THESES)) if i != T])
     if wrong_thesis == T:
         raise ValueError("wrong thesis must differ from the authoritative one")
-    k = len(editable) if k is None else min(k, len(editable))
+    if partial:
+        if len(editable) < 3:
+            raise ValueError(
+                "partial cross-block needs at least three editable blocks: "
+                "two wrong (a strict majority) and at least one right")
+        lo = len(editable) // 2 + 1     # strict majority
+        hi = len(editable) - 1          # at least one block stays correct
+        k = rng.randint(lo, hi) if k is None else min(max(k, lo), hi)
+    else:
+        k = len(editable) if k is None else min(k, len(editable))
     if k < 2:
         raise ValueError(
             "cross_block needs at least two edited blocks; a single-block "
@@ -328,13 +360,16 @@ def corrupt_cross_block(task: Task, rng: random.Random,
         blocks[i] = make_block(retarget(blocks[i].text, blocks[i].role,
                                         wrong_thesis),
                                blocks[i].role, quality_target="off_thesis")
+    defect = "cross_block_partial" if partial else "cross_block"
     out = Task(task_id=task.task_id, blocks=blocks, authoritative=T,
-               defect="cross_block", clean_blocks=task.clean_blocks,
+               defect=defect, clean_blocks=task.clean_blocks,
                edited=sorted(chosen),
                operator=f"retarget->{wrong_thesis}", meta=dict(task.meta))
-    errs = validate_cross_block(task, out)
+    errs = (validate_cross_block_partial(task, out) if partial
+            else validate_cross_block(task, out))
     if errs:
-        raise AssertionError(f"cross-block corruption violated its contract: {errs}")
+        raise AssertionError(
+            f"{defect} corruption violated its contract: {errs}")
     return out
 
 
@@ -412,6 +447,83 @@ def validate_cross_block(clean: Task, corrupt: Task) -> list[str]:
     coh = coherence(corrupt.blocks, corrupt.authoritative)
     if coh["c_edit"] != 0.0:
         errs.append(f"cross-block c_edit is {coh['c_edit']}, expected 0")
+    return errs
+
+
+def validate_cross_block_partial(clean: Task, corrupt: Task) -> list[str]:
+    """The harder cross-block defect: W is the *majority*, T* the intro.
+
+    Separate from `validate_cross_block` rather than a flag on it, because the
+    two contracts differ in a way that matters: the full defect asserts that
+    *every* editable block is wrong, while this one asserts that some are still
+    right. Merging them would let a full defect validate as partial (and vice
+    versa), and the whole point of the extra family is that the two are not
+    interchangeable.
+    """
+    errs = _metadata_truthful(corrupt)
+    if len(clean.blocks) != len(corrupt.blocks):
+        return errs + ["block count changed"]
+    if corrupt.defect != "cross_block_partial":
+        errs.append(f"defect label is {corrupt.defect!r}, "
+                    f"expected 'cross_block_partial'")
+    if not anchor_ok(clean.texts(), corrupt.texts(), clean.locked_indices):
+        errs.append("locked intro changed: the contract was violated")
+    intro = corrupt.blocks[0]
+    if intro.thesis_id != corrupt.authoritative:
+        errs.append("intro no longer states the authoritative thesis")
+
+    editable = corrupt.editable_indices
+    edited = set(corrupt.edited)
+    if not edited:
+        return errs + ["partial cross-block edited no blocks"]
+    if not edited <= set(editable):
+        errs.append(f"edited blocks {sorted(edited - set(editable))} are not "
+                    f"editable")
+    if len(edited) < 2:
+        errs.append(f"partial cross-block edited only {len(edited)} block(s); "
+                    f"a single block is a local defect")
+    if len(edited) >= len(editable):
+        errs.append("partial cross-block edited every editable block; that is "
+                    "the full cross-block defect")
+    kept = [i for i in editable if i not in edited]
+    if not kept:
+        errs.append("partial cross-block left no editable block supporting T*")
+    if len(edited) <= len(kept):
+        errs.append(
+            f"wrong thesis is on {len(edited)} of {len(editable)} editable "
+            f"blocks, not a strict majority; the hard distractor requires that "
+            f"a majority-vote heuristic sides with the corruption")
+
+    concl = len(corrupt.blocks) - 1
+    if concl not in edited:
+        errs.append("partial cross-block did not edit the conclusion; the "
+                    "document's own summary would still support T*")
+
+    wrong = {corrupt.blocks[i].thesis_id for i in edited}
+    if len(wrong) != 1:
+        errs.append(f"edited blocks support {len(wrong)} different theses, "
+                    f"expected 1")
+    if corrupt.authoritative in wrong:
+        errs.append("wrong thesis equals the authoritative thesis")
+
+    for i in kept:
+        if corrupt.blocks[i].thesis_id != corrupt.authoritative:
+            errs.append(f"unedited editable block {i} does not support T*")
+        if corrupt.blocks[i].text != clean.blocks[i].text:
+            errs.append(f"unedited editable block {i} changed")
+    # the *content* (reason text) must survive: only the proposition changes
+    for i in corrupt.edited:
+        if corrupt.blocks[i].role == "body":
+            if corrupt.blocks[i].reason != clean.blocks[i].reason:
+                errs.append(f"block {i}: reason changed, only the thesis should")
+
+    coh = coherence(corrupt.blocks, corrupt.authoritative)
+    expected = len(kept) / len(editable) if editable else 0.0
+    if abs(coh["c_edit"] - expected) > 1e-9:
+        errs.append(f"partial c_edit is {coh['c_edit']}, expected {expected}")
+    if not (0.0 < coh["c_edit"] < 1.0):
+        errs.append(f"partial c_edit is {coh['c_edit']}, expected strictly "
+                    f"between 0 and 1")
     return errs
 
 
@@ -587,7 +699,8 @@ def make_task_set(records: list, n: int, seed: int = 0,
     rng = random.Random(seed)
     pool = list(records)
     rng.shuffle(pool)
-    out: dict[str, list[Task]] = {"none": [], "local": [], "cross_block": []}
+    out: dict[str, list[Task]] = {"none": [], "local": [], "cross_block": [],
+                                  "cross_block_partial": []}
     skipped = 0
     scanned = 0
     for k, rec in enumerate(pool):
@@ -597,9 +710,10 @@ def make_task_set(records: list, n: int, seed: int = 0,
         clean = task_from_record(rec, task_id=k)
         loc = degrade_local(clean, rng)
         cross = corrupt_cross_block(clean, rng)
+        partial = corrupt_cross_block(clean, rng, partial=True)
         if fits is not None and not all(fits(t) for t in
                                         (clean.texts(), loc.texts(),
-                                         cross.texts())):
+                                         cross.texts(), partial.texts())):
             skipped += 1
             continue
         if len(out["none"]) < n:
@@ -608,6 +722,8 @@ def make_task_set(records: list, n: int, seed: int = 0,
             out["local"].append(loc)
         if len(out["cross_block"]) < n:
             out["cross_block"].append(cross)
+        if len(out["cross_block_partial"]) < n:
+            out["cross_block_partial"].append(partial)
     if stats is not None:
         stats["scanned"] = scanned
         stats["skipped"] = skipped
@@ -619,5 +735,6 @@ __all__ = [
     "make_block", "task_from_blocks", "task_from_record", "coherence",
     "block_quality", "quality", "anchor_ok", "degrade_local", "retarget",
     "corrupt_cross_block", "validate_local", "validate_cross_block",
-    "validate_task", "matched_budgets", "oracle_repair", "make_task_set",
+    "validate_cross_block_partial", "validate_task", "matched_budgets",
+    "oracle_repair", "make_task_set",
 ]

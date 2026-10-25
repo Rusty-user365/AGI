@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import torch
 
 from cgr.config import Config
-from cgr.train import load_system, train
+from cgr.train import load_system, pick_device, train
 
 RESULTS = Path("results")
 CHECKPOINTS = Path("checkpoints")
@@ -54,13 +54,16 @@ def ckpt_dir(preset: str, seed: int = 0) -> Path:
 
 def get_system(preset: str = "smoke", train_if_missing: bool = True,
                verbose: bool = True, seed: int = 0,
-               checkpoint: str | None = None):
+               checkpoint: str | None = None, device: str | None = None):
     """Load a checkpoint. `checkpoint` overrides the preset/seed path.
 
     The override exists so an experiment can be run against a model trained at
     a different budget (e.g. the editor-floor curve) without pretending it is
     the preset's checkpoint. The `preset` is still recorded in the result so a
     reader can see which config produced the weights.
+
+    `device=None` follows the preset (`cfg.train.device`), so the committed
+    canvas numbers stay on CPU while the 127M backbone runs where it can.
     """
     path = (Path(checkpoint) if checkpoint
             else ckpt_dir(preset, seed) / "stage_b.pt")
@@ -72,11 +75,14 @@ def get_system(preset: str = "smoke", train_if_missing: bool = True,
                   f"(seed {seed}) ...")
         cfg = Config.preset(preset)
         cfg.train.seed = seed
-        train(cfg, ckpt_dir(preset, seed), verbose=verbose)
+        train(cfg, ckpt_dir(preset, seed), verbose=verbose, device=device)
         path = ckpt_dir(preset, seed) / "stage_b.pt"
     system, cfg = load_system(path)
+    dev = pick_device(device if device is not None
+                      else getattr(cfg.train, "device", "cpu"))
+    system = system.to(dev)
     if verbose:
-        print(f"[common] loaded {path}")
+        print(f"[common] loaded {path} on {dev}")
     return system, cfg
 
 
@@ -125,9 +131,18 @@ def arg_parser(desc: str):
     ap.add_argument("--preset", default="smoke")
     ap.add_argument("--n", type=int, default=None)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--split", default="test",
+                    choices=["test", "heldout", "unseen"],
+                    help="corpus split: `test` is in-distribution, `heldout` "
+                         "uses template combinations never seen in training, "
+                         "`unseen` uses theses never seen in training")
     ap.add_argument("--train", action="store_true",
                     help="force retraining even if a checkpoint exists")
     ap.add_argument("--checkpoint", default=None,
                     help="load this stage_b.pt instead of the preset's "
                          "checkpoint (the preset is still recorded)")
+    ap.add_argument("--device", default=None,
+                    help="cpu | cuda | auto. Default: follow the preset "
+                         "(the canvas stays on cpu; diffugpt uses cuda if "
+                         "available)")
     return ap
