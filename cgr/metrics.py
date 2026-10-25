@@ -180,6 +180,16 @@ def score_repair(model, orig_ids: torch.Tensor, new_ids: torch.Tensor,
 
 @torch.no_grad()
 def _token_nll(model, ids: torch.Tensor) -> torch.Tensor:
+    """Per-position NLL of batch element 0.
+
+    Delegates to the backbone when it can. The shift convention is a property
+    of the backbone — the blank canvas predicts token `i` from `logits[i]`, the
+    pre-trained DiffuGPT from `logits[i-1]` — so a convention hard-coded here
+    would score one of them against the wrong target and make `improvement`
+    and `seam` meaningless.
+    """
+    if hasattr(model, "token_nll"):
+        return model.token_nll(ids)
     logits = model.forward(ids)
     logp = logits.log_softmax(-1)
     lp = logp.gather(-1, ids.unsqueeze(-1)).squeeze(-1)

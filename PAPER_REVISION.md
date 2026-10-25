@@ -162,6 +162,51 @@ in-distribution and held-out numbers separately. The draft's 30k documents
 from 12 templates gives ~2,500 exposures per template; at smoke scale we
 already measure an 11% exact-duplicate rate between test and train.
 
+**Backbone hardening update (not part of the v0.3 canvas results above).** The
+current DiffuGPT generator has 5,000 training documents, eight intro, eight
+conclusion, and eight body templates, six thesis labels, two of which are
+isolated in an `unseen` split, and a `cross_block_partial` defect whose wrong
+thesis occupies a strict majority of editable blocks. This is controlled,
+exactly parsed template variation; it is not open-ended paraphrasing.
+`exp8_architecture_ablation.py`
+compares a jointly trained CGR reasoner condition against a LoRA-only
+masked-denoising baseline on the same unseen tasks. The current repair path
+does not use the gate or a DAG, so this comparison cannot support a claim
+about either component. The 1-epoch smoke result is a pipeline check only;
+both systems scored at the parse/repair floor and a full matched run is still
+needed.
+
+**Repair-floor diagnosis (5k checkpoints).** The first 5k CGR run cleared the
+denoising sanity check (synthetic top-1 0.915) but scored only 7/40 (0.175)
+parseable-and-on-thesis on the ordinary test split, below the pre-registered
+0.20 floor. A per-block diagnostic (`scripts/diagnose_repair.py`, n=8) found no
+mask leaks or empty spans; 6/8 outputs were unparseable because they blended
+templates (e.g. `point 3 : the observation that ... supports ... in this
+reason .`), while the thesis phrase and a pool reason were present in 7/8
+outputs. A teacher-forced probe that masks the whole target block and predicts
+it in one pass reached only 0.292 top-1 (0/8 exact blocks), versus 0.915 on
+15% random token masks. The training objective masked scattered tokens
+(15-85% of the document); the benchmark masks one contiguous block. The model
+therefore learned local denoising but not the template-selection operation the
+gate scores.
+
+The targeted change is a mixed masking objective: with probability 0.5 an
+example masks one whole block (a run between separator tokens), otherwise it
+keeps the original random-token mask. Claims, which have no separator, keep
+the token mask. Both the CGR model and the LoRA-only control are being
+fine-tuned from their existing checkpoints with the same mixture (4 additional
+Stage A + 1 Stage B epoch, LoRA rank 8, learning rate, seed and corpus
+unchanged). This is one factor: the mask distribution. The result is not yet
+in; no claim about clearing the floor or unseen-thesis repair is made here.
+
+The realised mixture is not 50/50 over all training examples. Claim episodes
+carry no separator token, so they always keep the token mask; documents and
+repair episodes (8,750 of 13,750 examples per epoch) are block-capable, and
+half of those receive a block mask. The realised fraction of block-masked
+examples is therefore about 32%, with 68% token-masked. That is deliberate:
+masking an entire short claim would be unconditional generation, a different
+task from the one the benchmark scores.
+
 **4.3 Stochasticity.** In a deterministic template world, `V`, `o`, and `τ`
 are deterministic functions of the same features and the seven heads collapse
 into each other. The draft's own health check ("inter-head correlation must

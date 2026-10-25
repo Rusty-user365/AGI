@@ -124,7 +124,7 @@ def oracle_action(c: Claim | None, ex: Task | None,
     if ex is not None:
         if ex.defect_type == "local":
             return A["REP"]
-        if ex.defect_type == "cross_block":
+        if ex.defect_type.startswith("cross_block"):
             return A["REV"]
         return A["ANS"]
     if c is not None:

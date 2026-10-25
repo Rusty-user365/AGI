@@ -1,0 +1,129 @@
+{
+  "experiment": "exp8_architecture_ablation",
+  "preset": "diffugpt",
+  "seed": 0,
+  "split": "unseen",
+  "selection": {
+    "scanned": 4,
+    "skipped": 0
+  },
+  "requested_n": 4,
+  "cgr_checkpoint": "checkpoints/diffugpt_ablation_cgr/stage_b.pt",
+  "baseline_checkpoint": "checkpoints/diffugpt_ablation_backbone/stage_b.pt",
+  "comparison": "trained CGR reasoner conditioning vs LoRA-only masked-denoising baseline",
+  "limits": [
+    "The decoder and edit scopes are identical between conditions.",
+    "The gate does not participate in this repair comparison; no DAG is implemented.",
+    "Unseen-split specificity for local defects is not evaluated here."
+  ],
+  "conditions": {
+    "cross_block/one_block": {
+      "n": 4,
+      "cgr_mean_c_target": 0.0,
+      "backbone_mean_c_target": 0.0,
+      "noop_mean_c_target": 0.0,
+      "cgr_mean_blocks_changed": 1.0,
+      "backbone_mean_blocks_changed": 1.0,
+      "cgr_mean_tokens_spent": 16.25,
+      "backbone_mean_tokens_spent": 16.25,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_parse_rate": 0.0,
+      "backbone_parse_rate": 0.0,
+      "noop_parse_rate": 0.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    },
+    "cross_block/global": {
+      "n": 4,
+      "cgr_mean_c_target": 0.0,
+      "backbone_mean_c_target": 0.0,
+      "noop_mean_c_target": 0.0,
+      "cgr_mean_blocks_changed": 4.25,
+      "backbone_mean_blocks_changed": 4.25,
+      "cgr_mean_tokens_spent": 64.75,
+      "backbone_mean_tokens_spent": 64.75,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_parse_rate": 0.0,
+      "backbone_parse_rate": 0.0,
+      "noop_parse_rate": 0.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    },
+    "cross_block_partial/one_block": {
+      "n": 4,
+      "cgr_mean_c_target": 0.0,
+      "backbone_mean_c_target": 0.0,
+      "noop_mean_c_target": 0.0,
+      "cgr_mean_blocks_changed": 1.0,
+      "backbone_mean_blocks_changed": 1.0,
+      "cgr_mean_tokens_spent": 17.5,
+      "backbone_mean_tokens_spent": 17.5,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_parse_rate": 0.0,
+      "backbone_parse_rate": 0.0,
+      "noop_parse_rate": 0.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    },
+    "cross_block_partial/global": {
+      "n": 4,
+      "cgr_mean_c_target": 0.0,
+      "backbone_mean_c_target": 0.0,
+      "noop_mean_c_target": 0.0,
+      "cgr_mean_blocks_changed": 4.25,
+      "backbone_mean_blocks_changed": 4.25,
+      "cgr_mean_tokens_spent": 64.75,
+      "backbone_mean_tokens_spent": 64.75,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_parse_rate": 0.0,
+      "backbone_parse_rate": 0.0,
+      "noop_parse_rate": 0.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    }
+  }
+}

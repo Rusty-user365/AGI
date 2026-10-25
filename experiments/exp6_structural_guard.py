@@ -156,15 +156,26 @@ def main() -> int:
 
     banner("Experiment 6 — structural guard (C1), independent of the editor")
     system, cfg = get_system(args.preset, seed=args.seed,
-                             checkpoint=args.checkpoint)
+                             checkpoint=args.checkpoint,
+                             device=args.device)
     system.eval()
 
-    # All parameters trainable: the test must be able to detect a leak, and a
-    # frozen parameter cannot leak. exp1 freezes everything but the adapter,
-    # which is why it can only check that nothing moved, not that something
-    # else could have moved.
-    for p in system.parameters():
-        p.requires_grad_(True)
+    # Instrument scope. On the blank canvas every parameter is trainable: the
+    # test must be able to detect a leak, and a frozen parameter cannot leak.
+    #
+    # On the pre-trained backbone the instrument is every parameter Stage A is
+    # allowed to move (LoRA adapters + plastic substrate) plus the gate. The
+    # 127M base is frozen by the PEFT contract, so it cannot leak by
+    # construction and training it would add hours to a guard test that does
+    # not measure generation quality. Freezing the base cannot hide a leak into
+    # the adapters, which are the only part of the backbone that ever learns.
+    if getattr(cfg.model, "backbone", "canvas") == "diffugpt":
+        system.freeze_backbone_base()
+        for p in system.gate.parameters():
+            p.requires_grad_(True)
+    else:
+        for p in system.parameters():
+            p.requires_grad_(True)
 
     pool = make_claim_set(n * 3, seed=args.seed + 7, marker_present=True)
     wrong = [c for c in pool
@@ -358,7 +369,9 @@ def main() -> int:
         "and is unresolved: exp2's NLL diff-in-diff is within its minimum "
         "detectable effect at this scale. C1 does not depend on it.")
 
-    write_result("exp6_structural_guard", {
+    result_name = ("exp6_structural_guard" if cfg.model.backbone == "canvas"
+                   else f"exp6_structural_guard_{cfg.model.backbone}")
+    write_result(result_name, {
         "experiment": "exp6_structural_guard",
         "preset": args.preset, "seed": args.seed, "n": n,
         "preregistered_prediction": PREDICTION,

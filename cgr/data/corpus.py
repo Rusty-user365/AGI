@@ -28,10 +28,10 @@ import random
 from dataclasses import dataclass
 
 from ..config import Config
-from ..tokenizer import Tokenizer
+from ..tokenizer import Tokenizer, TokenizerLike, make_tokenizer
 from .documents import (Task, corrupt_cross_block, degrade_local,
                         make_task_set, task_from_blocks)
-from .grammar import (CONCLUSION_TEMPLATES, HOLDOUT_COMBOS,
+from .grammar import (CONCLUSION_TEMPLATES, HOLDOUT_COMBOS, THESES,
                       THESIS_INDEX, INTRO_TEMPLATES, Doc, blocked_spans,
                       is_consistent, make_doc, parse_blocks)
 
@@ -53,46 +53,74 @@ class Record:
     split: str  # "train" | "val" | "test" | "heldout"
 
 
-def _record(doc: Doc, tok: Tokenizer, doc_id: int, split: str) -> Record:
+def _record(doc: Doc, tok: TokenizerLike, doc_id: int, split: str) -> Record:
     ids, spans = blocked_spans(doc.blocks, tok)
     return Record(doc_id, doc.thesis_id, doc.blocks, ids, spans,
                   doc.combo, split)
 
 
 def _sample_docs(rng: random.Random, n: int,
-                 combos: set[tuple[int, int]]) -> list[Doc]:
-    """Draw docs whose (intro, conclusion) template pair is in `combos`."""
+                 combos: set[tuple[int, int]],
+                 theses: list[int] | None = None) -> list[Doc]:
+    """Draw docs from `combos` (and, when given, from `theses` only)."""
     combos = sorted(combos)
-    return [make_doc(rng, combo=rng.choice(combos)) for _ in range(n)]
+    theses = sorted(theses) if theses is not None else None
+    return [make_doc(rng, thesis_id=(rng.choice(theses) if theses else None),
+                     combo=rng.choice(combos)) for _ in range(n)]
 
 
-def build_corpus(cfg: Config, tok: Tokenizer | None = None
-                 ) -> tuple[Tokenizer, dict[str, list[Record]]]:
-    """Generate train/val/test/heldout splits.
+def build_corpus(cfg: Config, tok: TokenizerLike | None = None
+                 ) -> tuple[TokenizerLike, dict[str, list[Record]]]:
+    """Generate train/val/test/heldout/unseen splits.
 
-    `heldout` uses template combinations never seen in training. This is the
-    anti-memorisation split: if heldout and val scores diverge sharply, the
-    model learned surface form rather than structure.
+    Two *independent* generalisation axes, kept as separate splits so a failure
+    can be attributed instead of averaged:
+
+      heldout  seen theses, (intro, conclusion) template combinations never
+               seen in training. Tests surface-form generalisation.
+      unseen   theses that never appear in train or val, seen templates. Tests
+               whether the model learned "this block must support the thesis in
+               the intro" or merely memorised the thesis->reason mapping.
+
+    The test split stays in-distribution on purpose: it is the reference point
+    the two generalisation splits are compared against. Reporting only the
+    held-out numbers would make every repair rate look like a failure without
+    saying what it failed at.
+
+    The tokenizer comes from the config, not from the corpus, when the
+    backbone is pre-trained: a corpus-built vocabulary would make the
+    checkpoint's embedding rows meaningless. For the blank canvas it is still
+    built from the training split, which is why `make_tokenizer` is allowed to
+    return None. That is also why the canvas cannot use the `unseen` split: its
+    word vocabulary would have no rows for an unseen thesis's words.
     """
     rng = random.Random(cfg.data.seed)
     seen_combos = {(i, j)
                    for i in range(len(INTRO_TEMPLATES))
                    for j in range(len(CONCLUSION_TEMPLATES))} - HOLDOUT_COMBOS
 
+    k = max(0, min(int(cfg.data.n_heldout_theses), len(THESES) - 1))
+    seen_theses = list(range(len(THESES) - k))
+    unseen_theses = list(range(len(THESES) - k, len(THESES)))
+
     n_heldout = max(50, cfg.data.n_test // 4)
-    train_docs = _sample_docs(rng, cfg.data.n_docs, seen_combos)
-    val_docs = _sample_docs(rng, cfg.data.n_val, seen_combos)
-    test_docs = _sample_docs(rng, cfg.data.n_test, seen_combos)
-    held_docs = _sample_docs(rng, n_heldout, HOLDOUT_COMBOS)
+    train_docs = _sample_docs(rng, cfg.data.n_docs, seen_combos, seen_theses)
+    val_docs = _sample_docs(rng, cfg.data.n_val, seen_combos, seen_theses)
+    test_docs = _sample_docs(rng, cfg.data.n_test, seen_combos, seen_theses)
+    held_docs = _sample_docs(rng, n_heldout, HOLDOUT_COMBOS, seen_theses)
+    unseen_docs = (_sample_docs(rng, cfg.data.n_test, seen_combos, unseen_theses)
+                   if unseen_theses else [])
 
     if tok is None:
-        tok = Tokenizer.build([d.render() for d in train_docs])
+        tok = make_tokenizer(cfg) or Tokenizer.build(
+            [d.render() for d in train_docs])
 
     splits = {
         "train": [_record(d, tok, i, "train") for i, d in enumerate(train_docs)],
         "val": [_record(d, tok, i, "val") for i, d in enumerate(val_docs)],
         "test": [_record(d, tok, i, "test") for i, d in enumerate(test_docs)],
         "heldout": [_record(d, tok, i, "heldout") for i, d in enumerate(held_docs)],
+        "unseen": [_record(d, tok, i, "unseen") for i, d in enumerate(unseen_docs)],
     }
     return tok, splits
 
@@ -139,12 +167,17 @@ def corrupt_nonlocal(blocks: list[str], rng: random.Random,
 
 def make_repair_set(records: list[Record], n: int, seed: int = 0
                     ) -> dict[str, list[Task]]:
-    """Clean + local + cross-block tasks, one of each defect per document.
+    """Clean + local + both cross-block variants, one of each per document.
 
     `non_local` is an alias of `cross_block` for backwards compatibility.
+    `cross_block_partial` is the harder distractor: a majority of the editable
+    blocks (including the conclusion) support the wrong thesis while at least
+    one body still supports the authoritative one.
     """
     tasks = make_task_set(records, n, seed=seed)
-    return {"local": tasks["local"], "cross_block": tasks["cross_block"],
+    return {"local": tasks["local"],
+            "cross_block": tasks["cross_block"],
+            "cross_block_partial": tasks["cross_block_partial"],
             "non_local": tasks["cross_block"]}
 
 

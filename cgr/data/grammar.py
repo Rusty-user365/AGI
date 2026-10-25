@@ -80,23 +80,56 @@ THESIS_POOL: dict[int, list[str]] = {i: pool for i, (_, pool) in enumerate(THESE
 #: every coherence check is exact rather than a string comparison.
 THESIS_INDEX: dict[str, int] = {t: i for i, (t, _) in enumerate(THESES)}
 
+#: Surface templates. Varied clause order and lexical framing reduce a model's
+#: ability to use one fixed sentence shape as a shortcut. Each is still exactly
+#: parseable so the verifier stays deterministic. This is controlled template
+#: variation, not open-ended paraphrasing or a claim of natural-language scope.
 INTRO_TEMPLATES = [
     "this essay argues that {T} with {N} reasons .",
     "we argue that {T} , and offer {N} reasons .",
     "the claim is that {T} ; {N} reasons follow .",
+    "this paper will show that {T} in {N} reasons .",
+    "{T} is the central claim here , supported by {N} reasons .",
+    "we take the position that {T} ; {N} points support it .",
+    "the case for {T} rests on {N} reasons .",
+    "here we defend {T} through {N} reasons .",
 ]
 
 CONCLUSION_TEMPLATES = [
     "these {N} reasons establish that {T} .",
     "we have shown that {T} on the strength of {N} reasons .",
     "the {N} reasons given support {T} .",
+    "so {T} , as the {N} reasons above show .",
+    "the argument for {T} rests on {N} reasons .",
+    "taken together , {N} points support {T} .",
+    "on these {N} grounds , we conclude {T} .",
+    "thus , the evidence favors {T} ; {N} reasons support this .",
+]
+
+BODY_TEMPLATES = [
+    "reason {i} : {R} , so {T} .",
+    "reason {i} : because {R} , {T} .",
+    "reason {i} : {T} , since {R} .",
+    "point {i} : given {R} , {T} follows .",
+    "point {i} : evidence from {R} supports {T} .",
+    "point {i} : {T} follows from {R} .",
+    "point {i} : the observation that {R} backs {T} .",
+    "point {i} : we see {T} in {R} .",
 ]
 
 FILLER = "this reason is left vague ."
 
-# Held-out template combinations. Documents whose (intro, conclusion)
-# combination is in this set never appear in training.
-HOLDOUT_COMBOS: set[tuple[int, int]] = {(2, 0), (0, 2), (1, 1)}
+#: Reasons that are *on-thesis but not specific*. A body containing one of
+#: these is a local quality defect, not a coherence defect.
+VAGUE_REASONS = {
+    "this reason is left vague",
+    "the point is stated without a concrete example",
+}
+
+# Held-out (intro, conclusion) combinations. Documents whose combination is in
+# this set never appear in training, so a model that memorised surface form is
+# visible on the held-out split.
+HOLDOUT_COMBOS: set[tuple[int, int]] = {(4, 0), (0, 4), (3, 1), (1, 3), (2, 2)}
 
 
 @dataclass
@@ -108,6 +141,9 @@ class Doc:
     intro_tmpl: int
     concl_tmpl: int
     blocks: list[str] = field(default_factory=list)
+    #: One surface template per body, so the document is not a single repeated
+    #: sentence shape. Empty for docs built before the templates were varied.
+    body_tmpls: list[int] = field(default_factory=list)
 
     @property
     def combo(self) -> tuple[int, int]:
@@ -118,7 +154,8 @@ class Doc:
 
     def spoof(self) -> str:
         """Surface form used for split keys only."""
-        return f"{self.thesis_id}|{self.n_reasons}|{self.intro_tmpl}|{self.concl_tmpl}"
+        return (f"{self.thesis_id}|{self.n_reasons}|{self.intro_tmpl}|"
+                f"{self.concl_tmpl}|{'-'.join(map(str, self.body_tmpls))}")
 
 
 def make_doc(rng: random.Random,
@@ -134,27 +171,135 @@ def make_doc(rng: random.Random,
         combo = (rng.randrange(len(INTRO_TEMPLATES)),
                  rng.randrange(len(CONCLUSION_TEMPLATES)))
     reasons = rng.sample(pool, n_reasons)
+    body_tmpls = [rng.randrange(len(BODY_TEMPLATES)) for _ in range(n_reasons)]
 
     intro = INTRO_TEMPLATES[combo[0]].format(T=thesis, N=n_reasons)
-    bodies = [f"reason {i + 1} : {reasons[i]} , so {thesis} ."
+    bodies = [render_body(body_tmpls[i], i + 1, reasons[i], thesis)
               for i in range(n_reasons)]
     concl = CONCLUSION_TEMPLATES[combo[1]].format(T=thesis, N=n_reasons)
     return Doc(thesis_id, thesis, n_reasons, reasons, combo[0], combo[1],
-               [intro] + bodies + [concl])
+               [intro] + bodies + [concl], body_tmpls)
 
 
 # --------------------------------------------------------------------------
 # Exact parsers. Consistency is defined by these, so they must be strict.
 # --------------------------------------------------------------------------
 
-_INTRO_RE = re.compile(
-    r"(?:this essay argues that|we argue that|the claim is that) (.+?)(?: with| , and offer| ;) (\d+) reasons")
-_CONCL_RES = [
-    re.compile(r"these (\d+) reasons establish that (.+?) \."),
-    re.compile(r"we have shown that (.+?) on the strength of (\d+) reasons \."),
-    re.compile(r"the (\d+) reasons given support (.+?) \."),
+#: (pattern, thesis_group, n_group) per intro template. One pattern per
+#: template rather than one tolerant pattern for all of them, because the
+#: parser's return value includes *which* template was used: `retarget` and
+#: `degrade_local` re-render a block, and re-rendering it with a different
+#: surface form would make the corruption detectable from style alone.
+_INTRO_RES = [
+    (re.compile(r"this\s+essay\s+argues\s+that\s+(.+?)\s+with\s+"
+                r"(\d+)\s+reasons"), 1, 2),
+    (re.compile(r"we\s+argue\s+that\s+(.+?)\s*,\s*and\s+offer\s+"
+                r"(\d+)\s+reasons"), 1, 2),
+    (re.compile(r"the\s+claim\s+is\s+that\s+(.+?)\s*;\s*"
+                r"(\d+)\s+reasons\s+follow"), 1, 2),
+    (re.compile(r"this\s+paper\s+will\s+show\s+that\s+(.+?)\s+in\s+"
+                r"(\d+)\s+reasons"), 1, 2),
+    (re.compile(r"(.+?)\s+is\s+the\s+central\s+claim\s+here\s*,\s*"
+                r"supported\s+by\s+(\d+)\s+reasons"), 1, 2),
+    (re.compile(r"we\s+take\s+the\s+position\s+that\s+(.+?)\s*;\s*"
+                r"(\d+)\s+points\s+support\s+it"), 1, 2),
+    (re.compile(r"the\s+case\s+for\s+(.+?)\s+rests\s+on\s+"
+                r"(\d+)\s+reasons"), 1, 2),
+    (re.compile(r"here\s+we\s+defend\s+(.+?)\s+through\s+"
+                r"(\d+)\s+reasons"), 1, 2),
 ]
-_BODY_RE = re.compile(r"reason (\d+) : (.+?) , so (.+?) \.")
+_CONCL_RES = [
+    (re.compile(r"these\s+(\d+)\s+reasons\s+establish\s+that\s+(.+?)\s*\."),
+     1, 2),
+    (re.compile(r"we\s+have\s+shown\s+that\s+(.+?)\s+on\s+the\s+strength\s+of"
+                r"\s+(\d+)\s+reasons\s*\."), 2, 1),
+    (re.compile(r"the\s+(\d+)\s+reasons\s+given\s+support\s+(.+?)\s*\."),
+     1, 2),
+    (re.compile(r"so\s+(.+?)\s*,\s*as\s+the\s+(\d+)\s+reasons\s+above\s+show"
+                r"\s*\."), 2, 1),
+    (re.compile(r"the\s+argument\s+for\s+(.+?)\s+rests\s+on\s+(\d+)\s+reasons"
+                r"\s*\."), 2, 1),
+    (re.compile(r"taken\s+together\s*,?\s+(\d+)\s+points\s+support\s+"
+                r"(.+?)\s*\."), 1, 2),
+    (re.compile(r"on\s+these\s+(\d+)\s+grounds\s*,?\s+we\s+conclude\s+"
+                r"(.+?)\s*\."), 1, 2),
+    (re.compile(r"thus\s*,?\s+the\s+evidence\s+favors\s+(.+?)\s*;\s*"
+                r"(\d+)\s+reasons\s+support\s+this\s*\."), 2, 1),
+]
+#: (pattern, reason_group, thesis_group) per body template. Templates 2 and 3
+#: put the thesis and the reason on opposite sides of the comma, so the group
+#: order is not the same for every pattern; naming the groups by position here
+#: is what keeps `parse_block` from silently reading the reason as the thesis.
+_BODY_RES = [
+    (re.compile(r"reason\s+(\d+)\s*:\s*(.+?)\s*,\s*so\s+(.+?)\s*\."), 2, 3),
+    (re.compile(r"reason\s+(\d+)\s*:\s*because\s+(.+?)\s*,\s*(.+?)\s*\."),
+     2, 3),
+    (re.compile(r"reason\s+(\d+)\s*:\s*(.+?)\s*,\s*since\s+(.+?)\s*\."), 3, 2),
+    (re.compile(r"point\s+(\d+)\s*:\s*given\s+(.+?)\s*,\s*"
+                r"(.+?)\s+follows\s*\."), 2, 3),
+    (re.compile(r"point\s+(\d+)\s*:\s*evidence\s+from\s+(.+?)\s+"
+                r"supports\s+(.+?)\s*\."), 2, 3),
+    (re.compile(r"point\s+(\d+)\s*:\s*(.+?)\s+follows\s+from\s+"
+                r"(.+?)\s*\."), 3, 2),
+    (re.compile(r"point\s+(\d+)\s*:\s*the\s+observation\s+that\s+"
+                r"(.+?)\s+backs\s+(.+?)\s*\."), 2, 3),
+    (re.compile(r"point\s+(\d+)\s*:\s*we\s+see\s+(.+?)\s+in\s+"
+                r"(.+?)\s*\."), 3, 2),
+]
+
+
+def render_intro(tmpl: int, thesis: str, n: int) -> str:
+    return INTRO_TEMPLATES[tmpl].format(T=thesis, N=n)
+
+
+def render_concl(tmpl: int, thesis: str, n: int) -> str:
+    return CONCLUSION_TEMPLATES[tmpl].format(T=thesis, N=n)
+
+
+def render_body(tmpl: int, idx: int, reason: str, thesis: str) -> str:
+    return BODY_TEMPLATES[tmpl].format(i=idx, R=reason, T=thesis)
+
+
+def intro_parts(text: str) -> tuple[int, str, int] | None:
+    """Return (template_index, thesis_text, n_declared) or None."""
+    for i, (rx, tg, ng) in enumerate(_INTRO_RES):
+        m = rx.search(text)
+        if m:
+            return i, _norm(m.group(tg)), int(m.group(ng))
+    return None
+
+
+def body_parts(text: str) -> tuple[int, str, int, str] | None:
+    """Return (template_index, reason, reason_index, thesis_text) or None."""
+    for i, (rx, rg, tg) in enumerate(_BODY_RES):
+        m = rx.search(text)
+        if m:
+            return i, _norm(m.group(rg)), int(m.group(1)), _norm(m.group(tg))
+    return None
+
+
+def concl_parts(text: str) -> tuple[int, int, str] | None:
+    """Return (template_index, n_declared, thesis_text) or None."""
+    for i, (rx, ng, tg) in enumerate(_CONCL_RES):
+        m = rx.search(text)
+        if m:
+            return i, int(m.group(ng)), _norm(m.group(tg))
+    return None
+
+
+def _norm(s: str | None) -> str | None:
+    """Collapse whitespace so a captured thesis matches `THESIS_INDEX`.
+
+    The parsers are whitespace-tolerant because a *model-produced* block may
+    put the space on the wrong side of a comma (``"sunlight, so"``) or drop it
+    before the full stop. The template's canonical spacing is a property of the
+    generator, not of every string that is semantically the same block, and
+    rejecting a correct repair over a space would make the consistency metric
+    measure punctuation instead of content.
+    """
+    if s is None:
+        return None
+    return re.sub(r"\s+", " ", s).strip()
 
 
 @dataclass
@@ -180,6 +325,11 @@ class Block:
     reason_index: int | None = None
     locked: bool = False
     quality_target: str = "strong"
+    #: Surface template this block was rendered with. Needed to re-render the
+    #: block after a corruption (degrade/retarget) without changing its shape,
+    #: which is what keeps the corruption a content edit rather than a style
+    #: edit that the model could detect for free.
+    tmpl: int | None = None
 
 
 def parse_block(text: str, role: str) -> tuple[int | None, str | None,
@@ -191,24 +341,34 @@ def parse_block(text: str, role: str) -> tuple[int | None, str | None,
     may be garbage. Callers that require a valid block check for None.
     """
     if role == "intro":
-        m = _INTRO_RE.search(text)
-        if not m:
+        p = intro_parts(text)
+        if p is None:
             return None, None, None
-        return THESIS_INDEX.get(m.group(1)), None, None
+        return THESIS_INDEX.get(p[1]), None, None
     if role == "body":
-        m = _BODY_RE.search(text)
-        if not m:
+        p = body_parts(text)
+        if p is None:
             return None, None, None
-        return THESIS_INDEX.get(m.group(3)), m.group(2), int(m.group(1))
+        return THESIS_INDEX.get(p[3]), p[1], p[2]
     if role == "conclusion":
-        for i, rx in enumerate(_CONCL_RES):
-            m = rx.search(text)
-            if not m:
-                continue
-            thesis = m.group(1) if i == 1 else m.group(2)
-            return THESIS_INDEX.get(thesis), None, None
-        return None, None, None
+        p = concl_parts(text)
+        if p is None:
+            return None, None, None
+        return THESIS_INDEX.get(p[2]), None, None
     raise ValueError(f"unknown role {role!r}")
+
+
+def parse_block_tmpl(text: str, role: str) -> int | None:
+    """Template index of a block, or None when it does not parse."""
+    if role == "intro":
+        p = intro_parts(text)
+    elif role == "body":
+        p = body_parts(text)
+    elif role == "conclusion":
+        p = concl_parts(text)
+    else:
+        raise ValueError(f"unknown role {role!r}")
+    return None if p is None else p[0]
 
 
 @dataclass
@@ -226,33 +386,27 @@ class Parse:
 def parse_blocks(blocks: list[str]) -> Parse:
     if len(blocks) < 3:
         return Parse(ok=False)
-    m = _INTRO_RE.search(blocks[0])
-    if not m:
+    ip = intro_parts(blocks[0])
+    if ip is None:
         return Parse(ok=False)
-    thesis, n_intro = m.group(1), int(m.group(2))
+    thesis, n_intro = ip[1], ip[2]
 
     body_theses, body_idx, reasons = [], [], []
     for b in blocks[1:-1]:
-        bm = _BODY_RE.search(b)
-        if bm:
-            body_idx.append(int(bm.group(1)))
-            reasons.append(bm.group(2))
-            body_theses.append(bm.group(3))
+        bp = body_parts(b)
+        if bp:
+            body_idx.append(bp[2])
+            reasons.append(bp[1])
+            body_theses.append(bp[3])
         else:
             # filler or unparseable body -> counts as an invalid reason slot
             body_idx.append(-1)
             reasons.append(None)
 
     n_concl, concl_thesis = None, None
-    for i, rx in enumerate(_CONCL_RES):
-        cm = rx.search(blocks[-1])
-        if not cm:
-            continue
-        if i == 1:  # "we have shown that T on the strength of N reasons"
-            concl_thesis, n_concl = cm.group(1), int(cm.group(2))
-        else:
-            n_concl, concl_thesis = int(cm.group(1)), cm.group(2)
-        break
+    cp = concl_parts(blocks[-1])
+    if cp is not None:
+        n_concl, concl_thesis = cp[1], cp[2]
 
     return Parse(True, thesis, n_intro, body_theses, body_idx,
                  n_concl, concl_thesis, reasons)

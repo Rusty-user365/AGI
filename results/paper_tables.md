@@ -26,6 +26,12 @@ A `seed` column appears when more than one seed is present. Seeds present: 0, 1.
 - [s1] Model scope head is -0.300 relative to the probe; a negative gap means the architecture is worse than a linear probe.
 - [s1] Epistemic status is also surface-solvable (probe 0.95). The head is recovering template form, not epistemic state.
 
+## Table 0b — Editor gate (one-block infill)
+
+Gate: on-thesis rate >= 0.20. `test` and `unseen` are separate runs and must not be pooled. Wilson 95% intervals.
+
+_(not run)_
+
 ## Table 1 — Design invariants (not empirical claims)
 
 | seed | invariant | result |
@@ -120,25 +126,26 @@ A `seed` column appears when more than one seed is present. Seeds present: 0, 1.
 
 ## Table 4 — Revision scope under a matched budget
 
-| seed | condition | anchor | c_edit | c_all | quality | blocks_changed | tokens_spent | consistent | improvement | preservation | seam | n |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | local/one_block | 1.000 | 0.7388 | 0.7946 | 0.6375 | 1.000 | 16.73 | 0.000 | 0.6619 | 1.000 | 0.0139 | 40 |
-| 0 | local/global | 1.000 | 0.000 | 0.2054 | 0.000 | 4.025 | 57.95 | 0.000 | 0.8605 | 1.000 | 0.04413 | 40 |
-| 0 | local/repeated_local | 1.000 | 0.000 | 0.2054 | 0.000 | 4.025 | 57.95 | 0.000 | 0.8237 | 1.000 | -0.003872 | 40 |
-| 0 | cross_block/one_block | 1.000 | 0.000 | 0.2054 | 0.000 | 1.000 | 14.5 | 0.000 | -0.2038 | 1.000 | 0.03548 | 40 |
-| 0 | cross_block/global | 1.000 | 0.000 | 0.2054 | 0.000 | 4.025 | 55.65 | 0.000 | 0.0287 | 1.000 | -0.007327 | 40 |
-| 0 | cross_block/repeated_local | 1.000 | 0.000 | 0.2054 | 0.000 | 4.025 | 55.65 | 0.000 | 0.02151 | 1.000 | -0.006225 | 40 |
-| 0 | local/gate_selected | 1.000 | 0.475 | 0.5821 | 0.4042 | 2.125 | 32.17 | 0.000 | 0.714 | 1.000 | 0.0004237 | 40 |
-| 0 | cross_block/gate_selected | 1.000 | 0.000 | 0.2054 | 0.000 | 4.025 | 55.65 | 0.000 | 0.0287 | 1.000 | -0.007327 | 40 |
-| 1 | local/one_block | 1.000 | 0.7325 | 0.7904 | 0.6271 | 1.000 | 13.95 | 0.000 | 0.2735 | 1.000 | -0.02506 | 40 |
-| 1 | local/global | 1.000 | 0.000 | 0.2096 | 0.000 | 3.9 | 47.45 | 0.000 | 0.1023 | 1.000 | 0.0155 | 40 |
-| 1 | local/repeated_local | 1.000 | 0.000 | 0.2096 | 0.000 | 3.9 | 47.8 | 0.000 | 0.2676 | 1.000 | -0.01214 | 40 |
-| 1 | cross_block/one_block | 1.000 | 0.000 | 0.2096 | 0.000 | 1.000 | 12.18 | 0.000 | -0.289 | 1.000 | 0.002835 | 40 |
-| 1 | cross_block/global | 1.000 | 0.000 | 0.2096 | 0.000 | 3.9 | 45.83 | 0.000 | -0.1824 | 1.000 | 0.0343 | 40 |
-| 1 | cross_block/repeated_local | 1.000 | 0.000 | 0.2096 | 0.000 | 3.9 | 46.67 | 0.000 | 0.01894 | 1.000 | 0.04927 | 40 |
-| 1 | local/gate_selected | 1.000 | 0.7838 | 0.8308 | 0.6271 | 0.8 | 11.38 | 0.2 | 0.2507 | 1.000 | -0.02717 | 40 |
-| 1 | cross_block/gate_selected | 1.000 | 0.000 | 0.2096 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 1.000 | 0.000 | 40 |
+| seed | condition | anchor | c_edit | c_all | c_target | q_target | quality | blocks_changed | tokens_spent | consistent | improvement | preservation | seam | n | n_quality |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | local/one_block | 1.000 | 0.7388 | 0.7946 | 0.000 | 0.000 | 0.6375 | 1.000 | 16.73 | 0.000 | 0.6619 | 1.000 | 0.0139 | 40 |  |
+| 0 | local/global | 1.000 | 0.000 | 0.2054 | 0.000 | 0.000 | 0.000 | 4.025 | 57.95 | 0.000 | 0.8605 | 1.000 | 0.04413 | 40 |  |
+| 0 | local/repeated_local | 1.000 | 0.000 | 0.2054 | 0.000 | 0.000 | 0.000 | 4.025 | 57.95 | 0.000 | 0.8237 | 1.000 | -0.003872 | 40 |  |
+| 0 | cross_block/one_block | 1.000 | 0.000 | 0.2054 | 0.000 | 0.000 | 0.000 | 1.000 | 14.5 | 0.000 | -0.2038 | 1.000 | 0.03548 | 40 |  |
+| 0 | cross_block/global | 1.000 | 0.000 | 0.2054 | 0.000 | 0.000 | 0.000 | 4.025 | 55.65 | 0.000 | 0.0287 | 1.000 | -0.007327 | 40 |  |
+| 0 | cross_block/repeated_local | 1.000 | 0.000 | 0.2054 | 0.000 | 0.000 | 0.000 | 4.025 | 55.65 | 0.000 | 0.02151 | 1.000 | -0.006225 | 40 |  |
+| 0 | local/gate_selected | 1.000 | 0.475 | 0.5821 | 0.000 | 0.000 | 0.4042 | 2.125 | 32.17 | 0.000 | 0.714 | 1.000 | 0.0004237 | 40 |  |
+| 0 | cross_block/gate_selected | 1.000 | 0.000 | 0.2054 | 0.000 | 0.000 | 0.000 | 4.025 | 55.65 | 0.000 | 0.0287 | 1.000 | -0.007327 | 40 |  |
+| 1 | local/one_block | 1.000 | 0.7325 | 0.7904 | 0.000 | 0.000 | 0.6271 | 1.000 | 13.95 | 0.000 | 0.2735 | 1.000 | -0.02506 | 40 |  |
+| 1 | local/global | 1.000 | 0.000 | 0.2096 | 0.000 | 0.000 | 0.000 | 3.9 | 47.45 | 0.000 | 0.1023 | 1.000 | 0.0155 | 40 |  |
+| 1 | local/repeated_local | 1.000 | 0.000 | 0.2096 | 0.000 | 0.000 | 0.000 | 3.9 | 47.8 | 0.000 | 0.2676 | 1.000 | -0.01214 | 40 |  |
+| 1 | cross_block/one_block | 1.000 | 0.000 | 0.2096 | 0.000 | 0.000 | 0.000 | 1.000 | 12.18 | 0.000 | -0.289 | 1.000 | 0.002835 | 40 |  |
+| 1 | cross_block/global | 1.000 | 0.000 | 0.2096 | 0.000 | 0.000 | 0.000 | 3.9 | 45.83 | 0.000 | -0.1824 | 1.000 | 0.0343 | 40 |  |
+| 1 | cross_block/repeated_local | 1.000 | 0.000 | 0.2096 | 0.000 | 0.000 | 0.000 | 3.9 | 46.67 | 0.000 | 0.01894 | 1.000 | 0.04927 | 40 |  |
+| 1 | local/gate_selected | 1.000 | 0.7838 | 0.8308 | 0.2 | 0.000 | 0.6271 | 0.8 | 11.38 | 0.2 | 0.2507 | 1.000 | -0.02717 | 40 |  |
+| 1 | cross_block/gate_selected | 1.000 | 0.000 | 0.2096 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 1.000 | 0.000 | 40 |  |
 
+- [s0] split: test
 - [s0] oracle solvability gate: yes
 - [s0] infill sanity (exact block restore): 0.000
 - [s0] informative (infill >= 0.2): NO
@@ -149,6 +156,7 @@ A `seed` column appears when more than one seed is present. Seeds present: 0, 1.
 - [s0] local/repeated_local_minus_global: c_edit diff 0.000 (95% CI [0.000, 0.000])
 - [s0] scope interaction: 0.7388; prediction holds: NO
 
+- [s1] split: test
 - [s1] oracle solvability gate: yes
 - [s1] infill sanity (exact block restore): 0.000
 - [s1] informative (infill >= 0.2): NO
@@ -278,21 +286,28 @@ C1 is the structural claim: a verified-wrong example cannot move the plastic sub
 
 ## Table 7 — Editor floor: training budget vs capacity
 
-Two questions were conflated by the earlier byte-identical gate. `on_thesis` is clean-block infill ability; `local_*` and `cross_*` are scored on the blocks the task actually edits, with the no-op baseline shown. Copy fidelity (`exact`) is a diagnostic only.
+Two questions were conflated by the earlier byte-identical gate. `on_thesis` is clean-block infill ability; `local_*`, `cross_*` and `partial_*` are scored on the blocks the task actually edits, with the no-op baseline shown. Copy fidelity (`exact`) is a diagnostic only.
 
 **Seed 0 only, n=10 tasks per defect.** This is a budget curve, not a multi-seed result; the non-monotonicity between 750 and 1500 steps is not interpreted.
 
-| budget | opt_steps | exact | on_thesis | specific | local_c | local_q | local_noop_c | local_noop_q | cross_c | cross_q | cross_noop_c |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 2+1 | 75 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 1.000 | 0.000 | 0.000 | 0.000 | 0.000 |
-| 10+5 | 375 | 0.000 | 0.4 | 0.000 | 0.2 | 0.000 | 1.000 | 0.000 | 0.04 | 0.000 | 0.000 |
-| 20+10 | 750 | 0.000 | 0.6 | 0.000 | 0.000 | 0.000 | 1.000 | 0.000 | 0.07333 | 0.000 | 0.000 |
-| 40+20 | 1500 | 0.000 | 0.5 | 0.000 | 0.3 | 0.000 | 1.000 | 0.000 | 0.05 | 0.000 | 0.000 |
+| budget | opt_steps | exact | on_thesis | specific | local_c | local_q | local_noop_c | local_noop_q | cross_c | cross_q | cross_noop_c | partial_c | partial_q | partial_noop_c |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2+1 | 75 | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | 1.000 | 0.000 | 0.000 | 0.000 | 0.000 | n/a | n/a | n/a |
+| 10+5 | 375 | 0.000 | 0.4 | 0.000 | 0.2 | 0.000 | 1.000 | 0.000 | 0.04 | 0.000 | 0.000 | n/a | n/a | n/a |
+| 20+10 | 750 | 0.000 | 0.6 | 0.000 | 0.000 | 0.000 | 1.000 | 0.000 | 0.07333 | 0.000 | 0.000 | n/a | n/a | n/a |
+| 40+20 | 1500 | 0.000 | 0.5 | 0.000 | 0.3 | 0.000 | 1.000 | 0.000 | 0.05 | 0.000 | 0.000 | n/a | n/a | n/a |
 
-- ability rises with budget: yes; specificity rises: NO; local repair rises: NO; cross-block repair rises: NO
+- split: test
+- ability rises with budget: yes; specificity rises: NO; local repair rises: NO; cross-block repair rises: NO; partial cross-block repair rises: n/a
 
 - BUDGET, NOT CAPACITY: on-thesis infill rises to 60% at 20+10 (750 optimizer steps), from 0% at 2+1 (75 steps). The smoke preset's 75 steps are below the ability floor; the earlier 0.000 was a property of the budget, not of the architecture.
 - COHERENCE WITHOUT SPECIFICITY: the editor produces parseable, on-thesis blocks but never a specific reason (quality 0.000 at every budget). This is a narrower and more useful result than 'the editor cannot edit': it can restore label consistency, and it cannot restore the specificity that defines the local defect. A local-repair claim needs the specificity number, not c_edit.
 - On the actual local repair task, quality stays at the no-op baseline (0.000): the model does not repair specificity even when it can infill a clean block. Do not read c_edit on local defects as a repair result; a no-op already scores 1.000 there.
 - On the actual cross-block task, c_edit stays at its no-op floor: clean-block infill ability does not transfer to revising every editable block against a locked intro. The editor is above the infill floor and still below the repair floor.
 - Byte-identical restore is reported as a diagnostic only. A masked-diffusion infill regenerates the span, so exact copy is ~0 by construction and cannot be the precondition for interpreting the repair grid. exp4 now gates on on-thesis output and reports both.
+
+## Table 8 — CGR vs LoRA-only on unseen theses
+
+Both conditions use the same backbone, tokenizer, tasks, decoder, edit scopes and token/block budgets. The CGR condition has 8.15M trainable parameters and the LoRA-only control has 442k; this is a matched-task comparison, **not** a matched-compute or matched-capacity one. The gate and a DAG do not participate in either repair path, so this table cannot validate them.
+
+_(not run)_

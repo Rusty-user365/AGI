@@ -22,7 +22,8 @@ import torch.nn.functional as F
 from ..config import Config
 from ..data.facts import Claim
 from ..data.grammar import blocked_spans
-from ..tokenizer import Tokenizer
+from ..tokenizer import TokenizerLike
+from .diffugpt import DiffuGPTBackbone
 from .diffusion import MaskedDiffusionLM
 from .gate import ACTIONS, A, Gate
 from .heads import HeadModule
@@ -31,6 +32,29 @@ from .memory import SparseMemory
 from .reasoner import Reasoner
 
 REASONING_MODES = ("full", "shuffled", "constant", "none")
+
+
+def build_backbone(cfg: Config, tok, load_weights: bool = True) -> nn.Module:
+    """Select the sequence model.
+
+    Both backbones expose the same six methods, which is the whole contract the
+    rest of the system relies on: `forward`, `pooled`,
+    `masked_denoising_loss`, `infill`, `span_nll`, `token_nll`, plus the
+    `plastic_a`/`plastic_b` adapter and `mask_id`/`pad_id`. Adding a backbone
+    that does not implement all of them is a wiring bug, not a variant.
+
+    `load_weights=False` skips reading the pre-trained file. It exists for
+    `load_system`, which immediately overwrites every parameter with a trained
+    checkpoint and must not require the original download to be present.
+    """
+    kind = getattr(cfg.model, "backbone", "canvas")
+    if kind == "canvas":
+        return MaskedDiffusionLM(cfg.model, tok.mask_id, tok.pad_id)
+    if kind == "diffugpt":
+        return DiffuGPTBackbone(cfg.model, tok.mask_id, tok.pad_id,
+                                path=cfg.model.backbone_path,
+                                load_weights=load_weights)
+    raise ValueError(f"unknown backbone {kind!r}")
 
 
 @dataclass
@@ -48,12 +72,13 @@ class Decision:
 
 
 class CGRSystem(nn.Module):
-    def __init__(self, cfg: Config, tok: Tokenizer):
+    def __init__(self, cfg: Config, tok: TokenizerLike,
+                 load_weights: bool = True):
         super().__init__()
         self.cfg = cfg
         self.tok = tok
         m = cfg.model
-        self.backbone = MaskedDiffusionLM(m, tok.mask_id, tok.pad_id)
+        self.backbone = build_backbone(cfg, tok, load_weights=load_weights)
         self.reasoner = Reasoner(m)
         self.heads = HeadModule(m)
         self.gate = Gate(m)
@@ -61,6 +86,17 @@ class CGRSystem(nn.Module):
         self.advantage_threshold = 0.5
 
     # ------------------------------------------------------------------
+    @property
+    def device(self) -> torch.device:
+        """Where the system's parameters live.
+
+        Callers build tensors from Python lists (tokenised text), so every
+        public entry point moves its inputs here instead of asking the caller
+        to know the device. Without that, a GPU-trained checkpoint could only
+        be used by an experiment that duplicated the device logic.
+        """
+        return next(self.parameters()).device
+
     @property
     def feat_dim(self) -> int:
         return self.cfg.model.d_model * 2 + 8
@@ -72,8 +108,29 @@ class CGRSystem(nn.Module):
             "backbone": n(self.backbone), "reasoner": n(self.reasoner),
             "heads": n(self.heads), "gate": n(self.gate),
             "memory": n(self.memory),
+            "trainable": sum(p.numel() for p in self.parameters()
+                             if p.requires_grad),
             "total": sum(p.numel() for p in self.parameters()),
         }
+
+    # ------------------------------------------------------------------
+    def freeze_backbone_base(self) -> None:
+        """PEFT switch: freeze the pre-trained weights, keep the adapters live.
+
+        The blank canvas has no pre-trained base, so there is nothing to
+        protect and the call is a no-op there. On a pre-trained backbone this
+        is the difference between "we fine-tuned 127M parameters on 4k
+        synthetic documents" and "we trained a low-rank delta and the CGR
+        modules"; the paper needs the second, and the checkpoint has to be able
+        to prove which one happened.
+        """
+        if hasattr(self.backbone, "freeze_base"):
+            self.backbone.freeze_base()
+
+    def lora_params(self) -> list[torch.nn.Parameter]:
+        if hasattr(self.backbone, "lora_parameters"):
+            return self.backbone.lora_parameters()
+        return []
 
     # ------------------------------------------------------------------
     def encode(self, ids: torch.Tensor, reasoning_mode: str = "full",
@@ -118,10 +175,12 @@ class CGRSystem(nn.Module):
                        memory_enabled: bool = True,
                        denoise: bool = False,
                        cond_override: torch.Tensor | None = None) -> dict:
+        ids = ids.to(self.device)
+        clock = clock.to(self.device)
         pooled, cond, blocks = self.encode(ids, reasoning_mode, denoise,
                                            cond_override)
         mem_vec = None
-        mem_scores = torch.zeros(ids.shape[0])
+        mem_scores = torch.zeros(ids.shape[0], device=ids.device)
         mem_entries = [None] * ids.shape[0]
         if memory_enabled and memory_texts is not None and len(self.memory) > 0:
             vecs = []
@@ -133,7 +192,7 @@ class CGRSystem(nn.Module):
                 if v is None:
                     vecs.append(torch.zeros(self.cfg.model.d_model, device=ids.device))
                 else:
-                    vecs.append(v)
+                    vecs.append(v.to(ids.device))
                     any_hit = True
             if any_hit:
                 mem_vec = torch.stack(vecs)
@@ -228,7 +287,8 @@ class CGRSystem(nn.Module):
 
     # ------------------------------------------------------------------
     def repair(self, blocks: list[str], target_block: int, mode: str = "local",
-               steps: int = 6, seed: int | None = None) -> list[str]:
+               steps: int = 6, seed: int | None = None,
+               use_reasoner: bool = False) -> list[str]:
         """Repair a corrupted document.
 
         Modes, with their contract implications:
@@ -250,16 +310,21 @@ class CGRSystem(nn.Module):
             raise ValueError(
                 f"document has {len(ids)} tokens but model max_len is "
                 f"{self.cfg.model.max_len}; filter it out at task construction")
-        t = torch.tensor(ids).unsqueeze(0)
+        t = torch.tensor(ids, device=self.device).unsqueeze(0)
+        order = getattr(self.cfg.model, "infill_order", "confidence")
         with torch.no_grad():
+            cond = self.encode(t)[1] if use_reasoner else None
             if mode == "local":
                 gen = self.backbone.infill(t, [spans[target_block]],
-                                           steps=steps, seed=seed)
+                                           cond=cond, steps=steps, seed=seed,
+                                           order=order)
             elif mode == "editable":
-                gen = self.backbone.infill(t, spans[1:], steps=steps, seed=seed)
+                gen = self.backbone.infill(t, spans[1:], cond=cond,
+                                           steps=steps, seed=seed, order=order)
             elif mode == "global":
                 gen = self.backbone.infill(t, [(0, t.shape[1])],
-                                           steps=steps, seed=seed)
+                                           cond=cond, steps=steps, seed=seed,
+                                           order=order)
             else:
                 raise ValueError(mode)
         # decode back into blocks using the same span layout
@@ -320,13 +385,16 @@ class CGRSystem(nn.Module):
         keep = [i for i, (v, adv) in enumerate(zip(verified, advantage))
                 if v and adv > self.advantage_threshold]
         reject = [i for i, v in enumerate(verified) if not v]
+        ids = ids.to(self.device)
+        clock = clock.to(self.device)
+        labels = {k: v.to(self.device) for k, v in labels.items()}
         stats = {"n_total": len(verified), "n_updated": len(keep),
                  "n_masked": len(verified) - len(keep), "stepped": False,
                  "n_rejected": len(reject), "policy_supervised": False}
 
         loss = None
         if keep:
-            idx = torch.tensor(keep)
+            idx = torch.tensor(keep, device=self.device)
             out = self.forward_episodes(ids[idx], clock[idx], reasoning_mode,
                                         hard=False)
             b = {k: v[idx] for k, v in labels.items()}
@@ -347,14 +415,14 @@ class CGRSystem(nn.Module):
         # experiments), because then it would contribute no learning at all.
         gate_trainable = any(p.requires_grad for p in self.gate.parameters())
         if reject and gate_trainable:
-            idx_r = torch.tensor(reject)
+            idx_r = torch.tensor(reject, device=self.device)
             with torch.no_grad():
                 out_r = self.forward_episodes(ids[idx_r], clock[idx_r],
                                               reasoning_mode, hard=False)
             feats = out_r["feats"].detach()
             r_logits = self.gate.logits(feats)
             target = torch.full((len(reject),), A[reject_action],
-                                dtype=torch.long)
+                                dtype=torch.long, device=self.device)
             r_loss = F.cross_entropy(r_logits, target)
             loss = r_loss if loss is None else loss + r_loss
             stats["loss_policy"] = float(r_loss.detach())
