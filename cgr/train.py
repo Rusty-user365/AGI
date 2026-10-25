@@ -92,6 +92,39 @@ def _atomic_text(text: str, path: Path) -> None:
     os.replace(tmp, path)
 
 
+@torch.no_grad()
+def side_channel_stats(backbone, reasoner, reasoner_ref, probe_ids,
+                       probe_cond) -> dict:
+    """Evidence that the conditioning path is wired, not just present.
+
+    `film_max_abs`/`film_l2` say whether FiLM has left its zero init.
+    `reasoner_l2_delta` says whether the reasoner has moved since the run
+    started. `cond_probe_delta` is the decisive one: it is the change in the
+    backbone's output when `cond` is replaced by a random vector, so it is zero
+    for a frozen map, a detached vector, or a zero multiplier -- the three ways
+    this path has silently died before -- and non-zero only when the vector
+    genuinely reaches the computation.
+    """
+    films = [m.film.weight.detach() for m in backbone.h]
+    stats = {
+        "film_max_abs": max(float(f.abs().max()) for f in films),
+        "film_l2": float(torch.sqrt(sum((f * f).sum() for f in films))),
+        "reasoner_l2_delta": (
+            float(torch.sqrt(sum(((p.detach() - r) ** 2).sum()
+                                 for p, r in zip(reasoner.parameters(),
+                                                 reasoner_ref))))
+            if reasoner_ref else 0.0),
+    }
+    was_training = backbone.training
+    backbone.eval()
+    plain = backbone(probe_ids)
+    probed = backbone(probe_ids, probe_cond)
+    backbone.train(was_training)
+    stats["cond_probe_delta"] = float((plain - probed).abs().max())
+    stats["side_channel_live"] = stats["cond_probe_delta"] > 0.0
+    return stats
+
+
 def pick_device(name: str | None = None) -> torch.device:
     """Resolve a device name. `None`/"auto" means CUDA when it is available.
 
@@ -107,15 +140,30 @@ def pick_device(name: str | None = None) -> torch.device:
 def train(cfg: Config, out_dir: str | Path = "checkpoints",
           verbose: bool = True, device: str | None = None,
           objective: str = "cgr", log_every: int = 100,
-          resume: str | None = None) -> dict:
+          resume: str | None = None, cond_mode: str = "reasoner",
+          overwrite: bool = False) -> dict:
     if objective not in ("cgr", "backbone"):
         raise ValueError("objective must be 'cgr' or 'backbone'")
     if objective == "backbone" and not getattr(cfg.train, "freeze_backbone", False):
         raise ValueError("the backbone baseline requires a frozen pretrained base")
+    if cond_mode not in ("reasoner", "learned", "none"):
+        raise ValueError("cond_mode must be 'reasoner', 'learned' or 'none'")
+    if objective == "backbone" and cond_mode != "none":
+        # The denoising-only control has no reasoner and no side-channel loss,
+        # so a cond_mode other than "none" would be silently ignored.
+        raise ValueError("the backbone objective does not use a conditioning "
+                         "path; use cond_mode='none'")
     torch.manual_seed(cfg.train.seed)
     random.seed(cfg.train.seed)
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
+    if (out / "train_summary.json").exists() and not overwrite:
+        # A completed run is expensive and is the evidence for whatever the
+        # paper claims. Writing a different experiment into the same directory
+        # would destroy it silently, so this refuses unless asked explicitly.
+        raise FileExistsError(
+            f"{out} already holds a completed run (train_summary.json). "
+            f"Choose another --out, or pass --overwrite to replace it.")
 
     tok, splits = build_corpus(cfg)
     # Size the vocabulary to the tokenizer. For the corpus-built word
@@ -131,10 +179,21 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
     system = CGRSystem(cfg, tok).to(dev)
     if resume:
         ck = torch.load(Path(resume), map_location="cpu", weights_only=False)
-        system.load_state_dict(ck["model"], strict=True)
+        # Checkpoints written before the matched control existed have no
+        # `const_cond`. That key is *new by design* and is expected to be
+        # absent; anything else missing is a real mismatch and must fail.
+        missing, unexpected = system.load_state_dict(ck["model"], strict=False)
+        allowed = {k for k in missing if k.endswith("const_cond")}
+        leftover = sorted(set(missing) - allowed)
+        if unexpected or leftover:
+            raise RuntimeError(
+                f"checkpoint {resume} does not match the model: "
+                f"missing={leftover[:5]} unexpected={sorted(unexpected)[:5]}")
         if verbose:
+            note = (f"; initialised {len(allowed)} new side-channel key(s) "
+                    f"from their init" if allowed else "")
             print(f"[train] resumed weights from {resume} "
-                  f"(optimizer state is reset)")
+                  f"(optimizer state is reset){note}")
     # PEFT: the pre-trained base stays frozen. Only the low-rank adapters, the
     # plastic substrate and the CGR modules are trainable. Doing this before the
     # optimiser is built keeps the optimiser's parameter groups honest.
@@ -143,11 +202,16 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
         if objective == "backbone":
             # Matched task-adaptation control: only LoRA learns from the same
             # synthetic token stream, with the denoising objective. CGR heads,
-            # reasoner, gate, and consolidation adapter are frozen.
+            # reasoner, gate, side channel and consolidation adapter are frozen.
             for p in system.parameters():
                 p.requires_grad_(False)
             for p in system.lora_params():
                 p.requires_grad_(True)
+        else:
+            # A frozen or zero-initialised side channel trains happily and is
+            # indistinguishable from a working one by loss alone, so check the
+            # contract before the first step rather than after the run.
+            system.backbone.assert_side_channel_live()
         n_train = sum(p.numel() for p in system.parameters() if p.requires_grad)
         n_base = system.n_params()["backbone"]
         if verbose:
@@ -230,6 +294,62 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
                 f"mask_mode={mask_kwargs['mask_mode']!r}")
         mask_kwargs = {}
 
+    # Where the conditioning vector comes from. "reasoner" is the CGR arm: a
+    # per-document steering vector. "learned" is the matched control: the same
+    # FiLM side channel and the same parameter count, driven by one learned
+    # vector for every example, so the conditioning carries no information
+    # about the input. "none" disables the side channel.
+    reasoning_mode = {"reasoner": "full", "learned": "learned",
+                      "none": "none"}[cond_mode]
+
+    # ------------------------------------------------------------------
+    # Side-channel instrumentation
+    # ------------------------------------------------------------------
+    # A dead conditioning path trains to a plausible loss and is invisible in
+    # every aggregate number: that is exactly how it survived five hours of
+    # training and a gate run. The run therefore records the evidence that the
+    # wire is live, at every checkpoint:
+    #
+    #   film_max_abs / film_l2   is FiLM still at its zero init?
+    #   film_grad_max            does the loss reach FiLM at all?
+    #   reasoner_l2_delta        has the reasoner moved since the run started?
+    #   cond_probe_delta         does perturbing `cond` change the output?
+    #
+    # The last one is decisive. Magnitudes can be non-zero while `cond` is
+    # detached; only a changed output proves the vector is in the graph.
+    has_side = hasattr(system.backbone, "const_cond")
+    probe_ids = probe_cond = None
+    ref = {"reasoner": []}
+    if has_side:
+        with torch.no_grad():
+            probe_text = ("this essay argues that street trees cool cities "
+                          "with 3 reasons .")
+            probe_ids = torch.tensor(
+                tok.encode(probe_text, add_bos=False, add_eos=False)
+                [:cfg.model.max_len], device=dev).unsqueeze(0)
+            g = torch.Generator().manual_seed(cfg.train.seed)
+            probe_cond = torch.randn(1, cfg.model.d_model, device=dev,
+                                     generator=g)
+        ref["reasoner"] = [p.detach().clone()
+                           for p in system.reasoner.parameters()]
+
+    diag = {"step": 0, "stage": None, "epoch": None,
+            "film_max_abs": 0.0, "film_l2": 0.0, "film_grad_max": 0.0,
+            "reasoner_l2_delta": 0.0, "cond_abs_mean": 0.0,
+            "cond_probe_delta": None, "side_channel_live": False,
+            "cond_mode": cond_mode}
+
+    @torch.no_grad()
+    def measure_diagnostics(cond_value: torch.Tensor | None = None) -> None:
+        """Refresh the side-channel numbers. Cheap: one short forward."""
+        if not has_side:
+            return
+        diag.update(side_channel_stats(system.backbone, system.reasoner,
+                                       ref["reasoner"], probe_ids,
+                                       probe_cond))
+        if cond_value is not None:
+            diag["cond_abs_mean"] = float(cond_value.detach().abs().mean())
+
     def save_checkpoint() -> None:
         """Save the current weights so an interrupted run can be resumed.
 
@@ -249,6 +369,10 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
             {"history": hist, "n_episodes": len(episodes),
              "elapsed_s": prior_elapsed + (time.time() - t0)}, indent=2),
             out / "train_progress.json")
+        # Written next to the weights so an interrupted run can be audited:
+        # if `side_channel_live` is false at the last checkpoint, the run did
+        # not exercise the conditioning path no matter what the loss says.
+        _atomic_text(json.dumps(diag, indent=2), out / "train_diagnostics.json")
 
     def run_epoch(epoch: int, stage: str) -> dict:
         epoch_t0 = time.perf_counter()
@@ -257,6 +381,7 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
         order = list(range(len(episodes)))
         rng.shuffle(order)
         agg = {"loss": 0.0, "n": 0, "gate_acc": 0.0, "gate_n": 0}
+        last_cond = None
         for i in range(0, len(order), cfg.train.batch_size):
             batch = collate([episodes[j] for j in order[i:i + cfg.train.batch_size]],
                             tok, cfg.model.max_len)
@@ -269,9 +394,11 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
             else:
                 out_f = system.forward_episodes(
                     batch["ids"], batch["clock"],
+                    reasoning_mode=reasoning_mode,
                     memory_texts=None, hard=(stage == "A"))
                 denoise_loss = system.backbone.masked_denoising_loss(
                     batch["ids"], out_f["cond"], **mask_kwargs)
+                last_cond = out_f["cond"]
                 r_loss = system.reasoner.loss(out_f["pooled"],
                                               batch["labels"]["value"])
                 h_loss, _ = system.heads.loss(out_f["preds"], batch["labels"],
@@ -288,12 +415,34 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
 
             opt.zero_grad()
             loss.backward()
+            if objective == "cgr" and agg["n"] == 0:
+                # One backward is enough to prove the conditioning path is in
+                # the graph. A zero gradient here means `cond` was detached or
+                # multiplied by a frozen zero map -- a failure that no loss
+                # value, and no final accuracy, would ever reveal.
+                g = system.backbone.h[0].film.weight.grad
+                if g is None or float(g.abs().max()) == 0.0:
+                    raise RuntimeError(
+                        "the side channel received no gradient on the first "
+                        "step; cond_mode=%r is not reaching the backbone"
+                        % cond_mode)
             torch.nn.utils.clip_grad_norm_(
                 [p for p in system.parameters() if p.requires_grad],
                 cfg.train.grad_clip)
+            # Captured before the step: after `opt.step()` the gradient is still
+            # there, but capturing here makes it unambiguous that this is the
+            # gradient the step used.
+            if has_side:
+                grads = [m.film.weight.grad for m in system.backbone.h]
+                diag["film_grad_max"] = max(
+                    (float(g.abs().max()) for g in grads if g is not None),
+                    default=0.0)
             opt.step()
             if sched is not None:
                 sched.step()
+            diag["step"] = agg["n"] + 1
+            diag["stage"] = stage
+            diag["epoch"] = epoch
 
             if objective == "cgr":
                 with torch.no_grad():
@@ -305,6 +454,7 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
             # Periodic recovery point. A host restart or a driver reset should
             # not throw away an hour of work; the epoch boundary is too coarse.
             if agg["n"] % 500 == 0:
+                measure_diagnostics(last_cond)
                 save_checkpoint()
             if (verbose and log_every > 0
                     and agg["n"] % log_every == 0):
@@ -319,6 +469,13 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
         agg["step_s"] = agg["elapsed_s"] / max(agg["n"], 1)
         agg["epoch"] = epoch
         agg["stage"] = stage
+        measure_diagnostics(last_cond)
+        if verbose and has_side:
+            print(f"[diag {stage} {epoch}] film_max={diag['film_max_abs']:.3e} "
+                  f"film_grad={diag['film_grad_max']:.3e} "
+                  f"reasoner_delta={diag['reasoner_l2_delta']:.3e} "
+                  f"cond_probe={diag['cond_probe_delta']:.3e} "
+                  f"live={diag['side_channel_live']}", flush=True)
         return agg
 
     for ep in range(done_a, cfg.train.stage_a_epochs):
@@ -362,6 +519,8 @@ def train(cfg: Config, out_dir: str | Path = "checkpoints",
                                                False)),
                "lora_rank": int(getattr(cfg.model, "lora_rank", 0)),
                "objective": objective,
+               "cond_mode": cond_mode,
+               "side_channel": diag,
                "resumed_from": str(resume) if resume else None,
                "prior_epochs": {"stage_a": done_a, "stage_b": done_b},
                "cuda_memory": cuda_memory}
@@ -384,7 +543,17 @@ def load_system(path: str | Path) -> tuple[CGRSystem, Config]:
     # `load_weights=False`: every parameter is about to be overwritten from the
     # checkpoint, so the original pre-trained download is not required here.
     system = CGRSystem(cfg, tok, load_weights=False)
-    system.load_state_dict(ck["model"])
+    # Checkpoints written before the matched control existed have no
+    # `const_cond`. It is new by design, so it is allowed to be absent and
+    # keeps its init; every other mismatch is a real error. Strict loading here
+    # would make every older checkpoint unevaluable, which is how a schema
+    # addition turns into a lost result.
+    missing, unexpected = system.load_state_dict(ck["model"], strict=False)
+    leftover = sorted({k for k in missing if not k.endswith("const_cond")})
+    if unexpected or leftover:
+        raise RuntimeError(
+            f"checkpoint {path} does not match the model: "
+            f"missing={leftover[:5]} unexpected={sorted(unexpected)[:5]}")
     system.eval()
     return system, cfg
 
@@ -411,8 +580,17 @@ if __name__ == "__main__":
     ap.add_argument("--resume", default=None,
                     help="stage_b.pt to initialise weights from; optimizer state "
                          "is reset, so this is fine-tuning, not exact continuation")
+    ap.add_argument("--cond-mode", choices=["reasoner", "learned", "none"],
+                    default="reasoner",
+                    help="conditioning source: the reasoner's per-document "
+                         "vector (cgr), a learned per-batch constant with the "
+                         "same parameter count (matched control), or no side "
+                         "channel at all")
     ap.add_argument("--log-every", type=int, default=100,
                     help="print training progress every N batches; 0 disables")
+    ap.add_argument("--overwrite", action="store_true",
+                    help="allow writing into an --out directory that already "
+                         "holds a completed run")
     args = ap.parse_args()
     cfg = Config.preset(args.preset)
     if args.docs is not None:
@@ -426,4 +604,5 @@ if __name__ == "__main__":
     if args.block_mask_prob is not None:
         cfg.train.block_mask_prob = args.block_mask_prob
     train(cfg, args.out, device=args.device, objective=args.objective,
-          log_every=args.log_every, resume=args.resume)
+          log_every=args.log_every, resume=args.resume,
+          cond_mode=args.cond_mode, overwrite=args.overwrite)

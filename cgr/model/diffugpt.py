@@ -188,6 +188,15 @@ class DiffuGPTBackbone(nn.Module):
         self.plastic_b = nn.Parameter(
             torch.zeros(self.plastic_rank, cfg.d_model))
 
+        # Constant-conditioning control. When `cond_mode` is "learned", every
+        # example in the batch is conditioned on this single vector instead of
+        # on the reasoner's per-document vector. It is a parameter, not zeros,
+        # so `film.weight` still receives gradient: the control has exactly the
+        # same trainable capacity and the same functional form as the CGR arm,
+        # and differs only in whether the conditioning carries information
+        # about the input. That is the comparison the architecture claim needs.
+        self.const_cond = nn.Parameter(torch.randn(cfg.d_model) * 0.02)
+
         src = Path(path) if path is not None else Path(cfg.backbone_path)
         if load_weights:
             self.load_pretrained(src)
@@ -199,21 +208,71 @@ class DiffuGPTBackbone(nn.Module):
         """The task-adaptation parameters (Stage A only)."""
         return [p for n, p in self.named_parameters() if ".lora_" in n]
 
+    def side_channel_parameters(self) -> list[nn.Parameter]:
+        """The conditioning path: the per-layer FiLM maps and the constant.
+
+        `freeze_base` freezes every parameter and then re-enables an explicit
+        allowlist. The side channel has to be *on* that allowlist. It was not,
+        so `film` kept its zero initialisation and `cond` had exactly no effect
+        on the output: the reasoner computed a steering vector, multiplied it
+        by a zero matrix, and discarded it. Nothing failed, because a zero side
+        channel is a perfectly valid identity at load time. Hence this method
+        exists and `freeze_base` calls it by name: adding a conditioning
+        parameter without adding it here is now a visible omission rather than
+        a silent no-op.
+        """
+        out: list[nn.Parameter] = [self.const_cond]
+        for m in self.h:
+            out += [m.film.weight, m.film.bias]
+        return out
+
     def freeze_base(self) -> None:
-        """Freeze the pre-trained weights, leaving LoRA and plastic trainable.
+        """Freeze the pre-trained weights, leaving LoRA, plastic and the side
+        channel trainable.
 
         This is the PEFT contract: the 127M base is a fixed feature extractor,
-        Stage A moves a ~0.4M-parameter low-rank delta (plus the CGR modules),
-        and the plastic substrate stays reserved for `consolidate`. It is
-        enforced in code rather than by convention because the claim "the
-        backbone was not fine-tuned" has to be checkable from the checkpoint.
+        Stage A moves a low-rank delta plus the conditioning path, and the
+        plastic substrate stays reserved for `consolidate`. It is enforced in
+        code rather than by convention because the claim "the backbone was not
+        fine-tuned" has to be checkable from the checkpoint.
+
+        The allowlist is explicit and complete. `freeze_base` previously
+        re-enabled only LoRA and plastic, which left the FiLM side channel at
+        its zero initialisation for every run; the checkpoint cannot be told
+        apart from one that never had a side channel. Callers should follow
+        this with `assert_side_channel_live()` so that class of bug fails at
+        step 0 instead of after three hours.
         """
         for p in self.parameters():
             p.requires_grad_(False)
         for p in self.lora_parameters():
             p.requires_grad_(True)
+        for p in self.side_channel_parameters():
+            p.requires_grad_(True)
         self.plastic_a.requires_grad_(True)
         self.plastic_b.requires_grad_(True)
+
+    def assert_side_channel_live(self) -> None:
+        """Fail loudly if the conditioning path is frozen or still zero.
+
+        A dead side channel is indistinguishable from a working one by loss
+        alone: the model still trains, the numbers still look plausible, and
+        the architecture claim silently becomes a claim about the adapters.
+        This checks the two ways it can be dead — parameters not trainable, or
+        the FiLM weights never having moved off their zero init.
+        """
+        dead = [n for n, p in self.named_parameters()
+                if "film" in n and not p.requires_grad]
+        if dead:
+            raise RuntimeError(
+                f"side channel is frozen ({len(dead)} tensors, e.g. {dead[0]}); "
+                "the conditioning vector would have no effect on the output")
+        if not self.const_cond.requires_grad:
+            raise RuntimeError("side channel constant is frozen")
+        if float(self.const_cond.abs().max()) == 0.0:
+            raise RuntimeError(
+                "side channel constant is exactly zero; the matched control "
+                "would be indistinguishable from no conditioning at all")
 
     def trainable_names(self) -> list[str]:
         return [n for n, p in self.named_parameters() if p.requires_grad]

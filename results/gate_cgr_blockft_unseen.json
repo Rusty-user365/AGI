@@ -1,0 +1,39 @@
+{
+  "experiment": "editor_gate",
+  "checkpoint": "checkpoints/diffugpt_5k_e10_cgr_blockft/stage_b.pt",
+  "preset": "diffugpt",
+  "split": "unseen",
+  "use_reasoner": false,
+  "n": 200,
+  "steps": 8,
+  "seed": 0,
+  "parseable": 38,
+  "on_thesis": 38,
+  "parseable_rate": 0.19,
+  "on_thesis_rate": 0.19,
+  "parseable_ci95": [
+    0.14167093792456506,
+    0.250013585744794
+  ],
+  "on_thesis_ci95": [
+    0.14167093792456506,
+    0.250013585744794
+  ],
+  "floor": 0.2,
+  "clears_floor": false,
+  "side_channel": {
+    "film_max_abs": 0.0,
+    "cond_probe_delta": 0.0,
+    "cond_probe_defined": false
+  },
+  "denoise": {
+    "synthetic": {
+      "top1": 0.9154997585707387,
+      "masked_tokens": 2071
+    },
+    "natural": {
+      "top1": 0.23529411764705882,
+      "masked_tokens": 17
+    }
+  }
+}

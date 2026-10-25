@@ -159,13 +159,29 @@ def main() -> int:
         plain = system.backbone(ids).clone()
         cond = torch.zeros(1, cfg.model.d_model, device=system.device)
         steered = system.backbone(ids, cond)
+        # A *non-zero* probe is the check that matters. Zero cond is an exact
+        # identity by construction, so it stays silent when the side channel is
+        # frozen at its zero init -- which is exactly how a dead conditioning
+        # path survived every earlier gate run. This probe changes the output
+        # only if FiLM has learned something.
+        probe = torch.randn(1, cfg.model.d_model, device=system.device)
+        probed = system.backbone(ids, probe)
+        film_max = max(float(m.film.weight.abs().max())
+                       for m in system.backbone.h)
         snap = system.plastic_snapshot()
         system.backbone.plastic_a.add_(
             torch.randn_like(system.backbone.plastic_a))
         after = system.backbone(ids)
         system.restore_plastic(snap)
+    cond_delta = float((plain - probed).abs().max())
     print(f"\ncond identity      {float((plain - steered).abs().max()):.3e} "
           f"(0.0 = side channel is inert at load)")
+    print(f"cond probe delta   {cond_delta:.3e} "
+          f"(0.0 = side channel is dead: cond has no effect)")
+    print(f"film max|w|        {film_max:.3e} (0.0 = never trained off init)")
+    if cond_delta == 0.0 and film_max == 0.0:
+        print("WARNING: the conditioning path is dead. Any architecture claim "
+              "about this checkpoint is really a claim about the adapters.")
     print(f"plastic perturbation delta {float((plain - after).abs().max()):.3e} "
           f"(output change after adding noise to plastic adapter)")
 
@@ -215,6 +231,9 @@ def main() -> int:
             "on_thesis_ci95": [t_lo, t_hi],
             "floor": 0.20,
             "clears_floor": (on_thesis / max(n, 1)) >= 0.20,
+            "side_channel": {"film_max_abs": film_max,
+                             "cond_probe_delta": cond_delta,
+                             "cond_probe_defined": cond_delta != 0.0},
             "denoise": denoise,
         }
         out = Path(args.json_out)

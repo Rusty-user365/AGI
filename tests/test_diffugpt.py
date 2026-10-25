@@ -303,12 +303,123 @@ def test_freeze_base_leaves_only_adapters_trainable():
     trainable = [n for n, p in m.named_parameters() if p.requires_grad]
     assert trainable, "freeze_base froze everything"
     for n in trainable:
-        assert (".lora_" in n) or n in ("plastic_a", "plastic_b"), n
+        assert ((".lora_" in n) or ("film" in n) or n == "const_cond"
+                or n in ("plastic_a", "plastic_b")), n
     frozen = [n for n, p in m.named_parameters() if not p.requires_grad]
     for n in ("embed_tokens.weight", "wte.weight", "h.0.c_attn.weight",
               "h.0.c_fc.weight", "ln_f.weight"):
         if n in dict(m.named_parameters()):
             assert n in frozen, f"{n} should be frozen"
+
+
+def test_freeze_base_keeps_the_side_channel_trainable():
+    """Regression: the side channel was silently dropped from the allowlist.
+
+    `freeze_base` froze every parameter and re-enabled only LoRA and plastic.
+    The FiLM maps stayed at their zero initialisation, so `cond` had exactly no
+    effect for every run, and no test noticed because "zero side channel" is a
+    valid identity at load time. This asserts the contract instead.
+    """
+    m = tiny_model()
+    m.freeze_base()
+    for blk in m.h:
+        assert blk.film.weight.requires_grad, "film.weight was frozen"
+        assert blk.film.bias.requires_grad, "film.bias was frozen"
+    assert m.const_cond.requires_grad, "const_cond was frozen"
+    m.assert_side_channel_live()
+
+
+def test_side_channel_receives_gradient_from_the_denoising_loss():
+    """A live allowlist is not enough: the gradient has to reach FiLM."""
+    m = tiny_model()
+    m.freeze_base()
+    m.train()
+    ids = torch.randint(3, 60, (2, 12))
+    cond = torch.randn(2, 32)
+    g = torch.Generator().manual_seed(0)
+    loss = m.masked_denoising_loss(ids, cond, mask_ratio=0.5, generator=g)
+    loss.backward()
+    grad = m.h[0].film.weight.grad
+    assert grad is not None, "no gradient reached film.weight"
+    assert float(grad.abs().max()) > 0.0, (
+        "film.weight received an all-zero gradient; cond is not in the graph")
+
+
+def test_const_cond_receives_gradient_in_the_matched_control():
+    """The control's conditioning vector must be a learned parameter, not zeros.
+
+    If `const_cond` were zero, `film.weight` would receive an all-zero gradient
+    (grad_w is proportional to cond) and the control would collapse to a bias
+    term: same parameter count on paper, far less capacity in practice.
+
+    The vector cannot move on the *first* step, because dL/d(const_cond) is
+    proportional to `film.weight`, which starts at zero. It moves from the
+    second step on, once FiLM has a gradient of its own -- so this checks two
+    steps, not one.
+    """
+    m = tiny_model()
+    m.freeze_base()
+    m.train()
+    opt = torch.optim.AdamW([p for p in m.parameters() if p.requires_grad],
+                            lr=1e-2)
+    ids = torch.randint(3, 60, (2, 12))
+    cond = m.const_cond.unsqueeze(0).expand(2, -1)
+    before = m.const_cond.detach().clone()
+    for step in range(2):
+        opt.zero_grad()
+        g = torch.Generator().manual_seed(step)
+        loss = m.masked_denoising_loss(ids, cond, mask_ratio=0.5, generator=g)
+        loss.backward()
+        assert float(m.h[0].film.weight.grad.abs().max()) > 0.0, (
+            "the control's FiLM weights got no gradient")
+        opt.step()
+    assert not torch.equal(before, m.const_cond.detach()), (
+        "const_cond never moved; the control is not a learned conditioning "
+        "vector")
+
+
+def test_assert_side_channel_live_rejects_a_dead_channel():
+    m = tiny_model()
+    m.freeze_base()
+    with torch.no_grad():
+        for blk in m.h:
+            blk.film.weight.requires_grad_(False)
+    with pytest.raises(RuntimeError, match="frozen"):
+        m.assert_side_channel_live()
+
+    m2 = tiny_model()
+    m2.freeze_base()
+    with torch.no_grad():
+        m2.const_cond.zero_()
+    with pytest.raises(RuntimeError, match="exactly zero"):
+        m2.assert_side_channel_live()
+
+
+def test_side_channel_stats_detect_a_dead_channel():
+    """The diagnostic that would have caught the frozen-FiLM bug on day one."""
+    from cgr.train import side_channel_stats
+
+    m = tiny_model()
+    m.freeze_base()
+    ids = torch.randint(3, 60, (1, 10))
+    probe = torch.randn(1, 32)
+    reasoner = torch.nn.Linear(4, 4)
+    ref = [p.detach().clone() for p in reasoner.parameters()]
+
+    dead = side_channel_stats(m, reasoner, ref, ids, probe)
+    assert dead["film_max_abs"] == 0.0
+    assert dead["cond_probe_delta"] == 0.0
+    assert dead["side_channel_live"] is False
+
+    with torch.no_grad():
+        for blk in m.h:
+            blk.film.weight.normal_(0, 0.05)
+        reasoner.weight.add_(1.0)
+    live = side_channel_stats(m, reasoner, ref, ids, probe)
+    assert live["film_max_abs"] > 0.0
+    assert live["cond_probe_delta"] > 0.0
+    assert live["side_channel_live"] is True
+    assert live["reasoner_l2_delta"] > 0.0
 
 
 def test_frozen_base_does_not_move_after_a_step():

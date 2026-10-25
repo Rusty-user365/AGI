@@ -1,0 +1,279 @@
+{
+  "experiment": "exp8_architecture_ablation",
+  "preset": "diffugpt",
+  "seed": 0,
+  "split": "test",
+  "selection": {
+    "scanned": 200,
+    "skipped": 0
+  },
+  "requested_n": 200,
+  "cgr_checkpoint": "checkpoints/diffugpt_5k_e10_cgr_blockft/stage_b.pt",
+  "baseline_checkpoint": "checkpoints/diffugpt_5k_e10_backbone_blockft/stage_b.pt",
+  "comparison": "trained CGR reasoner conditioning vs LoRA-only masked-denoising baseline",
+  "limits": [
+    "The decoder and edit scopes are identical between conditions.",
+    "The gate does not participate in this repair comparison; no DAG is implemented.",
+    "Unseen-split specificity for local defects is not evaluated here."
+  ],
+  "conditions": {
+    "local/one_block": {
+      "n": 200,
+      "cgr_mean_c_target": 0.38,
+      "backbone_mean_c_target": 0.245,
+      "noop_mean_c_target": 1.0,
+      "cgr_mean_blocks_changed": 1.0,
+      "backbone_mean_blocks_changed": 1.0,
+      "cgr_mean_tokens_spent": 17.155,
+      "backbone_mean_tokens_spent": 17.15,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": 0.135,
+        "lo": 0.06,
+        "hi": 0.21,
+        "significant": true
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": -0.005,
+        "lo": -0.065,
+        "hi": 0.05,
+        "significant": false
+      },
+      "cgr_mean_preservation": 1.0,
+      "backbone_mean_preservation": 1.0,
+      "preservation_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_mean_improvement": -0.3412622320652008,
+      "backbone_mean_improvement": -0.13812671437859536,
+      "improvement_cgr_minus_backbone": {
+        "mean_diff": -0.20313551768660545,
+        "lo": -0.27962286949157716,
+        "hi": -0.12201511457562447,
+        "significant": true
+      },
+      "cgr_doc_consistent_rate": 0.38,
+      "backbone_doc_consistent_rate": 0.245,
+      "noop_doc_consistent_rate": 1.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    },
+    "local/global": {
+      "n": 200,
+      "cgr_mean_c_target": 0.305,
+      "backbone_mean_c_target": 0.315,
+      "noop_mean_c_target": 1.0,
+      "cgr_mean_blocks_changed": 3.94,
+      "backbone_mean_blocks_changed": 3.94,
+      "cgr_mean_tokens_spent": 58.59,
+      "backbone_mean_tokens_spent": 58.56,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": -0.01,
+        "lo": -0.075,
+        "hi": 0.06,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": -0.065,
+        "lo": -0.11,
+        "hi": -0.02,
+        "significant": true
+      },
+      "cgr_mean_preservation": 1.0,
+      "backbone_mean_preservation": 1.0,
+      "preservation_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_mean_improvement": -0.23724062800407408,
+      "backbone_mean_improvement": -0.13262827426195145,
+      "improvement_cgr_minus_backbone": {
+        "mean_diff": -0.10461235374212265,
+        "lo": -0.15096238225698472,
+        "hi": -0.05840671390295029,
+        "significant": true
+      },
+      "cgr_doc_consistent_rate": 0.045,
+      "backbone_doc_consistent_rate": 0.03,
+      "noop_doc_consistent_rate": 1.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    },
+    "cross_block/one_block": {
+      "n": 200,
+      "cgr_mean_c_target": 0.03558333333333333,
+      "backbone_mean_c_target": 0.04375000000000001,
+      "noop_mean_c_target": 0.0,
+      "cgr_mean_blocks_changed": 1.0,
+      "backbone_mean_blocks_changed": 1.0,
+      "cgr_mean_tokens_spent": 15.155,
+      "backbone_mean_tokens_spent": 15.155,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": -0.008166666666666664,
+        "lo": -0.023416666666666672,
+        "hi": 0.006916666666666667,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": 0.003666666666666667,
+        "lo": -0.00933333333333333,
+        "hi": 0.017,
+        "significant": false
+      },
+      "cgr_mean_preservation": 1.0,
+      "backbone_mean_preservation": 1.0,
+      "preservation_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_mean_improvement": -0.02026850149035454,
+      "backbone_mean_improvement": -0.03887154370546341,
+      "improvement_cgr_minus_backbone": {
+        "mean_diff": 0.018603042215108872,
+        "lo": -0.056480876058340075,
+        "hi": 0.09547738492488861,
+        "significant": false
+      },
+      "cgr_doc_consistent_rate": 0.0,
+      "backbone_doc_consistent_rate": 0.0,
+      "noop_doc_consistent_rate": 0.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    },
+    "cross_block/global": {
+      "n": 200,
+      "cgr_mean_c_target": 0.45100000000000007,
+      "backbone_mean_c_target": 0.46166666666666684,
+      "noop_mean_c_target": 0.0,
+      "cgr_mean_blocks_changed": 3.94,
+      "backbone_mean_blocks_changed": 3.94,
+      "cgr_mean_tokens_spent": 56.5,
+      "backbone_mean_tokens_spent": 56.485,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": -0.010666666666666665,
+        "lo": -0.05091666666666668,
+        "hi": 0.03124999999999999,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": -0.02433333333333333,
+        "lo": -0.062083333333333365,
+        "hi": 0.014166666666666675,
+        "significant": false
+      },
+      "cgr_mean_preservation": 1.0,
+      "backbone_mean_preservation": 1.0,
+      "preservation_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_mean_improvement": -0.13103027999401093,
+      "backbone_mean_improvement": -0.05603799343109131,
+      "improvement_cgr_minus_backbone": {
+        "mean_diff": -0.07499228656291962,
+        "lo": -0.12131447210907936,
+        "hi": -0.02511856108903885,
+        "significant": true
+      },
+      "cgr_doc_consistent_rate": 0.03,
+      "backbone_doc_consistent_rate": 0.04,
+      "noop_doc_consistent_rate": 0.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    },
+    "cross_block_partial/one_block": {
+      "n": 200,
+      "cgr_mean_c_target": 0.06041666666666668,
+      "backbone_mean_c_target": 0.07583333333333335,
+      "noop_mean_c_target": 0.0,
+      "cgr_mean_blocks_changed": 1.0,
+      "backbone_mean_blocks_changed": 1.0,
+      "cgr_mean_tokens_spent": 14.985,
+      "backbone_mean_tokens_spent": 14.985,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": -0.015416666666666669,
+        "lo": -0.04333333333333333,
+        "hi": 0.012500000000000002,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": -0.009999999999999998,
+        "lo": -0.03833333333333333,
+        "hi": 0.01791666666666666,
+        "significant": false
+      },
+      "cgr_mean_preservation": 1.0,
+      "backbone_mean_preservation": 1.0,
+      "preservation_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_mean_improvement": -0.005047113299369812,
+      "backbone_mean_improvement": -0.0028441144526004792,
+      "improvement_cgr_minus_backbone": {
+        "mean_diff": -0.002202998846769333,
+        "lo": -0.06845606833696366,
+        "hi": 0.06752458304166793,
+        "significant": false
+      },
+      "cgr_doc_consistent_rate": 0.0,
+      "backbone_doc_consistent_rate": 0.0,
+      "noop_doc_consistent_rate": 0.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    },
+    "cross_block_partial/global": {
+      "n": 200,
+      "cgr_mean_c_target": 0.47999999999999987,
+      "backbone_mean_c_target": 0.47125000000000006,
+      "noop_mean_c_target": 0.0,
+      "cgr_mean_blocks_changed": 3.94,
+      "backbone_mean_blocks_changed": 3.94,
+      "cgr_mean_tokens_spent": 56.5,
+      "backbone_mean_tokens_spent": 56.485,
+      "c_target_cgr_minus_backbone": {
+        "mean_diff": 0.008749999999999997,
+        "lo": -0.03666666666666668,
+        "hi": 0.05499999999999999,
+        "significant": false
+      },
+      "q_target_cgr_minus_backbone": {
+        "mean_diff": 0.004583333333333333,
+        "lo": -0.037500000000000006,
+        "hi": 0.04833333333333334,
+        "significant": false
+      },
+      "cgr_mean_preservation": 1.0,
+      "backbone_mean_preservation": 1.0,
+      "preservation_cgr_minus_backbone": {
+        "mean_diff": 0.0,
+        "lo": 0.0,
+        "hi": 0.0,
+        "significant": false
+      },
+      "cgr_mean_improvement": -0.09702087447047233,
+      "backbone_mean_improvement": -0.039619986712932584,
+      "improvement_cgr_minus_backbone": {
+        "mean_diff": -0.05740088775753975,
+        "lo": -0.10350825980305672,
+        "hi": -0.010657102018594742,
+        "significant": true
+      },
+      "cgr_doc_consistent_rate": 0.03,
+      "backbone_doc_consistent_rate": 0.04,
+      "noop_doc_consistent_rate": 0.0,
+      "cgr_anchor_rate": 1.0,
+      "backbone_anchor_rate": 1.0
+    }
+  }
+}

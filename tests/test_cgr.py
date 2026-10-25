@@ -70,6 +70,73 @@ def test_parser_recovers_structure(setup):
     assert p.n_intro == len(p.body_theses)
 
 
+# --------------------------------------------------------------------------
+# matched control for the side channel
+# --------------------------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def diffugpt_setup():
+    """A tiny DiffuGPT system: the only backbone with a conditioning channel."""
+    cfg = Config.preset("smoke")
+    tok, _ = build_corpus(cfg)
+    cfg.model.backbone = "diffugpt"
+    cfg.model.d_model = 32
+    cfg.model.n_layers = 2
+    cfg.model.n_heads = 2
+    cfg.model.d_ff = 64
+    cfg.model.max_len = 96
+    cfg.model.vocab_size = tok.vocab_size
+    system = CGRSystem(cfg, tok, load_weights=False)
+    system.eval()
+    return cfg, tok, system
+
+
+def test_learned_cond_carries_no_document_information(diffugpt_setup):
+    """The matched control must differ from CGR *only* in where cond comes from.
+
+    Same FiLM parameters, same shape, same losses. If the learned vector moved
+    with the input, the control would be a second CGR arm and the comparison
+    would measure nothing.
+    """
+    cfg, tok, system = diffugpt_setup
+    a = torch.tensor([tok.encode("this essay argues that street trees cool "
+                                 "cities .")[:cfg.model.max_len]])
+    b = torch.tensor([tok.encode("remote work raises output because commuting "
+                                 "hours become working hours .")[:cfg.model.max_len]])
+    clock = torch.zeros(1, 8)
+    with torch.no_grad():
+        ca = system.forward_episodes(a, clock, reasoning_mode="learned")["cond"]
+        cb = system.forward_episodes(b, clock, reasoning_mode="learned")["cond"]
+        ra = system.forward_episodes(a, clock, reasoning_mode="full")["cond"]
+        rb = system.forward_episodes(b, clock, reasoning_mode="full")["cond"]
+    assert torch.allclose(ca, cb), (
+        "the learned control vector changed with the input; it is not a control")
+    assert not torch.allclose(ra, rb), (
+        "the reasoner produced the same vector for different documents")
+
+
+def test_learned_cond_reaches_the_output_once_film_is_live(diffugpt_setup):
+    cfg, tok, system = diffugpt_setup
+    ids = torch.tensor([tok.encode("this essay argues that x .")[:cfg.model.max_len]])
+    clock = torch.zeros(1, 8)
+    with torch.no_grad():
+        for blk in system.backbone.h:
+            blk.film.weight.normal_(0, 0.05)
+        full = system.forward_episodes(ids, clock, reasoning_mode="full")
+        learned = system.forward_episodes(ids, clock, reasoning_mode="learned")
+        none = system.forward_episodes(ids, clock, reasoning_mode="none")
+    # `build_features` substitutes a zero vector when cond is None, so "none"
+    # means "a side channel that carries nothing", not "no tensor".
+    assert none["cond"] is not None and float(none["cond"].abs().max()) == 0.0, (
+        "reasoning_mode='none' should condition on an all-zero vector")
+    assert not torch.allclose(full["cond"], learned["cond"]), (
+        "the two conditioning sources produced the same vector")
+    assert not torch.allclose(full["pooled"], learned["pooled"], atol=1e-6), (
+        "the conditioning source changed but the representation did not")
+    assert not torch.allclose(full["pooled"], none["pooled"], atol=1e-6), (
+        "the side channel does not reach the representation")
+
+
 def test_local_defect_preserves_coherence_and_loses_quality(setup):
     """The local defect is a *quality* defect, not a coherence defect.
 

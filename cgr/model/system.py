@@ -152,6 +152,23 @@ class CGRSystem(nn.Module):
         pooled0 = self.backbone.pooled(ids)
         blocks = self.reasoner.encode(pooled0)
 
+        if reasoning_mode == "learned":
+            # Matched control: the same FiLM side channel, driven by one learned
+            # vector for the whole batch instead of a per-document steering
+            # vector. Identical parameters, identical losses; the only thing
+            # removed is the input-dependent information. `cond_override` takes
+            # precedence so a caller can substitute a specific vector.
+            if not hasattr(self.backbone, "const_cond"):
+                raise ValueError(
+                    f"reasoning_mode='learned' needs a backbone with a "
+                    f"conditioning side channel; "
+                    f"{type(self.backbone).__name__} has none")
+            cond = (cond_override if cond_override is not None
+                    else self.backbone.const_cond.unsqueeze(0).expand(
+                        ids.shape[0], -1))
+            pooled = self.backbone.pooled(ids, cond)
+            return pooled, cond, blocks
+
         if reasoning_mode == "none" and cond_override is None:
             return pooled0, None, blocks
 
