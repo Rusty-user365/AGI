@@ -1,0 +1,121 @@
+{
+  "config": {
+    "data": "results/arith_steps_h5.pt",
+    "seeds": 5,
+    "width": 64,
+    "epochs": 150,
+    "device": "cpu",
+    "out": "results/localizer_pair_arith_steps_h5.json"
+  },
+  "data": "results\\arith_steps_h5.pt",
+  "steps": 5,
+  "train_candidates": 279,
+  "holdout_candidates": 110,
+  "majority": {
+    "linear_top1": 0.6272727251052856,
+    "linear_bal": 0.5237876296043396,
+    "transformer_top1": 0.6545454263687134,
+    "transformer_bal": 0.5281075835227966,
+    "diff": -0.027272727340459824,
+    "diff_ci": [
+      -0.11818181723356247,
+      0.06363636255264282
+    ]
+  },
+  "pooled_paired": {
+    "wins": 80,
+    "losses": 68,
+    "p": 0.3659440738175881
+  },
+  "per_step_recall": {
+    "linear": [
+      {
+        "step": 0,
+        "n": 3,
+        "recall": 0.0
+      },
+      {
+        "step": 1,
+        "n": 39,
+        "recall": 0.9230769276618958
+      },
+      {
+        "step": 2,
+        "n": 23,
+        "recall": 0.739130437374115
+      },
+      {
+        "step": 3,
+        "n": 13,
+        "recall": 0.7692307829856873
+      },
+      {
+        "step": 4,
+        "n": 32,
+        "recall": 0.1875
+      }
+    ],
+    "transformer": [
+      {
+        "step": 0,
+        "n": 3,
+        "recall": 0.0
+      },
+      {
+        "step": 1,
+        "n": 39,
+        "recall": 0.8205128312110901
+      },
+      {
+        "step": 2,
+        "n": 23,
+        "recall": 0.5652173757553101
+      },
+      {
+        "step": 3,
+        "n": 13,
+        "recall": 0.692307710647583
+      },
+      {
+        "step": 4,
+        "n": 32,
+        "recall": 0.5625
+      }
+    ]
+  },
+  "per_seed": [
+    {
+      "seed": 0,
+      "linear": 0.6272727251052856,
+      "transformer": 0.6181818246841431
+    },
+    {
+      "seed": 1,
+      "linear": 0.6000000238418579,
+      "transformer": 0.581818163394928
+    },
+    {
+      "seed": 2,
+      "linear": 0.6454545259475708,
+      "transformer": 0.6272727251052856
+    },
+    {
+      "seed": 3,
+      "linear": 0.6454545259475708,
+      "transformer": 0.581818163394928
+    },
+    {
+      "seed": 4,
+      "linear": 0.5909090638160706,
+      "transformer": 0.5909090638160706
+    }
+  ],
+  "linear_top1_ci": [
+    0.5340503169531756,
+    0.7119054672241376
+  ],
+  "transformer_top1_ci": [
+    0.5618231409752017,
+    0.7368374540972498
+  ]
+}

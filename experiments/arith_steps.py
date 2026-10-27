@@ -126,12 +126,19 @@ def parse_value(text: str) -> int | None:
 
 
 def build_prompt(lines: list[str], order: list[str], start: int,
-                 emitted: list[int | None], step: int) -> str:
-    """Definition block, then the values so far, then the name to fill in."""
+                 emitted: list[int | None], step: int,
+                 constraint: str | None = None) -> str:
+    """Definition block, then the values so far, then the name to fill in.
+
+    `constraint` is an optional line injected immediately before the name to
+    fill in, used by the hindsight arm of `oracle_rewind.py`.
+    """
     first_name = lines[0].split(" = ")[0]
     vals = [f"{first_name} -> {start}"]
     for j in range(step):
         vals.append(f"{order[j]} -> {emitted[j]}")
+    if constraint:
+        vals.append(constraint)
     vals.append(f"{order[step]} ->")
     return FEWSHOT + "\n".join(lines) + "\n" + "\n".join(vals)
 
@@ -175,6 +182,64 @@ def readout(model, tok, prompt: str, text: str, device: str):
             out.hidden_states[-1][0, plen:].mean(0).float().cpu())
 
 
+@torch.no_grad()
+def batched_step_value(model, tok, prompts: list[str], device: str,
+                       max_new: int, sample: bool, temperature: float,
+                       top_p: float) -> list[str]:
+    """One generation call for several candidates at the same step.
+
+    The tokenizer is left-padding (set by `load`), which is what decoder-only
+    generation needs. Batching does not reduce FLOPs on this card, but it removes
+    the per-call launch overhead, which dominates when each call emits 1-2 tokens.
+    """
+    enc = tok(prompts, return_tensors="pt", padding=True).to(device)
+    enc.pop("token_type_ids", None)
+    kw = dict(do_sample=True, temperature=temperature, top_p=top_p) if sample \
+        else dict(do_sample=False)
+    gen = model.generate(
+        **enc, max_new_tokens=max_new, pad_token_id=tok.pad_token_id,
+        eos_token_id=tok.eos_token_id, **kw)
+    new = gen[:, enc["input_ids"].shape[1]:]
+    return tok.batch_decode(new, skip_special_tokens=True)
+
+
+@torch.no_grad()
+def batched_readout(model, tok, prompts: list[str], texts: list[str],
+                    device: str) -> list[tuple[float | None, torch.Tensor | None]]:
+    """Batched logprob and mean hidden state, segmented by character offsets.
+
+    Offset mapping locates the prompt/completion boundary exactly, so a BPE merge
+    across it cannot silently shift the span the way a token-count split can.
+    """
+    full = [p + t for p, t in zip(prompts, texts)]
+    old = tok.padding_side
+    tok.padding_side = "right"
+    try:
+        enc = tok(full, return_tensors="pt", padding=True,
+                  return_offsets_mapping=True)
+    finally:
+        tok.padding_side = old
+    offsets = enc.pop("offset_mapping")
+    enc.pop("token_type_ids", None)
+    enc = {k: v.to(device) for k, v in enc.items()}
+    out = model(**enc, output_hidden_states=True)
+    ids, mask = enc["input_ids"], enc["attention_mask"]
+    lp = torch.log_softmax(out.logits.float()[:, :-1], dim=-1).gather(
+        -1, ids[:, 1:].unsqueeze(-1)).squeeze(-1)
+    hidden = out.hidden_states[-1].float()
+    res = []
+    for i, p in enumerate(prompts):
+        length = int(mask[i].sum())
+        off = offsets[i].tolist()
+        start = next((j for j in range(length) if off[j][1] > len(p)), None)
+        if start is None or start == 0 or start >= length:
+            res.append((None, None))
+            continue
+        res.append((float(lp[i, start - 1:length - 1].mean()),
+                    hidden[i, start:length].mean(0).cpu()))
+    return res
+
+
 # ----------------------------------------------------------------- stats ----
 
 def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
@@ -188,9 +253,21 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
 
 
 def save(path: Path, state: dict) -> None:
+    """Atomic save that survives a transient Windows file lock.
+
+    `Path.replace` fails with PermissionError if any other process (an analysis
+    script reading the corpus, a virus scanner) has the target open for even an
+    instant. A crash here costs the whole run, so retry before giving up.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
     torch.save(state, tmp)
+    for attempt in range(12):
+        try:
+            tmp.replace(path)
+            return
+        except PermissionError:
+            time.sleep(0.5 * (attempt + 1))
     tmp.replace(path)
 
 
@@ -227,7 +304,6 @@ def summarize(state: dict, steps: int, splits: list[str], k: int) -> dict:
 
         # Localization, on complete chains with an interior error.
         elig = [r for r in full if r["first_error"] is not None
-                and r["first_error"] < steps - 1
                 and all(s["logprob"] is not None for s in r["steps"])]
         lp_hit = lp_after = first_hit = 0
         for r in elig:
@@ -286,6 +362,49 @@ def print_summary(summary: dict, k: int) -> None:
 
 # ------------------------------------------------------------------ main ----
 
+def run_candidates(model, tok, task, args, device) -> dict[int, dict]:
+    """All candidates for one task, batched per step.
+
+    Greedy (cand 0) and the k samples are generated in separate calls because
+    they need different decoding, but each call covers every live candidate, so a
+    task costs 2 calls per step instead of 2 per candidate.
+    """
+    lines, order, truth, start = task
+    rows: dict[int, dict] = {}
+    for sample, idxs in ((False, [0]), (True, list(range(1, args.k + 1)))):
+        alive = list(idxs)
+        emitted: dict[int, list] = {ci: [] for ci in idxs}
+        rec: dict[int, list] = {ci: [] for ci in idxs}
+        for i in range(args.steps):
+            if not alive:
+                break
+            prompts = [build_prompt(lines, order, start, emitted[ci], i)
+                       for ci in alive]
+            texts = batched_step_value(model, tok, prompts, device,
+                                       args.max_new, sample, args.temperature,
+                                       args.top_p)
+            reads = batched_readout(model, tok, prompts, texts, device)
+            for ci, text, (lp, feat) in zip(alive, texts, reads):
+                v = parse_value(text)
+                emitted[ci].append(v)
+                rec[ci].append({"step": i, "text": text, "value": v,
+                                "truth": truth[i], "logprob": lp,
+                                "feat": feat, "ok": int(v == truth[i])})
+            alive = [ci for ci in alive if emitted[ci][-1] is not None]
+        for ci in idxs:
+            steps_rec = rec[ci]
+            step_ok = [int(s["ok"]) for s in steps_rec]
+            complete = len(steps_rec) == args.steps
+            fe = (next((i for i, ok in enumerate(step_ok) if not ok), None)
+                  if complete else len(step_ok) - 1)
+            rows[ci] = {"steps": steps_rec, "emitted": emitted[ci],
+                        "truth": truth, "step_ok": step_ok,
+                        "complete": int(complete),
+                        "chain_correct": int(complete and all(step_ok)),
+                        "first_error": fe}
+    return rows
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
@@ -338,37 +457,12 @@ def main() -> int:
             lines, order, truth, start = make_chain(random.Random(seed),
                                                     args.steps)
 
-            for ci in range(args.k + 1):
-                sample = ci > 0
-                emitted: list[int | None] = []
-                steps_rec, prompts = [], []
-                for i in range(args.steps):
-                    prompt = build_prompt(lines, order, start, emitted, i)
-                    prompts.append(prompt)
-                    text = step_value(model, tok, prompt, args.device,
-                                      args.max_new, sample, args.temperature,
-                                      args.top_p)
-                    v = parse_value(text)
-                    lp, feat = readout(model, tok, prompt, text, args.device)
-                    emitted.append(v)
-                    steps_rec.append({"step": i, "text": text, "value": v,
-                                      "truth": truth[i], "logprob": lp,
-                                      "feat": feat,
-                                      "ok": int(v == truth[i])})
-                    if v is None:
-                        break
-                step_ok = [int(s["ok"]) for s in steps_rec]
-                complete = len(steps_rec) == args.steps
-                fe = next((i for i, ok in enumerate(step_ok) if not ok), None) \
-                    if complete else len(step_ok) - 1
-                state["rows"].append({
-                    "split": split, "idx": idx, "seed": seed, "cand": ci,
-                    "steps": steps_rec, "emitted": emitted,
-                    "truth": truth, "step_ok": step_ok, "complete": int(complete),
-                    "chain_correct": int(complete and all(step_ok)),
-                    "first_error": fe,
-                    "prompts": prompts,
-                })
+            rows = run_candidates(model, tok,
+                                  (lines, order, truth, start), args,
+                                  args.device)
+            for ci, r in rows.items():
+                state["rows"].append({"split": split, "idx": idx, "seed": seed,
+                                      "cand": ci, **r})
             state["tasks"].append({"split": split, "idx": idx, "seed": seed,
                                    "lines": lines, "order": order,
                                    "truth": truth, "start": start})

@@ -1,0 +1,107 @@
+{
+  "steps": 5,
+  "splits": {
+    "train": {
+      "tasks": 120,
+      "candidates": 480,
+      "complete_rate": 1.0,
+      "chain_p1_greedy": 0.5083333333333333,
+      "chain_p1_sampled": 0.3888888888888889,
+      "chain_pass_at_k": 0.5583333333333333,
+      "chain_pass_at_k_ci": [
+        0.46904360820302915,
+        0.6440040268404459
+      ],
+      "step_acc": [
+        0.9916666666666667,
+        0.7222222222222222,
+        0.6777777777777778,
+        0.6888888888888889,
+        0.5888888888888889
+      ],
+      "cond_step_acc": [
+        0.9916666666666667,
+        0.7226890756302521,
+        0.7441860465116279,
+        0.875,
+        0.8333333333333334
+      ],
+      "first_error_dist": {
+        "0": 3,
+        "1": 99,
+        "2": 66,
+        "3": 24,
+        "4": 28,
+        "none": 140,
+        "incomplete": 0
+      },
+      "first_error_none_frac": 0.3888888888888889,
+      "first_error_incomplete_frac": 0.0,
+      "localize_eligible": 220,
+      "localize_chance": 0.2,
+      "localize_always_first": 0.013636363636363636,
+      "localize_argmin_logprob": 0.30454545454545456,
+      "localize_at_or_after": 0.9954545454545455
+    },
+    "holdout": {
+      "tasks": 50,
+      "candidates": 200,
+      "complete_rate": 1.0,
+      "chain_p1_greedy": 0.5,
+      "chain_p1_sampled": 0.43333333333333335,
+      "chain_pass_at_k": 0.6,
+      "chain_pass_at_k_ci": [
+        0.4618118910275937,
+        0.7239181021375425
+      ],
+      "step_acc": [
+        0.9866666666666667,
+        0.7933333333333333,
+        0.7866666666666666,
+        0.7133333333333334,
+        0.6066666666666667
+      ],
+      "cond_step_acc": [
+        0.9866666666666667,
+        0.7905405405405406,
+        0.8376068376068376,
+        0.8979591836734694,
+        0.7386363636363636
+      ],
+      "first_error_dist": {
+        "0": 2,
+        "1": 31,
+        "2": 19,
+        "3": 10,
+        "4": 23,
+        "none": 65,
+        "incomplete": 0
+      },
+      "first_error_none_frac": 0.43333333333333335,
+      "first_error_incomplete_frac": 0.0,
+      "localize_eligible": 85,
+      "localize_chance": 0.2,
+      "localize_always_first": 0.023529411764705882,
+      "localize_argmin_logprob": 0.4117647058823529,
+      "localize_at_or_after": 1.0
+    }
+  },
+  "config": {
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float32",
+    "device": "cuda",
+    "steps": 5,
+    "k": 3,
+    "n_train": 120,
+    "n_holdout": 50,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 5,
+    "save_every": 10,
+    "out": "results/arith_steps_h5.pt",
+    "summary": "results/arith_steps_h5.json",
+    "show": 2,
+    "resume": true
+  }
+}

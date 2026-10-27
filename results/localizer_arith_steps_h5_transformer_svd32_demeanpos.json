@@ -1,0 +1,297 @@
+{
+  "config": {
+    "data": "results/arith_steps_h5.pt",
+    "arch": "transformer",
+    "width": 64,
+    "heads": 4,
+    "dropout": 0.1,
+    "epochs": 150,
+    "batch": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "frozen_proj": 32,
+    "demean_position": true,
+    "seeds": 5,
+    "device": "cpu",
+    "out": "results/localizer_arith_steps_h5_transformer_svd32_demeanpos.json"
+  },
+  "data": "results\\arith_steps_h5.pt",
+  "steps": 5,
+  "train_candidates": 279,
+  "holdout_candidates": 110,
+  "label_dist_train": [
+    3,
+    124,
+    83,
+    32,
+    37
+  ],
+  "label_dist_holdout": [
+    3,
+    39,
+    23,
+    13,
+    32
+  ],
+  "baselines": {
+    "n": 110,
+    "chance": 0.2,
+    "prior_index": 1,
+    "prior_acc": 0.3545454442501068,
+    "always_first_acc": 0.027272727340459824,
+    "argmin_logprob_acc": 0.4000000059604645,
+    "argmin_logprob_ci": [
+      0.3133177568006176,
+      0.493431269917208
+    ],
+    "argmin_logprob_bal": 0.29319955557584765,
+    "argmin_logprob_nonmodal": [
+      0.5492957830429077,
+      71
+    ]
+  },
+  "runs": [
+    {
+      "seed": 0,
+      "train_acc": 1.0,
+      "main": {
+        "name": "seed0 transformer",
+        "top1": 0.4727272689342499,
+        "top2": 0.6636363863945007,
+        "mae": 1.0090909004211426,
+        "bal_acc": 0.37197603583335875,
+        "nonmodal_acc": 0.3802816867828369,
+        "nonmodal_n": 71
+      },
+      "poslogprob": {
+        "name": "seed0 poslogprob",
+        "top1": 0.44545453786849976,
+        "top2": 0.5636363625526428,
+        "mae": 1.2636363506317139,
+        "bal_acc": 0.2869565188884735,
+        "nonmodal_acc": 0.14084507524967194,
+        "nonmodal_n": 71
+      },
+      "vs_argmin_logprob": {
+        "wins": 30,
+        "losses": 22,
+        "p": 0.3317497633694906
+      },
+      "vs_poslogprob": {
+        "wins": 18,
+        "losses": 15,
+        "p": 0.7283324808813632
+      }
+    },
+    {
+      "seed": 1,
+      "train_acc": 1.0,
+      "main": {
+        "name": "seed1 transformer",
+        "top1": 0.5727272629737854,
+        "top2": 0.6818181872367859,
+        "mae": 0.9636363387107849,
+        "bal_acc": 0.49750558137893675,
+        "nonmodal_acc": 0.5211267471313477,
+        "nonmodal_n": 71
+      },
+      "poslogprob": {
+        "name": "seed1 poslogprob",
+        "top1": 0.44545453786849976,
+        "top2": 0.5636363625526428,
+        "mae": 1.2636363506317139,
+        "bal_acc": 0.2869565188884735,
+        "nonmodal_acc": 0.14084507524967194,
+        "nonmodal_n": 71
+      },
+      "vs_argmin_logprob": {
+        "wins": 42,
+        "losses": 23,
+        "p": 0.024811974571552164
+      },
+      "vs_poslogprob": {
+        "wins": 29,
+        "losses": 15,
+        "p": 0.048766765904474596
+      }
+    },
+    {
+      "seed": 2,
+      "train_acc": 1.0,
+      "main": {
+        "name": "seed2 transformer",
+        "top1": 0.5454545617103577,
+        "top2": 0.6545454263687134,
+        "mae": 1.0818182229995728,
+        "bal_acc": 0.5186594307422638,
+        "nonmodal_acc": 0.4507042169570923,
+        "nonmodal_n": 71
+      },
+      "poslogprob": {
+        "name": "seed2 poslogprob",
+        "top1": 0.44545453786849976,
+        "top2": 0.5636363625526428,
+        "mae": 1.2636363506317139,
+        "bal_acc": 0.2869565188884735,
+        "nonmodal_acc": 0.14084507524967194,
+        "nonmodal_n": 71
+      },
+      "vs_argmin_logprob": {
+        "wins": 43,
+        "losses": 27,
+        "p": 0.07223792719176259
+      },
+      "vs_poslogprob": {
+        "wins": 24,
+        "losses": 13,
+        "p": 0.09887174959294498
+      }
+    },
+    {
+      "seed": 3,
+      "train_acc": 1.0,
+      "main": {
+        "name": "seed3 transformer",
+        "top1": 0.5545454621315002,
+        "top2": 0.7090908885002136,
+        "mae": 0.8545454740524292,
+        "bal_acc": 0.469007807970047,
+        "nonmodal_acc": 0.5070422291755676,
+        "nonmodal_n": 71
+      },
+      "poslogprob": {
+        "name": "seed3 poslogprob",
+        "top1": 0.44545453786849976,
+        "top2": 0.5636363625526428,
+        "mae": 1.2636363506317139,
+        "bal_acc": 0.2869565188884735,
+        "nonmodal_acc": 0.14084507524967194,
+        "nonmodal_n": 71
+      },
+      "vs_argmin_logprob": {
+        "wins": 34,
+        "losses": 17,
+        "p": 0.024092907698449295
+      },
+      "vs_poslogprob": {
+        "wins": 28,
+        "losses": 16,
+        "p": 0.09614175442061423
+      }
+    },
+    {
+      "seed": 4,
+      "train_acc": 1.0,
+      "main": {
+        "name": "seed4 transformer",
+        "top1": 0.5272727012634277,
+        "top2": 0.699999988079071,
+        "mae": 1.0545454025268555,
+        "bal_acc": 0.4767837285995483,
+        "nonmodal_acc": 0.5070422291755676,
+        "nonmodal_n": 71
+      },
+      "poslogprob": {
+        "name": "seed4 poslogprob",
+        "top1": 0.44545453786849976,
+        "top2": 0.5636363625526428,
+        "mae": 1.2636363506317139,
+        "bal_acc": 0.2869565188884735,
+        "nonmodal_acc": 0.14084507524967194,
+        "nonmodal_n": 71
+      },
+      "vs_argmin_logprob": {
+        "wins": 35,
+        "losses": 21,
+        "p": 0.08142681460950621
+      },
+      "vs_poslogprob": {
+        "wins": 28,
+        "losses": 19,
+        "p": 0.24296021728332562
+      }
+    }
+  ],
+  "mean_top1": 0.5345454514026642,
+  "mean_top1_ci": [
+    0.4435223086398581,
+    0.6267507725536599
+  ],
+  "mean_bal_acc": 0.466786516904831,
+  "mean_poslogprob_top1": 0.44545453786849976,
+  "pooled_vs_argmin_logprob": {
+    "wins": 184,
+    "losses": 110,
+    "p": 1.8808241302126813e-05
+  },
+  "pooled_vs_poslogprob": {
+    "wins": 127,
+    "losses": 78,
+    "p": 0.0007607317898791614
+  },
+  "confusion_pred_rows": [
+    [
+      0,
+      5,
+      1,
+      0,
+      9
+    ],
+    [
+      0,
+      26,
+      4,
+      3,
+      6
+    ],
+    [
+      3,
+      1,
+      17,
+      0,
+      3
+    ],
+    [
+      0,
+      4,
+      1,
+      10,
+      4
+    ],
+    [
+      0,
+      3,
+      0,
+      0,
+      10
+    ]
+  ],
+  "pred_hist": [
+    15,
+    39,
+    24,
+    19,
+    13
+  ],
+  "logprob_hist": [
+    0,
+    5,
+    9,
+    3,
+    93
+  ],
+  "by_arm": {
+    "greedy": {
+      "n": 25,
+      "localizer": 0.47999998927116394,
+      "argmin_logprob": 0.36000001430511475,
+      "prior": 0.3199999928474426
+    },
+    "sampled": {
+      "n": 85,
+      "localizer": 0.6000000238418579,
+      "argmin_logprob": 0.4117647111415863,
+      "prior": 0.364705890417099
+    }
+  }
+}

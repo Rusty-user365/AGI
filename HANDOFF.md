@@ -74,8 +74,39 @@ re-derived intermediate values.
 `linear` (per-step, no cross-step information), `transformer` (one encoder layer
 over the H rows), and both against **chance, the label prior, always-step-0, and
 argmin per-step logprob**. The transformer must beat argmin-logprob, not chance,
-or it repeats the selection null.
+or it repeats the selection null. (Superseded: argmin-logprob turned out to be a
+constant predictor, so the gate was raised to a position+confidence model. See
+the 2026-10-28 section below.)
 
+---
+
+## Current state (2026-10-28: the localizer answers; attention is a null)
+
+The step-level observer question is answered on `arith_steps` h5 (120 train / 50
+holdout tasks, 279 / **110** broken complete candidates). The gate was raised
+before the run: a hidden-state reader must beat **`poslogprob`** (per-position
+bias + per-position logprob slope, 10 parameters, no hidden state), because
+position is linearly readable from the state and error labels are not uniform
+over steps.
+
+| Question | Answer | Evidence |
+|---|---|---|
+| Do un-pooled per-step states localize the broken step? | **Yes.** linear+SVD32 0.611 top-1, 0.506 balanced, 114W/23L vs poslogprob | `results/localizer_arith_steps_h5_linear_svd32.json` |
+| Is it just the step-index prior? | **No.** Demeaning the per-step mean costs 0.022 and still wins 133W/54L | `..._linear_svd32_demeanpos.json` |
+| Does cross-step attention help on average? | **No.** Paired 80W/68L p=0.366; majority vote 0.655 vs 0.627, CI [-0.118, +0.064] | `results/localizer_pair_arith_steps_h5.json` |
+| Is the transformer capacity-starved? | **No.** Full width (0.600) >= SVD32 (0.576), so the 200/80 rebuild is unnecessary | `..._transformer.json` |
+| Does confidence alone localize? | **No.** poslogprob 0.445 is prior+slope; non-modal 0.141 vs 0.25 chance | same |
+| Does `argmin logprob` localize? | **No.** It predicts step 4 in 93/110 cases; balanced 0.293 | same |
+
+Where the best arm fails: per-step recall is 0.92 / 0.74 / 0.77 / **0.19** for
+steps 1-4, so a rewind loop built on it cuts to the right place early and to
+step 1 late. The transformer's profile is the mirror image on the tail (0.82 /
+0.57 / 0.69 / **0.56**): it triples late-step recall while losing early. A
+linear+transformer vote is the obvious untested follow-up. Finding:
+`findings/2026-10-28-localizer-ranks-steps-but-attention-does-not-help.md`.
+
+**Still no compute claim.** The harness has no KV cache; each step is a fresh
+forward over the prefix, so "rewind" saves `H - t` forwards and nothing more.
 
 ---
 
