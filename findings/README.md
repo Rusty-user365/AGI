@@ -19,6 +19,7 @@ are recorded in the same entry rather than quietly deleted.
 | 2026-10-25 | [steering-capacity-control](2026-10-25-steering-capacity-control.md) | **The +0.135 CGR advantage was capacity**: against a matched 22.3M control it is +0.035 [-0.045, 0.115], not significant |
 | 2026-10-26 | [unseen-confirmation](2026-10-26-unseen-confirmation.md) | Global-scope trade replicated 4/4 on unseen; gate condition null on test (+0.005 vs a fair control) and uninterpretable on unseen (control below floor) |
 | 2026-10-26 | [chapter-close](2026-10-26-chapter-close.md) | What is and is not established; why the next step is explicit control flow, not more FiLM |
+| 2026-10-27 | [fair-control-exp8](2026-10-27-fair-control-exp8.md) | Gate condition null at +0.005 against an in-distribution control, with a quality cost; one of two global-scope trades survives on test only |
 
 Open gaps, tracked here so they are not forgotten:
 

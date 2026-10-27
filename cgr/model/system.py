@@ -306,7 +306,9 @@ class CGRSystem(nn.Module):
     def repair(self, blocks: list[str], target_block: int, mode: str = "local",
                steps: int = 6, seed: int | None = None,
                use_reasoner: bool = False,
-               reasoning_mode: str | None = None) -> list[str]:
+               reasoning_mode: str | None = None,
+               temperature: float = 0.0,
+               order: str | None = None) -> list[str]:
         """Repair a corrupted document.
 
         Modes, with their contract implications:
@@ -319,6 +321,13 @@ class CGRSystem(nn.Module):
                     violates the anchor contract by construction; it is kept
                     only so the violation can be measured rather than assumed
                     away.
+
+        `temperature` defaults to 0.0, which makes a repair fully deterministic:
+        greedy proposal plus a deterministic commit order means two different
+        `seed` values return byte-identical text. Any caller that wants N
+        *distinct* candidates (best-of-n, a rejection loop, an observer that
+        ranks alternatives) must pass `temperature > 0` or
+        `order="random"`; otherwise it is running 1-of-n N times.
         """
         ids, spans = blocked_spans(blocks, self.tok)
         if len(ids) > self.cfg.model.max_len:
@@ -329,7 +338,7 @@ class CGRSystem(nn.Module):
                 f"document has {len(ids)} tokens but model max_len is "
                 f"{self.cfg.model.max_len}; filter it out at task construction")
         t = torch.tensor(ids, device=self.device).unsqueeze(0)
-        order = getattr(self.cfg.model, "infill_order", "confidence")
+        order = order or getattr(self.cfg.model, "infill_order", "left_to_right")
         with torch.no_grad():
             # `reasoning_mode` wins when given. `use_reasoner` is the older
             # boolean and still means full steering vs none, so existing
@@ -347,14 +356,15 @@ class CGRSystem(nn.Module):
             if mode == "local":
                 gen = self.backbone.infill(t, [spans[target_block]],
                                            cond=cond, steps=steps, seed=seed,
-                                           order=order)
+                                           temperature=temperature, order=order)
             elif mode == "editable":
                 gen = self.backbone.infill(t, spans[1:], cond=cond,
-                                           steps=steps, seed=seed, order=order)
+                                           steps=steps, seed=seed,
+                                           temperature=temperature, order=order)
             elif mode == "global":
                 gen = self.backbone.infill(t, [(0, t.shape[1])],
                                            cond=cond, steps=steps, seed=seed,
-                                           order=order)
+                                           temperature=temperature, order=order)
             else:
                 raise ValueError(mode)
         # decode back into blocks using the same span layout
