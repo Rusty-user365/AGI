@@ -1,0 +1,93 @@
+{
+  "config": {
+    "corpus": "results/arith_bench_s2.pt",
+    "components": 32,
+    "weight_decay": 0.01,
+    "steps": 800,
+    "lr": 0.05,
+    "bootstrap": 300,
+    "seed": 0,
+    "permute": true,
+    "min_discordant": 30,
+    "out": "results/select_eval_arith_s2_perm.json"
+  },
+  "rows": 4500,
+  "tasks": 500,
+  "admitted_rate": 1.0,
+  "arms": {
+    "head_train": {
+      "within_task_auc": 0.5446231820185103,
+      "ci": [
+        0.5040929927963327,
+        0.5822079314040729
+      ],
+      "discordant_tasks": 248,
+      "tasks": 250
+    },
+    "head_holdout": {
+      "within_task_auc": 0.4956160071942446,
+      "ci": [
+        0.45701682396389004,
+        0.535528506034124
+      ],
+      "discordant_tasks": 249,
+      "tasks": 250
+    },
+    "random": {
+      "expected_acc": 0.5026666797697544,
+      "n": 250
+    },
+    "majority": {
+      "hits": 135,
+      "n": 250,
+      "acc": 0.54,
+      "wilson": [
+        0.47807895390860083,
+        0.6007103383114293
+      ]
+    },
+    "logprob": {
+      "hits": 139,
+      "n": 250,
+      "acc": 0.556,
+      "wilson": [
+        0.49402378531370017,
+        0.616281223794342
+      ]
+    },
+    "head": {
+      "hits": 135,
+      "n": 250,
+      "acc": 0.54,
+      "wilson": [
+        0.47807895390860083,
+        0.6007103383114293
+      ]
+    },
+    "oracle": {
+      "hits": 195,
+      "n": 250,
+      "acc": 0.78,
+      "wilson": [
+        0.7246261912502433,
+        0.8268988542899677
+      ]
+    },
+    "greedy": {
+      "hits": 136,
+      "n": 250,
+      "acc": 0.544,
+      "wilson": [
+        0.48205927010382327,
+        0.6046089513382098
+      ]
+    }
+  },
+  "gate": {
+    "auc_ci_excludes_chance": false,
+    "sufficient_discordant": true,
+    "beats_logprob": false,
+    "beats_majority": false,
+    "passes": false
+  }
+}

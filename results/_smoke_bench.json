@@ -1,0 +1,39 @@
+{
+  "config": {
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float32",
+    "device": "cuda",
+    "steps": 2,
+    "k": 4,
+    "n_train": 4,
+    "n_holdout": 2,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 6,
+    "save_every": 2,
+    "out": "results/_smoke_bench.pt",
+    "summary": "results/_smoke_bench.json",
+    "resume": false
+  },
+  "splits": {
+    "train": {
+      "tasks": 4,
+      "candidates": 20,
+      "p1_greedy": 0.25,
+      "p1_sampled": 0.25,
+      "pass_at_k": 0.25,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 15
+    },
+    "holdout": {
+      "tasks": 2,
+      "candidates": 10,
+      "p1_greedy": 1.0,
+      "p1_sampled": 1.0,
+      "pass_at_k": 1.0,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 0
+    }
+  }
+}

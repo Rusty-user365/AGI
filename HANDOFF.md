@@ -14,6 +14,34 @@ must not be hand-edited.
 
 ---
 
+## Current state (2026-10-27, after the routing gate)
+
+The repair line is closed. On `test` the CGR gate condition is a null against an
+in-distribution control (+0.005, quality -0.174 SIG worse), and the repair
+corpus cannot test routing at all: parseability and correctness agree 480/480,
+so a parser achieves perfect discrimination.
+
+A replacement benchmark was built and the observer was evaluated on it.
+
+| Question | Answer | Evidence |
+|---|---|---|
+| Can a head rank correct repairs above incorrect ones? | **Yes**, AUC 0.682 [0.573, 0.782] on held-out tasks, permutation control 0.496 | `results/select_eval_arith_s2.json` |
+| Does that ranking improve selection over free baselines? | **No.** Head 0.560 vs max-logprob 0.556, 12 wins / 11 losses, p=1.000 | same |
+| Is the benchmark property present? | **Yes.** 500 tasks, 100% well-formed, 1096 wrong-but-well-formed holdout candidates | `results/arith_bench_s2.pt` |
+| Is an instruct model a better generator? | **No.** Qwen2.5-1.5B-Instruct is 100% well-formed but p1 0.03-0.22, so pass@k tops out at 0.20-0.50 | `findings/2026-10-27-instruct-model-fluent-but-wrong.md` |
+
+**`DAG_Scratchpad` stays unwritten.** The literal gate (AUC > 0.5) is met; the
+justification (beat the model's own confidence) is not. A loop reranking by this
+observer is indistinguishable from max-logprob, which is free.
+
+New instruments: `experiments/arith_bench.py` (corpus builder, resumable),
+`experiments/select_eval.py` (head vs greedy/random/majority/logprob/oracle,
+paired sign tests, permutation control), `experiments/wordbench.py`
+(notebook-and-pen family). Models on disk: `checkpoints/hf/dual-lm-470m`,
+`checkpoints/hf/qwen3-0.6b-base`, `checkpoints/hf/qwen2.5-1.5b-instruct`.
+
+---
+
 ## 0. Active branch: DiffuGPT backbone (uncommitted on top of `5345a1e`)
 
 The v0.3 snapshot below is the canvas result. Work since then swaps in

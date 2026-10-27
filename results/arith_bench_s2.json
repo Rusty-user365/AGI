@@ -1,0 +1,39 @@
+{
+  "config": {
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float32",
+    "device": "cuda",
+    "steps": 2,
+    "k": 8,
+    "n_train": 250,
+    "n_holdout": 250,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 6,
+    "save_every": 25,
+    "out": "results/arith_bench_s2.pt",
+    "summary": "results/arith_bench_s2.json",
+    "resume": false
+  },
+  "splits": {
+    "train": {
+      "tasks": 250,
+      "candidates": 2250,
+      "p1_greedy": 0.52,
+      "p1_sampled": 0.485,
+      "pass_at_k": 0.748,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 1150
+    },
+    "holdout": {
+      "tasks": 250,
+      "candidates": 2250,
+      "p1_greedy": 0.544,
+      "p1_sampled": 0.509,
+      "pass_at_k": 0.776,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 1096
+    }
+  }
+}

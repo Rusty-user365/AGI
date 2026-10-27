@@ -1,0 +1,72 @@
+{
+  "model": "checkpoints/hf/qwen3-0.6b-base",
+  "dtype": "float32",
+  "n": 8,
+  "k": 1,
+  "temperature": 0.8,
+  "rungs": {
+    "0": {
+      "steps": 0,
+      "n": 8,
+      "k": 1,
+      "p1_greedy": 0.875,
+      "p1_sampled": 0.5,
+      "pass_at_k": 0.25,
+      "lift": -0.25,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 6,
+      "examples": [
+        {
+          "problem": "a = 7\na = ?",
+          "answer": 7,
+          "greedy": "7\n\nx = 2",
+          "sampled": "7\n\nb = 8"
+        },
+        {
+          "problem": "a = 7\na = ?",
+          "answer": 7,
+          "greedy": "7\n\nx = 2",
+          "sampled": "15\n\nb = 2"
+        },
+        {
+          "problem": "a = 1\na = ?",
+          "answer": 1,
+          "greedy": "1\n\nx = 2",
+          "sampled": "1\n\nb = 2"
+        }
+      ]
+    },
+    "1": {
+      "steps": 1,
+      "n": 8,
+      "k": 1,
+      "p1_greedy": 1.0,
+      "p1_sampled": 1.0,
+      "pass_at_k": 1.0,
+      "lift": 0.0,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 0,
+      "examples": [
+        {
+          "problem": "a = 7\nb = a - 6\nb = ?",
+          "answer": 1,
+          "greedy": "1\n\nx = 2",
+          "sampled": "1\n\nWhat is the total number"
+        },
+        {
+          "problem": "a = 2\nb = a + 9\nb = ?",
+          "answer": 11,
+          "greedy": "11\n\nx = 3",
+          "sampled": "11\n\nc = 3"
+        },
+        {
+          "problem": "a = 7\nb = a + 4\nb = ?",
+          "answer": 11,
+          "greedy": "11\n\nx = 2",
+          "sampled": "11\n\nx = 3"
+        }
+      ]
+    }
+  },
+  "usable_rungs": []
+}

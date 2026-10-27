@@ -1,0 +1,112 @@
+{
+  "config": {
+    "corpus": "results/arith_bench_s2.pt",
+    "components": 32,
+    "weight_decay": 0.01,
+    "steps": 800,
+    "lr": 0.05,
+    "bootstrap": 400,
+    "seed": 0,
+    "permute": false,
+    "min_discordant": 30,
+    "use_logprob": false,
+    "loss": "rank",
+    "out": "results/select_eval_arith_s2_rank.json"
+  },
+  "rows": 4500,
+  "tasks": 500,
+  "admitted_rate": 1.0,
+  "arms": {
+    "head_train": {
+      "within_task_auc": 0.6837968561064087,
+      "ci": [
+        0.5916988416988417,
+        0.7593876372039283
+      ],
+      "discordant_tasks": 126,
+      "tasks": 250
+    },
+    "head_holdout": {
+      "within_task_auc": 0.521505376344086,
+      "ci": [
+        0.40681502086230875,
+        0.6240482233502538
+      ],
+      "discordant_tasks": 121,
+      "tasks": 250
+    },
+    "random": {
+      "expected_acc": 0.512888892441988,
+      "n": 250
+    },
+    "oracle": {
+      "hits": 195,
+      "n": 250,
+      "acc": 0.78,
+      "wilson": [
+        0.7246261912502433,
+        0.8268988542899677
+      ]
+    },
+    "greedy": {
+      "hits": 136,
+      "n": 250,
+      "acc": 0.544,
+      "wilson": [
+        0.48205927010382327,
+        0.6046089513382098
+      ]
+    },
+    "majority": {
+      "hits": 135,
+      "n": 250,
+      "acc": 0.54,
+      "wilson": [
+        0.47807895390860083,
+        0.6007103383114293
+      ]
+    },
+    "logprob": {
+      "hits": 139,
+      "n": 250,
+      "acc": 0.556,
+      "wilson": [
+        0.49402378531370017,
+        0.616281223794342
+      ]
+    },
+    "head": {
+      "hits": 127,
+      "n": 250,
+      "acc": 0.508,
+      "wilson": [
+        0.4463768324746957,
+        0.5693810259693104
+      ]
+    }
+  },
+  "paired": {
+    "greedy": {
+      "wins": 21,
+      "losses": 30,
+      "p": 0.2624375357110438
+    },
+    "majority": {
+      "wins": 17,
+      "losses": 25,
+      "p": 0.27995623852893914
+    },
+    "logprob": {
+      "wins": 19,
+      "losses": 31,
+      "p": 0.11892045255943628
+    }
+  },
+  "gate": {
+    "auc_ci_excludes_chance": false,
+    "sufficient_discordant": true,
+    "beats_best_free_arm": false,
+    "beats_best_free_p_lt_0.05": false,
+    "passes": false
+  }
+}

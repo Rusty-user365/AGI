@@ -1,0 +1,87 @@
+{
+  "config": {
+    "corpus": "results/_smoke_bench.pt",
+    "components": 32,
+    "weight_decay": 0.01,
+    "steps": 800,
+    "lr": 0.05,
+    "bootstrap": 50,
+    "seed": 0,
+    "permute": false,
+    "min_discordant": 30,
+    "out": "results/_smoke_select.json"
+  },
+  "rows": 30,
+  "tasks": 6,
+  "admitted_rate": 1.0,
+  "arms": {
+    "head_train": {
+      "within_task_auc": null,
+      "ci": null,
+      "discordant_tasks": 0,
+      "tasks": 4
+    },
+    "head_holdout": {
+      "within_task_auc": null,
+      "ci": null,
+      "discordant_tasks": 0,
+      "tasks": 2
+    },
+    "random": {
+      "expected_acc": 1.0,
+      "n": 2
+    },
+    "majority": {
+      "hits": 2,
+      "n": 2,
+      "acc": 1.0,
+      "wilson": [
+        0.34237195288961925,
+        1.0
+      ]
+    },
+    "logprob": {
+      "hits": 2,
+      "n": 2,
+      "acc": 1.0,
+      "wilson": [
+        0.34237195288961925,
+        1.0
+      ]
+    },
+    "head": {
+      "hits": 2,
+      "n": 2,
+      "acc": 1.0,
+      "wilson": [
+        0.34237195288961925,
+        1.0
+      ]
+    },
+    "oracle": {
+      "hits": 2,
+      "n": 2,
+      "acc": 1.0,
+      "wilson": [
+        0.34237195288961925,
+        1.0
+      ]
+    },
+    "greedy": {
+      "hits": 2,
+      "n": 2,
+      "acc": 1.0,
+      "wilson": [
+        0.34237195288961925,
+        1.0
+      ]
+    }
+  },
+  "gate": {
+    "auc_ci_excludes_chance": false,
+    "sufficient_discordant": false,
+    "beats_logprob": false,
+    "beats_majority": false,
+    "passes": false
+  }
+}

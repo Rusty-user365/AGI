@@ -1,0 +1,42 @@
+{
+  "config": {
+    "model": "checkpoints/hf/qwen2.5-1.5b-instruct",
+    "arch": "auto",
+    "dtype": "float16",
+    "device": "cuda",
+    "level": 1,
+    "k": 4,
+    "n_train": 4,
+    "n_holdout": 2,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 12,
+    "save_every": 2,
+    "out": "results/_smoke_word.pt",
+    "summary": "results/_smoke_word.json",
+    "show": 4,
+    "resume": false
+  },
+  "splits": {
+    "train": {
+      "tasks": 4,
+      "candidates": 20,
+      "clean_rate": 1.0,
+      "p1_greedy": 0.25,
+      "p1_sampled": 0.0,
+      "pass_at_k": 0.0,
+      "wrong_clean": 16,
+      "tasks_with_no_clean": 0
+    },
+    "holdout": {
+      "tasks": 2,
+      "candidates": 10,
+      "clean_rate": 1.0,
+      "p1_greedy": 0.0,
+      "p1_sampled": 0.125,
+      "pass_at_k": 0.5,
+      "wrong_clean": 7,
+      "tasks_with_no_clean": 0
+    }
+  }
+}

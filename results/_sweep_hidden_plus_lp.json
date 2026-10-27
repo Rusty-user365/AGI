@@ -1,0 +1,111 @@
+{
+  "config": {
+    "corpus": "results/arith_bench_s2.pt",
+    "components": 32,
+    "weight_decay": 0.01,
+    "steps": 800,
+    "lr": 0.05,
+    "bootstrap": 200,
+    "seed": 0,
+    "permute": false,
+    "min_discordant": 30,
+    "use_logprob": true,
+    "out": "results/_sweep_hidden_plus_lp.json"
+  },
+  "rows": 4500,
+  "tasks": 500,
+  "admitted_rate": 1.0,
+  "arms": {
+    "head_train": {
+      "within_task_auc": 0.6650544135429263,
+      "ci": [
+        0.5499338624338624,
+        0.7712823275862069
+      ],
+      "discordant_tasks": 126,
+      "tasks": 250
+    },
+    "head_holdout": {
+      "within_task_auc": 0.6810035842293907,
+      "ci": [
+        0.579472558802566,
+        0.7727969348659004
+      ],
+      "discordant_tasks": 121,
+      "tasks": 250
+    },
+    "random": {
+      "expected_acc": 0.512888892441988,
+      "n": 250
+    },
+    "oracle": {
+      "hits": 195,
+      "n": 250,
+      "acc": 0.78,
+      "wilson": [
+        0.7246261912502433,
+        0.8268988542899677
+      ]
+    },
+    "greedy": {
+      "hits": 136,
+      "n": 250,
+      "acc": 0.544,
+      "wilson": [
+        0.48205927010382327,
+        0.6046089513382098
+      ]
+    },
+    "majority": {
+      "hits": 135,
+      "n": 250,
+      "acc": 0.54,
+      "wilson": [
+        0.47807895390860083,
+        0.6007103383114293
+      ]
+    },
+    "logprob": {
+      "hits": 139,
+      "n": 250,
+      "acc": 0.556,
+      "wilson": [
+        0.49402378531370017,
+        0.616281223794342
+      ]
+    },
+    "head": {
+      "hits": 140,
+      "n": 250,
+      "acc": 0.56,
+      "wilson": [
+        0.4980198439170466,
+        0.6201640944129987
+      ]
+    }
+  },
+  "paired": {
+    "greedy": {
+      "wins": 15,
+      "losses": 11,
+      "p": 0.557197093963623
+    },
+    "majority": {
+      "wins": 14,
+      "losses": 9,
+      "p": 0.4048728942871094
+    },
+    "logprob": {
+      "wins": 12,
+      "losses": 11,
+      "p": 1.0
+    }
+  },
+  "gate": {
+    "auc_ci_excludes_chance": true,
+    "sufficient_discordant": true,
+    "beats_best_free_arm": true,
+    "beats_best_free_p_lt_0.05": false,
+    "passes": false
+  }
+}

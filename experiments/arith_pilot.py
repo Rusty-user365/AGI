@@ -56,7 +56,9 @@ FEWSHOT = (
 
 def make_problem(rng: random.Random, steps: int) -> tuple[str, int]:
     """A chain of `steps` assignments with small non-negative values."""
-    names = ["a", "b", "c", "d", "e"]
+    names = list("abcdefgh")
+    if steps >= len(names):
+        raise ValueError(f"steps must be < {len(names)}, got {steps}")
     val = {names[0]: rng.randint(1, 9)}
     lines = [f"{names[0]} = {val[names[0]]}"]
     for i in range(steps):
@@ -81,7 +83,25 @@ def score(text: str) -> int | None:
     return int(m.group()) if m else None
 
 
-def load(model_dir: Path, dtype: torch.dtype, device: str):
+def load(model_dir: Path, dtype: torch.dtype, device: str, arch: str = "dlm"):
+    """Load either the repo's custom Dual-LM or any HF causal LM.
+
+    The DLM branch needs its remote modeling code importable from the model
+    directory; the `auto` branch must work with a plain hub repo id, which is
+    how a competent small generator gets tested without vendoring it.
+    """
+    if arch == "auto":
+        from transformers import AutoModelForCausalLM
+
+        src = str(model_dir) if Path(model_dir).is_dir() else str(model_dir)
+        tok = AutoTokenizer.from_pretrained(src)
+        tok.padding_side = "left"
+        if tok.pad_token is None:
+            tok.pad_token = tok.eos_token
+        model = AutoModelForCausalLM.from_pretrained(src, torch_dtype=dtype)
+        model.to(device).eval()
+        return model, tok
+
     sys.path.insert(0, str(model_dir))
     import modeling_dlm_llama as m
 
@@ -176,12 +196,16 @@ def main() -> int:
     ap.add_argument("--temperature", type=float, default=0.8)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--dtype", default="float16", choices=["float16", "float32"])
+    ap.add_argument("--arch", default="dlm", choices=["dlm", "auto"],
+                    help="dlm = this repo's Dual-LM remote code; auto = any "
+                         "transformers causal LM, including a hub repo id")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--out", default="results/arith_pilot.json")
     args = ap.parse_args()
 
     dtype = torch.float16 if args.dtype == "float16" else torch.float32
-    model, tok = load(Path(args.model).resolve(), dtype, args.device)
+    model, tok = load(Path(args.model).resolve() if Path(args.model).is_dir()
+                      else args.model, dtype, args.device, args.arch)
     print(f"loaded, {sum(p.numel() for p in model.parameters()):,} params, {args.dtype}")
 
     rungs = [int(s) for s in args.steps.split(",")]
@@ -197,6 +221,10 @@ def main() -> int:
         print(f"{steps:>5} {r['p1_greedy']:>10.3f} {r['p1_sampled']:>8.3f} "
               f"{r['pass_at_k']:>7.3f} {r['lift']:>+6.3f} "
               f"{r['wellformed_rate']:>8.3f} {r['wrong_wellformed']:>9}")
+        # Write after every rung: a crash on a later rung must not destroy the
+        # rungs that already finished.
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out).write_text(json.dumps(report, indent=2), encoding="utf-8")
 
     usable = [s for s, r in report["rungs"].items()
               if 0.15 <= r["p1_sampled"] <= 0.50 and r["lift"] >= 0.15
