@@ -1,0 +1,386 @@
+{
+  "status": "complete",
+  "signature": {
+    "checkpoint": "checkpoints/diffugpt_5k_e10_cgr_fixup_reasoner/stage_b.pt",
+    "split": "test",
+    "n": 120,
+    "candidates": 4,
+    "steps": 8,
+    "seed": 0,
+    "cond_mode": "reasoner"
+  },
+  "checkpoint": "checkpoints/diffugpt_5k_e10_cgr_fixup_reasoner/stage_b.pt",
+  "split": "test",
+  "cond_mode": "reasoner",
+  "n_tasks": 120,
+  "candidates": 4,
+  "steps": 8,
+  "pairs": 480,
+  "mean_candidate_correct": 0.30833333333333335,
+  "oracle_top1": 0.7166666666666667,
+  "discordant_tasks": 82,
+  "discordant_frac": 0.6833333333333333,
+  "within_task_pairs": 280,
+  "diversity": {
+    "mean_distinct_per_task": 3.841666666666667,
+    "frac_tasks_single_candidate": 0.0,
+    "candidates": 4,
+    "temperature": 0.8,
+    "order": "left_to_right",
+    "source": "token sampling"
+  },
+  "length_confound": {
+    "auc": 0.4953598176489743,
+    "within_task_auc": 0.5,
+    "note": "token count used as a head; if this is far from 0.5 the pooled AUCs are length-confounded and within-task is the only honest number"
+  },
+  "rule": {
+    "rerank_usable": "within-task AUC 95% CI excludes 0.5, either direction, with at least 30 tasks",
+    "gate_usable": "a threshold holds precision >= base_rate + 0.15 at coverage >= 0.30 on the held-out half, with at least 30 tasks"
+  },
+  "heads": {
+    "value": {
+      "auc": 0.4834744382937154,
+      "auc_ci": [
+        0.4241439692820524,
+        0.5458534984824871
+      ],
+      "within_task_auc": 0.5285714285714286,
+      "within_task_ci": [
+        0.44642857142857145,
+        0.6101083032490975
+      ],
+      "within_task_auc_len_controlled": 0.5285714285714286,
+      "top1": 0.30833333333333335,
+      "gain_vs_mean": 0.0,
+      "icc": 0.554939792329279,
+      "brier": 0.2036214878986809,
+      "ece": 0.06739958912011103,
+      "calibration_note": "Platt fit on first half, scored on second half",
+      "thresholds": [
+        {
+          "quantile": 0.5,
+          "threshold": 0.8616133332252502,
+          "coverage": 0.5041666666666667,
+          "precision": 0.256198347107438
+        },
+        {
+          "quantile": 0.7,
+          "threshold": 0.8970453143119812,
+          "coverage": 0.30416666666666664,
+          "precision": 0.2602739726027397
+        },
+        {
+          "quantile": 0.8,
+          "threshold": 0.9036036133766174,
+          "coverage": 0.20416666666666666,
+          "precision": 0.2857142857142857
+        },
+        {
+          "quantile": 0.9,
+          "threshold": 0.9174320697784424,
+          "coverage": 0.10416666666666667,
+          "precision": 0.36
+        }
+      ],
+      "heldout_base_rate": 0.275,
+      "rerank_usable": false,
+      "gate_usable": false,
+      "sufficient_n": true
+    },
+    "outcome_max": {
+      "auc": 0.4760664278736568,
+      "auc_ci": [
+        0.412983396274183,
+        0.5401358443964186
+      ],
+      "within_task_auc": 0.4714285714285714,
+      "within_task_ci": [
+        0.3942652329749104,
+        0.550561797752809
+      ],
+      "within_task_auc_len_controlled": 0.4714285714285714,
+      "top1": 0.2916666666666667,
+      "gain_vs_mean": -0.016666666666666663,
+      "icc": 0.626334316227104,
+      "brier": 0.20425903487482922,
+      "ece": 0.06572803257096216,
+      "calibration_note": "Platt fit on first half, scored on second half",
+      "thresholds": [
+        {
+          "quantile": 0.5,
+          "threshold": 0.9847341179847717,
+          "coverage": 0.5041666666666667,
+          "precision": 0.23140495867768596
+        },
+        {
+          "quantile": 0.7,
+          "threshold": 0.9880778789520264,
+          "coverage": 0.30416666666666664,
+          "precision": 0.273972602739726
+        },
+        {
+          "quantile": 0.8,
+          "threshold": 0.9906604290008545,
+          "coverage": 0.20416666666666666,
+          "precision": 0.2857142857142857
+        },
+        {
+          "quantile": 0.9,
+          "threshold": 0.9929233193397522,
+          "coverage": 0.10416666666666667,
+          "precision": 0.28
+        }
+      ],
+      "heldout_base_rate": 0.275,
+      "rerank_usable": false,
+      "gate_usable": false,
+      "sufficient_n": true
+    },
+    "tau": {
+      "auc": 0.5094024747639205,
+      "auc_ci": [
+        0.4441689973726587,
+        0.5681089743589743
+      ],
+      "within_task_auc": 0.45714285714285713,
+      "within_task_ci": [
+        0.3724832214765101,
+        0.5379537953795379
+      ],
+      "within_task_auc_len_controlled": 0.45714285714285713,
+      "top1": 0.275,
+      "gain_vs_mean": -0.033333333333333326,
+      "icc": 0.5656186769198719,
+      "brier": 0.20379508957699555,
+      "ece": 0.06645867114640869,
+      "calibration_note": "Platt fit on first half, scored on second half",
+      "thresholds": [
+        {
+          "quantile": 0.5,
+          "threshold": 1.3945341110229492,
+          "coverage": 0.5041666666666667,
+          "precision": 0.2892561983471074
+        },
+        {
+          "quantile": 0.7,
+          "threshold": 1.5692379474639893,
+          "coverage": 0.30416666666666664,
+          "precision": 0.3424657534246575
+        },
+        {
+          "quantile": 0.8,
+          "threshold": 1.621824026107788,
+          "coverage": 0.20416666666666666,
+          "precision": 0.30612244897959184
+        },
+        {
+          "quantile": 0.9,
+          "threshold": 1.6599617004394531,
+          "coverage": 0.10416666666666667,
+          "precision": 0.36
+        }
+      ],
+      "heldout_base_rate": 0.275,
+      "rerank_usable": false,
+      "gate_usable": false,
+      "sufficient_n": true
+    },
+    "disagreement": {
+      "auc": 0.49202214262455224,
+      "auc_ci": [
+        0.42880397022332506,
+        0.5554052603327966
+      ],
+      "within_task_auc": 0.425,
+      "within_task_ci": [
+        0.3467741935483871,
+        0.5072992700729927
+      ],
+      "within_task_auc_len_controlled": 0.425,
+      "top1": 0.26666666666666666,
+      "gain_vs_mean": -0.041666666666666685,
+      "icc": 0.5899221839961534,
+      "brier": 0.20392163604065722,
+      "ece": 0.06658715493448092,
+      "calibration_note": "Platt fit on first half, scored on second half",
+      "thresholds": [
+        {
+          "quantile": 0.5,
+          "threshold": 7.361119969573338e-06,
+          "coverage": 0.5041666666666667,
+          "precision": 0.3140495867768595
+        },
+        {
+          "quantile": 0.7,
+          "threshold": 1.0226375707134139e-05,
+          "coverage": 0.30416666666666664,
+          "precision": 0.273972602739726
+        },
+        {
+          "quantile": 0.8,
+          "threshold": 1.1905966857739259e-05,
+          "coverage": 0.20416666666666666,
+          "precision": 0.2857142857142857
+        },
+        {
+          "quantile": 0.9,
+          "threshold": 1.4642383575846907e-05,
+          "coverage": 0.10416666666666667,
+          "precision": 0.2
+        }
+      ],
+      "heldout_base_rate": 0.275,
+      "rerank_usable": false,
+      "gate_usable": false,
+      "sufficient_n": true
+    },
+    "epistemic_conf": {
+      "auc": 0.4747028655161185,
+      "auc_ci": [
+        0.4206415647177458,
+        0.5382498624105668
+      ],
+      "within_task_auc": 0.55,
+      "within_task_ci": [
+        0.4800796812749004,
+        0.6245954692556634
+      ],
+      "within_task_auc_len_controlled": 0.55,
+      "top1": 0.3416666666666667,
+      "gain_vs_mean": 0.033333333333333326,
+      "icc": 0.6118254993582715,
+      "brier": 0.20441062403490204,
+      "ece": 0.06648890017531611,
+      "calibration_note": "Platt fit on first half, scored on second half",
+      "thresholds": [
+        {
+          "quantile": 0.5,
+          "threshold": 0.999994158744812,
+          "coverage": 0.5083333333333333,
+          "precision": 0.20491803278688525
+        },
+        {
+          "quantile": 0.7,
+          "threshold": 0.9999969005584717,
+          "coverage": 0.30833333333333335,
+          "precision": 0.25675675675675674
+        },
+        {
+          "quantile": 0.8,
+          "threshold": 0.999997615814209,
+          "coverage": 0.2125,
+          "precision": 0.3137254901960784
+        },
+        {
+          "quantile": 0.9,
+          "threshold": 0.9999979734420776,
+          "coverage": 0.12083333333333333,
+          "precision": 0.27586206896551724
+        }
+      ],
+      "heldout_base_rate": 0.275,
+      "rerank_usable": false,
+      "gate_usable": false,
+      "sufficient_n": true
+    },
+    "scope_conf": {
+      "auc": 0.5072146694887659,
+      "auc_ci": [
+        0.4438995106922798,
+        0.5658239829622764
+      ],
+      "within_task_auc": 0.5053571428571428,
+      "within_task_ci": [
+        0.4377224199288256,
+        0.5670498084291188
+      ],
+      "within_task_auc_len_controlled": 0.5053571428571428,
+      "top1": 0.3416666666666667,
+      "gain_vs_mean": 0.033333333333333326,
+      "icc": 0.7680255639915567,
+      "brier": 0.2050305702903419,
+      "ece": 0.06392760054192087,
+      "calibration_note": "Platt fit on first half, scored on second half",
+      "thresholds": [
+        {
+          "quantile": 0.5,
+          "threshold": 0.9999995231628418,
+          "coverage": 0.6625,
+          "precision": 0.3081761006289308
+        },
+        {
+          "quantile": 0.7,
+          "threshold": 0.9999996423721313,
+          "coverage": 0.4666666666666667,
+          "precision": 0.32142857142857145
+        },
+        {
+          "quantile": 0.8,
+          "threshold": 0.9999996423721313,
+          "coverage": 0.4666666666666667,
+          "precision": 0.32142857142857145
+        },
+        {
+          "quantile": 0.9,
+          "threshold": 0.9999997615814209,
+          "coverage": 0.1875,
+          "precision": 0.3333333333333333
+        }
+      ],
+      "heldout_base_rate": 0.275,
+      "rerank_usable": false,
+      "gate_usable": false,
+      "sufficient_n": true
+    },
+    "source_conf": {
+      "auc": 0.5,
+      "auc_ci": [
+        0.5,
+        0.5
+      ],
+      "within_task_auc": 0.5,
+      "within_task_ci": [
+        0.5,
+        0.5
+      ],
+      "within_task_auc_len_controlled": 0.5,
+      "top1": 0.35,
+      "gain_vs_mean": 0.04166666666666663,
+      "icc": null,
+      "brier": 0.2038194444444445,
+      "ece": 0.06666666666666748,
+      "calibration_note": "Platt fit on first half, scored on second half",
+      "thresholds": [
+        {
+          "quantile": 0.5,
+          "threshold": 1.0,
+          "coverage": 1.0,
+          "precision": 0.275
+        },
+        {
+          "quantile": 0.7,
+          "threshold": 1.0,
+          "coverage": 1.0,
+          "precision": 0.275
+        },
+        {
+          "quantile": 0.8,
+          "threshold": 1.0,
+          "coverage": 1.0,
+          "precision": 0.275
+        },
+        {
+          "quantile": 0.9,
+          "threshold": 1.0,
+          "coverage": 1.0,
+          "precision": 0.275
+        }
+      ],
+      "heldout_base_rate": 0.275,
+      "rerank_usable": false,
+      "gate_usable": false,
+      "sufficient_n": true
+    }
+  }
+}

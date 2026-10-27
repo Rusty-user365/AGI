@@ -3,6 +3,13 @@
 Artifact: `results/observer_diagnostic_test.json`
 Run: `--n 120 --candidates 4 --steps 8 --cond-mode reasoner --temperature 0.8 --split test`
 
+> Follow-up, same day: the 0.409 oracle gap measured here is sampling luck, not
+> reasoning. This corpus contains no wrong-but-well-formed candidate, so the gap
+> is "at least one of four samples parsed", which a validity check captures for
+> free. See
+> [benchmark-has-no-plausible-wrong-answers](2026-10-27-benchmark-has-no-plausible-wrong-answers.md).
+> The head results in this entry are unchanged.
+
 ## The question
 
 A rejection loop only helps if the observer's score correlates with being right.

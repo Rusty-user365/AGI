@@ -1,0 +1,192 @@
+{
+  "full": [
+    {
+      "features": "full",
+      "dim_in": 1544,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.5849514563106796,
+        "within_task_ci": [
+          0.4830917874396135,
+          0.6724890829694323
+        ],
+        "discordant_tasks": 61,
+        "top1": 0.4027777777777778,
+        "base_rate": 0.3194444477558136,
+        "gain_vs_base": 0.08333333002196419,
+        "oracle_top1": 0.8472222222222222
+      },
+      "heldout": {
+        "within_task_auc": 0.4959677419354839,
+        "within_task_ci": [
+          0.4112903225806452,
+          0.6016260162601627
+        ],
+        "discordant_tasks": 38,
+        "top1": 0.25,
+        "base_rate": 0.2916666567325592,
+        "gain_vs_base": -0.041666656732559204,
+        "oracle_top1": 0.7916666666666666
+      },
+      "passes": false,
+      "seed": 0
+    },
+    {
+      "features": "full",
+      "dim_in": 1544,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.6135135135135135,
+        "within_task_ci": [
+          0.5280612244897959,
+          0.6852791878172588
+        ],
+        "discordant_tasks": 56,
+        "top1": 0.3194444444444444,
+        "base_rate": 0.3020833432674408,
+        "gain_vs_base": 0.017361101177003624,
+        "oracle_top1": 0.7777777777777778
+      },
+      "heldout": {
+        "within_task_auc": 0.5413793103448276,
+        "within_task_ci": [
+          0.4272151898734177,
+          0.6462585034013606
+        ],
+        "discordant_tasks": 43,
+        "top1": 0.375,
+        "base_rate": 0.3177083432674408,
+        "gain_vs_base": 0.057291656732559204,
+        "oracle_top1": 0.8958333333333334
+      },
+      "passes": false,
+      "seed": 1
+    },
+    {
+      "features": "full",
+      "dim_in": 1544,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.6675392670157068,
+        "within_task_ci": [
+          0.5804878048780487,
+          0.7345971563981043
+        ],
+        "discordant_tasks": 58,
+        "top1": 0.4166666666666667,
+        "base_rate": 0.2951388955116272,
+        "gain_vs_base": 0.12152777115503949,
+        "oracle_top1": 0.8055555555555556
+      },
+      "heldout": {
+        "within_task_auc": 0.5575539568345323,
+        "within_task_ci": [
+          0.43137254901960786,
+          0.6679389312977099
+        ],
+        "discordant_tasks": 41,
+        "top1": 0.375,
+        "base_rate": 0.328125,
+        "gain_vs_base": 0.046875,
+        "oracle_top1": 0.8541666666666666
+      },
+      "passes": false,
+      "seed": 2
+    }
+  ],
+  "block": [
+    {
+      "features": "block",
+      "dim_in": 768,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.7305825242718447,
+        "within_task_ci": [
+          0.6511627906976745,
+          0.7953488372093023
+        ],
+        "discordant_tasks": 61,
+        "top1": 0.5138888888888888,
+        "base_rate": 0.3194444477558136,
+        "gain_vs_base": 0.19444444113307524,
+        "oracle_top1": 0.8472222222222222
+      },
+      "heldout": {
+        "within_task_auc": 0.4879032258064516,
+        "within_task_ci": [
+          0.3702290076335878,
+          0.6192660550458715
+        ],
+        "discordant_tasks": 38,
+        "top1": 0.3125,
+        "base_rate": 0.2916666567325592,
+        "gain_vs_base": 0.020833343267440796,
+        "oracle_top1": 0.7916666666666666
+      },
+      "passes": false,
+      "seed": 0
+    },
+    {
+      "features": "block",
+      "dim_in": 768,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.7594594594594595,
+        "within_task_ci": [
+          0.6764705882352942,
+          0.8333333333333334
+        ],
+        "discordant_tasks": 56,
+        "top1": 0.4583333333333333,
+        "base_rate": 0.3020833432674408,
+        "gain_vs_base": 0.15624999006589252,
+        "oracle_top1": 0.7777777777777778
+      },
+      "heldout": {
+        "within_task_auc": 0.506896551724138,
+        "within_task_ci": [
+          0.3993055555555556,
+          0.6006944444444444
+        ],
+        "discordant_tasks": 43,
+        "top1": 0.4166666666666667,
+        "base_rate": 0.3177083432674408,
+        "gain_vs_base": 0.09895832339922589,
+        "oracle_top1": 0.8958333333333334
+      },
+      "passes": false,
+      "seed": 1
+    },
+    {
+      "features": "block",
+      "dim_in": 768,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.7408376963350786,
+        "within_task_ci": [
+          0.6641414141414141,
+          0.8184210526315789
+        ],
+        "discordant_tasks": 58,
+        "top1": 0.4861111111111111,
+        "base_rate": 0.2951388955116272,
+        "gain_vs_base": 0.1909722155994839,
+        "oracle_top1": 0.8055555555555556
+      },
+      "heldout": {
+        "within_task_auc": 0.5143884892086331,
+        "within_task_ci": [
+          0.4064516129032258,
+          0.6277372262773723
+        ],
+        "discordant_tasks": 41,
+        "top1": 0.3125,
+        "base_rate": 0.328125,
+        "gain_vs_base": -0.015625,
+        "oracle_top1": 0.8541666666666666
+      },
+      "passes": false,
+      "seed": 2
+    }
+  ]
+}

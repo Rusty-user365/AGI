@@ -22,6 +22,7 @@ are recorded in the same entry rather than quietly deleted.
 | 2026-10-27 | [fair-control-exp8](2026-10-27-fair-control-exp8.md) | Gate condition null at +0.005 against an in-distribution control, with a quality cost; one of two global-scope trades survives on test only |
 | 2026-10-27 | [observer-cannot-rank](2026-10-27-observer-cannot-rank.md) | No head ranks repairs above chance (all CIs include 0.5); oracle gap is 0.409, so the DAG stays unwritten |
 | 2026-10-27 | [dual-lm-masked-path-causal](2026-10-27-dual-lm-masked-path-causal.md) | Dual-LM 470M's masked path is causal under transformers 4.51.3; a 15-line mask patch restores bidirectional infill |
+| 2026-10-27 | [benchmark-has-no-plausible-wrong-answers](2026-10-27-benchmark-has-no-plausible-wrong-answers.md) | Parseability and correctness agree in 480/480 candidates, so a retrained head's 0.684 is a well-formedness detector and a parser dominates it |
 
 Open gaps, tracked here so they are not forgotten:
 

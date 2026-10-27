@@ -229,14 +229,15 @@ def role_of(index: int, n_blocks: int) -> str:
 
 
 @torch.no_grad()
-def head_scores(system, tok, blocks: list[str]) -> tuple[dict[str, float], int]:
+def head_scores(system, tok, blocks: list[str]) -> tuple[dict[str, float], int, torch.Tensor]:
     ids, _ = blocked_spans(blocks, tok)
     t = torch.tensor(ids, device=system.device).unsqueeze(0)
     clock = torch.tensor([CLOCK], device=system.device)
-    preds = system.forward_episodes(t, clock)["preds"]
+    f = system.forward_episodes(t, clock)
+    preds = f["preds"]
     one = lambda x: x.reshape(-1)[0]
     conf = lambda k: float(torch.softmax(preds[k], -1).max())
-    return {
+    scores = {
         "value": float(torch.sigmoid(one(preds["value"]))),
         "tau": float(torch.nn.functional.softplus(one(preds["tau"]))),
         "disagreement": float(torch.sigmoid(one(preds["disagreement"]))),
@@ -244,7 +245,22 @@ def head_scores(system, tok, blocks: list[str]) -> tuple[dict[str, float], int]:
         "scope_conf": conf("scope"),
         "source_conf": conf("source"),
         "outcome_max": float(preds["outcome"].reshape(-1).max()),
-    }, len(ids)
+    }
+    return scores, len(ids), f["feats"][0].detach()
+
+
+@torch.no_grad()
+def block_feature(system, tok, text: str, max_len: int) -> torch.Tensor:
+    """Pooled hidden state of the repaired block alone.
+
+    The full-document feature is 99% unchanged text, so any signal about the
+    repaired span is diluted by construction. This is the same backbone applied
+    only to the block, which is out of distribution but gives the label a chance
+    to be visible.
+    """
+    ids = tok.encode(text, add_bos=True, add_eos=True)[:max_len]
+    t = torch.tensor(ids, device=system.device).unsqueeze(0)
+    return system.backbone.pooled(t)[0].detach()
 
 
 def load_partial(path: Path, args) -> list[list[dict]]:
@@ -284,6 +300,9 @@ def main() -> int:
     ap.add_argument("--order", default=None,
                     choices=[None, "left_to_right", "random"])
     ap.add_argument("--bootstrap", type=int, default=1000)
+    ap.add_argument("--dump-features", default=None,
+                    help="write cached backbone features and labels here, for "
+                         "training a head directly on the selection objective")
     ap.add_argument("--out", default="results/observer_diagnostic.json")
     args = ap.parse_args()
 
@@ -300,7 +319,11 @@ def main() -> int:
         fits=lambda texts: len(blocked_spans(texts, tok)[0]) <= cfg.model.max_len
     )["local"]
 
-    per_task: list[list[dict]] = load_partial(out_path, args)
+    dump = ({"feats": [], "block_feats": [], "labels": [], "parseable": [],
+             "task": []}
+            if args.dump_features else None)
+    # Feature dumps are positional, so a partial resume would misalign them.
+    per_task: list[list[dict]] = [] if dump else load_partial(out_path, args)
     if per_task:
         print(f"resuming with {len(per_task)}/{len(tasks)} tasks from {out_path}", flush=True)
 
@@ -315,10 +338,19 @@ def main() -> int:
                 temperature=args.temperature, order=args.order)
             role = role_of(task.target_block, len(cand))
             tid, _, _ = parse_block(cand[task.target_block], role)
-            sc, ntok = head_scores(system, tok, cand)
+            sc, ntok, feats = head_scores(system, tok, cand)
             rows.append({"correct": int(tid == task.authoritative),
                          "scores": sc, "tokens": ntok, "candidate": ci,
-                         "text": cand[task.target_block]})
+                         "text": cand[task.target_block],
+                         "parseable": int(tid is not None)})
+            if dump is not None:
+                dump["feats"].append(feats.cpu())
+                dump["block_feats"].append(
+                    block_feature(system, tok, cand[task.target_block],
+                                  cfg.model.max_len).cpu())
+                dump["labels"].append(int(tid == task.authoritative))
+                dump["parseable"].append(int(tid is not None))
+                dump["task"].append(ti)
         per_task.append(rows)
         if (ti + 1) % 10 == 0 or ti + 1 == len(tasks):
             out_path.write_text(json.dumps(
@@ -474,6 +506,22 @@ def main() -> int:
               f"{p90:>11.3f} {str(h['gate_usable']):>6} {str(h['rerank_usable']):>7}")
 
     out_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+    if dump is not None:
+        dpath = Path(args.dump_features)
+        dpath.parent.mkdir(parents=True, exist_ok=True)
+        torch.save({
+            "feats": torch.stack(dump["feats"]),
+            "block_feats": torch.stack(dump["block_feats"]),
+            "labels": torch.tensor(dump["labels"], dtype=torch.long),
+            "parseable": torch.tensor(dump["parseable"], dtype=torch.long),
+            "task": torch.tensor(dump["task"], dtype=torch.long),
+            "signature": signature(args),
+            "base_rate": mean_correct,
+            "oracle_top1": oracle,
+        }, dpath)
+        print(f"wrote features {dpath} "
+              f"({len(dump['labels'])} rows, {dump['feats'][0].numel()}-dim)")
     print(f"\nwrote {args.out}")
     best = max((h for h in report["heads"].items()),
                key=lambda kv: abs((kv[1]["within_task_auc"] or 0.5) - 0.5))

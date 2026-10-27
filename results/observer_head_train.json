@@ -1,0 +1,316 @@
+{
+  "full": [
+    {
+      "features": "full",
+      "dim_in": 1544,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.6746987951807228,
+        "within_task_ci": [
+          0.563953488372093,
+          0.7777777777777778
+        ],
+        "discordant_tasks": 49,
+        "top1": 0.4444444444444444,
+        "base_rate": 0.3263888955116272,
+        "gain_vs_base": 0.11805554893281722,
+        "oracle_top1": 0.7222222222222222
+      },
+      "heldout": {
+        "within_task_auc": 0.5263157894736842,
+        "within_task_ci": [
+          0.40217391304347827,
+          0.6464646464646465
+        ],
+        "discordant_tasks": 33,
+        "top1": 0.3333333333333333,
+        "base_rate": 0.28125,
+        "gain_vs_base": 0.052083333333333315,
+        "oracle_top1": 0.7083333333333334
+      },
+      "passes": false,
+      "seed": 0
+    },
+    {
+      "features": "full",
+      "dim_in": 1544,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.6728395061728395,
+        "within_task_ci": [
+          0.5574712643678161,
+          0.7597765363128491
+        ],
+        "discordant_tasks": 47,
+        "top1": 0.4027777777777778,
+        "base_rate": 0.2847222089767456,
+        "gain_vs_base": 0.11805556880103218,
+        "oracle_top1": 0.6805555555555556
+      },
+      "heldout": {
+        "within_task_auc": 0.5508474576271186,
+        "within_task_ci": [
+          0.425,
+          0.6766917293233082
+        ],
+        "discordant_tasks": 35,
+        "top1": 0.3541666666666667,
+        "base_rate": 0.34375,
+        "gain_vs_base": 0.010416666666666685,
+        "oracle_top1": 0.7708333333333334
+      },
+      "passes": false,
+      "seed": 1
+    },
+    {
+      "features": "full",
+      "dim_in": 1544,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.6705202312138728,
+        "within_task_ci": [
+          0.5780346820809249,
+          0.7613636363636364
+        ],
+        "discordant_tasks": 50,
+        "top1": 0.4444444444444444,
+        "base_rate": 0.3368055522441864,
+        "gain_vs_base": 0.10763889220025802,
+        "oracle_top1": 0.7361111111111112
+      },
+      "heldout": {
+        "within_task_auc": 0.6822429906542056,
+        "within_task_ci": [
+          0.5643564356435643,
+          0.8058252427184466
+        ],
+        "discordant_tasks": 32,
+        "top1": 0.3541666666666667,
+        "base_rate": 0.265625,
+        "gain_vs_base": 0.08854166666666669,
+        "oracle_top1": 0.6875
+      },
+      "passes": true,
+      "seed": 2
+    },
+    {
+      "features": "full",
+      "dim_in": 1544,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.7378048780487805,
+        "within_task_ci": [
+          0.6436781609195402,
+          0.8235294117647058
+        ],
+        "discordant_tasks": 48,
+        "top1": 0.4444444444444444,
+        "base_rate": 0.2916666567325592,
+        "gain_vs_base": 0.15277778771188522,
+        "oracle_top1": 0.7083333333333334
+      },
+      "heldout": {
+        "within_task_auc": 0.5172413793103449,
+        "within_task_ci": [
+          0.40350877192982454,
+          0.6434782608695652
+        ],
+        "discordant_tasks": 34,
+        "top1": 0.2916666666666667,
+        "base_rate": 0.3333333432674408,
+        "gain_vs_base": -0.04166667660077411,
+        "oracle_top1": 0.7291666666666666
+      },
+      "passes": false,
+      "seed": 3
+    },
+    {
+      "features": "full",
+      "dim_in": 1544,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.6580310880829016,
+        "within_task_ci": [
+          0.572289156626506,
+          0.746031746031746
+        ],
+        "discordant_tasks": 55,
+        "top1": 0.5277777777777778,
+        "base_rate": 0.3784722089767456,
+        "gain_vs_base": 0.14930556880103218,
+        "oracle_top1": 0.8055555555555556
+      },
+      "heldout": {
+        "within_task_auc": 0.6666666666666666,
+        "within_task_ci": [
+          0.5353535353535354,
+          0.7872340425531915
+        ],
+        "discordant_tasks": 27,
+        "top1": 0.3125,
+        "base_rate": 0.203125,
+        "gain_vs_base": 0.109375,
+        "oracle_top1": 0.5833333333333334
+      },
+      "passes": true,
+      "seed": 4
+    }
+  ],
+  "block": [
+    {
+      "features": "block",
+      "dim_in": 768,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.8493975903614458,
+        "within_task_ci": [
+          0.76,
+          0.9186046511627907
+        ],
+        "discordant_tasks": 49,
+        "top1": 0.5555555555555556,
+        "base_rate": 0.3263888955116272,
+        "gain_vs_base": 0.22916666004392838,
+        "oracle_top1": 0.7222222222222222
+      },
+      "heldout": {
+        "within_task_auc": 0.6842105263157895,
+        "within_task_ci": [
+          0.5754716981132075,
+          0.7815126050420168
+        ],
+        "discordant_tasks": 33,
+        "top1": 0.3958333333333333,
+        "base_rate": 0.28125,
+        "gain_vs_base": 0.11458333333333331,
+        "oracle_top1": 0.7083333333333334
+      },
+      "passes": true,
+      "seed": 0
+    },
+    {
+      "features": "block",
+      "dim_in": 768,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.7530864197530864,
+        "within_task_ci": [
+          0.6728395061728395,
+          0.8291139240506329
+        ],
+        "discordant_tasks": 47,
+        "top1": 0.4583333333333333,
+        "base_rate": 0.2847222089767456,
+        "gain_vs_base": 0.1736111243565877,
+        "oracle_top1": 0.6805555555555556
+      },
+      "heldout": {
+        "within_task_auc": 0.6694915254237288,
+        "within_task_ci": [
+          0.5714285714285714,
+          0.7692307692307693
+        ],
+        "discordant_tasks": 35,
+        "top1": 0.375,
+        "base_rate": 0.34375,
+        "gain_vs_base": 0.03125,
+        "oracle_top1": 0.7708333333333334
+      },
+      "passes": true,
+      "seed": 1
+    },
+    {
+      "features": "block",
+      "dim_in": 768,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.8092485549132948,
+        "within_task_ci": [
+          0.7321428571428571,
+          0.8901734104046243
+        ],
+        "discordant_tasks": 50,
+        "top1": 0.5277777777777778,
+        "base_rate": 0.3368055522441864,
+        "gain_vs_base": 0.1909722255335914,
+        "oracle_top1": 0.7361111111111112
+      },
+      "heldout": {
+        "within_task_auc": 0.7102803738317757,
+        "within_task_ci": [
+          0.6021505376344086,
+          0.8073394495412844
+        ],
+        "discordant_tasks": 32,
+        "top1": 0.3333333333333333,
+        "base_rate": 0.265625,
+        "gain_vs_base": 0.06770833333333331,
+        "oracle_top1": 0.6875
+      },
+      "passes": true,
+      "seed": 2
+    },
+    {
+      "features": "block",
+      "dim_in": 768,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.8414634146341463,
+        "within_task_ci": [
+          0.7804878048780488,
+          0.8983050847457628
+        ],
+        "discordant_tasks": 48,
+        "top1": 0.5,
+        "base_rate": 0.2916666567325592,
+        "gain_vs_base": 0.2083333432674408,
+        "oracle_top1": 0.7083333333333334
+      },
+      "heldout": {
+        "within_task_auc": 0.6120689655172413,
+        "within_task_ci": [
+          0.49264705882352944,
+          0.7264957264957265
+        ],
+        "discordant_tasks": 34,
+        "top1": 0.3958333333333333,
+        "base_rate": 0.3333333432674408,
+        "gain_vs_base": 0.06249999006589252,
+        "oracle_top1": 0.7291666666666666
+      },
+      "passes": false,
+      "seed": 3
+    },
+    {
+      "features": "block",
+      "dim_in": 768,
+      "components": 32,
+      "train": {
+        "within_task_auc": 0.8238341968911918,
+        "within_task_ci": [
+          0.7552083333333334,
+          0.882051282051282
+        ],
+        "discordant_tasks": 55,
+        "top1": 0.6111111111111112,
+        "base_rate": 0.3784722089767456,
+        "gain_vs_base": 0.23263890213436555,
+        "oracle_top1": 0.8055555555555556
+      },
+      "heldout": {
+        "within_task_auc": 0.7241379310344828,
+        "within_task_ci": [
+          0.6226415094339622,
+          0.8289473684210527
+        ],
+        "discordant_tasks": 27,
+        "top1": 0.3125,
+        "base_rate": 0.203125,
+        "gain_vs_base": 0.109375,
+        "oracle_top1": 0.5833333333333334
+      },
+      "passes": true,
+      "seed": 4
+    }
+  ]
+}
