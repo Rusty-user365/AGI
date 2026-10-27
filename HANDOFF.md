@@ -42,6 +42,43 @@ paired sign tests, permutation control), `experiments/wordbench.py`
 
 ---
 
+## Current state (2026-10-27, late: the localization instrument)
+
+The next question was localization, not selection: can anything point at the
+step where the reasoning broke? That needs per-step ground truth, which no
+earlier corpus had.
+
+**The box world is closed.** Neither available model can apply a *single*
+1-ball move: Qwen3-0.6B-Base 22.5% (2 boxes) and 2.5% (3-4 boxes),
+Qwen2.5-1.5B-Instruct 2.5% raw / 15% chat, 40 trials each, all 100% parseable.
+With step 1 wrong, `first_error` is 0 everywhere and localization is undefined
+rather than low. Evidence:
+`findings/2026-10-27-state-tracking-below-floor.md`.
+
+| Question | Answer | Evidence |
+|---|---|---|
+| Does a pooled observer fail for lack of position? | **Structurally yes**; never tested here, and the test is now possible | below |
+| Can the 0.6B track box state at all? | **No**, 22.5% on one move | `scratch/probe_onestep.py` |
+| Is there a task with per-step labels it *can* do? | **Yes**, arithmetic chains: p1 0.544 on 2 steps | `results/arith_bench_s2.pt` |
+
+New corpus `experiments/arith_steps.py`: the model emits the value of each
+assignment in order (`x -> 5`, `y ->`, ...), self-conditioned, so an error
+propagates exactly as in a DAG run and `first_error` is a real divergence label.
+Per step it stores `value`, `logprob`, and the mean hidden state of the emitted
+number, giving the `[H, d]` un-pooled input a localizer needs. Admission is "the
+first line is a bare integer". Generator cross-checked against
+`arith_pilot.make_problem`: 0 mismatches in 800 chains, 0 in 300 independently
+re-derived intermediate values.
+
+`experiments/localizer.py` compares three arms on the same held-out candidates:
+`linear` (per-step, no cross-step information), `transformer` (one encoder layer
+over the H rows), and both against **chance, the label prior, always-step-0, and
+argmin per-step logprob**. The transformer must beat argmin-logprob, not chance,
+or it repeats the selection null.
+
+
+---
+
 ## 0. Active branch: DiffuGPT backbone (uncommitted on top of `5345a1e`)
 
 The v0.3 snapshot below is the canvas result. Work since then swaps in
