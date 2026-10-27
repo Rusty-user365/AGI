@@ -1,0 +1,35 @@
+{
+  "model": "checkpoints/hf/dual-lm-470m",
+  "dtype": "float16",
+  "n": 2,
+  "k": 1,
+  "temperature": 0.8,
+  "rungs": {
+    "1": {
+      "steps": 1,
+      "n": 2,
+      "k": 1,
+      "p1_greedy": 0.0,
+      "p1_sampled": 0.0,
+      "pass_at_k": 0.0,
+      "lift": 0.0,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 2,
+      "examples": [
+        {
+          "problem": "a = 7\nb = a - 6\nb = ?",
+          "answer": 1,
+          "greedy": "10\n\na = ?\nb =",
+          "sampled": "9\n\na = 6\nb ="
+        },
+        {
+          "problem": "a = 2\nb = a + 9\nb = ?",
+          "answer": 11,
+          "greedy": "10\n\na = 2\nb",
+          "sampled": "5\n\na = 3\nb ="
+        }
+      ]
+    }
+  },
+  "usable_rungs": []
+}

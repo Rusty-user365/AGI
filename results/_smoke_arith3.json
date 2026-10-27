@@ -1,0 +1,72 @@
+{
+  "model": "checkpoints/hf/dual-lm-470m",
+  "dtype": "float32",
+  "n": 8,
+  "k": 1,
+  "temperature": 0.8,
+  "rungs": {
+    "0": {
+      "steps": 0,
+      "n": 8,
+      "k": 1,
+      "p1_greedy": 0.0,
+      "p1_sampled": 0.0,
+      "pass_at_k": 0.125,
+      "lift": 0.125,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 7,
+      "examples": [
+        {
+          "problem": "a = 7\na = ?",
+          "answer": 7,
+          "greedy": "10\n\na = ?\nAnswer:",
+          "sampled": "6\n\nThe answer is 7. In"
+        },
+        {
+          "problem": "a = 7\na = ?",
+          "answer": 7,
+          "greedy": "10\n\na = ?\nAnswer:",
+          "sampled": "3\n\nx = 2\ny ="
+        },
+        {
+          "problem": "a = 1\na = ?",
+          "answer": 1,
+          "greedy": "10\n\na = ?\nAnswer:",
+          "sampled": "2\n\nx = 10\ny"
+        }
+      ]
+    },
+    "1": {
+      "steps": 1,
+      "n": 8,
+      "k": 1,
+      "p1_greedy": 0.0,
+      "p1_sampled": 0.0,
+      "pass_at_k": 0.0,
+      "lift": 0.0,
+      "wellformed_rate": 1.0,
+      "wrong_wellformed": 8,
+      "examples": [
+        {
+          "problem": "a = 7\nb = a - 6\nb = ?",
+          "answer": 1,
+          "greedy": "10\n\na = ?\nb =",
+          "sampled": "7\n\nz = ?\nAnswer: ?"
+        },
+        {
+          "problem": "a = 2\nb = a + 9\nb = ?",
+          "answer": 11,
+          "greedy": "10\n\na = 2\nb",
+          "sampled": "4\n\na = 5\nb ="
+        },
+        {
+          "problem": "a = 7\nb = a + 4\nb = ?",
+          "answer": 11,
+          "greedy": "10\n\na = ?\nb =",
+          "sampled": "3\n\nb = 4\nc ="
+        }
+      ]
+    }
+  },
+  "usable_rungs": []
+}
