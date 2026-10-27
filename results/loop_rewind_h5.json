@@ -1,0 +1,2016 @@
+{
+  "config": {
+    "data": "results/arith_steps_h5.pt",
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "device": "cuda",
+    "max_new": 5,
+    "seeds": 5,
+    "limit": 0,
+    "out": "results/loop_rewind_h5.json"
+  },
+  "steps": 5,
+  "n": 110,
+  "localizer_top1": 0.6181818246841431,
+  "localizer_seeds": 5,
+  "variants": {
+    "pred_real": {
+      "ok": 23,
+      "n": 110,
+      "steps": 373,
+      "t_exact": 68,
+      "t_late": 7,
+      "rate": 0.20909090909090908
+    },
+    "pred_truth": {
+      "ok": 25,
+      "n": 110,
+      "steps": 373,
+      "t_exact": 68,
+      "t_late": 7,
+      "rate": 0.22727272727272727
+    }
+  },
+  "per_row": [
+    {
+      "idx": 1,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 1,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 1,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 1,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 1,
+      "cand": 2,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 1,
+      "cand": 2,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 1,
+      "cand": 3,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 1,
+      "cand": 3,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 2,
+      "cand": 0,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 2,
+      "cand": 0,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 2,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 2,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 2,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 2,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 2,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 2,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 3,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 3,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 3,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 3,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 3,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 3,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 3,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 3,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 4,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 4,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 4,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 4,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 4,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 4,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 5,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 5,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 6,
+      "cand": 0,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 6,
+      "cand": 0,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 6,
+      "cand": 1,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 6,
+      "cand": 1,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 6,
+      "cand": 2,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 6,
+      "cand": 2,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 6,
+      "cand": 3,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 6,
+      "cand": 3,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 7,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 7,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 7,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 7,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 7,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 7,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 7,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 7,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 8,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 8,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 8,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 8,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 8,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 8,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 8,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 8,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 10,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 10,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 10,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 10,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 10,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 10,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 10,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 10,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 11,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 11,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 11,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 11,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 11,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 11,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 11,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 11,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 12,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 12,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 12,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 12,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 12,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 12,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 12,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 12,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 13,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 13,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 13,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 13,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 13,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 13,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 13,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 13,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 14,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 14,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 14,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 14,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 14,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 14,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 14,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 14,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 16,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 16,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 16,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 16,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 16,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 16,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 16,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 16,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 19,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 19,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 4
+    },
+    {
+      "idx": 20,
+      "cand": 0,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 20,
+      "cand": 0,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 20,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 20,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 20,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 20,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 20,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 20,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 21,
+      "cand": 0,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 21,
+      "cand": 0,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 21,
+      "cand": 1,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 21,
+      "cand": 1,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 21,
+      "cand": 2,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 21,
+      "cand": 2,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 21,
+      "cand": 3,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 21,
+      "cand": 3,
+      "t_true": 3,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 23,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 23,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 23,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 23,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 23,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 23,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 23,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 23,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 24,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 4,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 1
+    },
+    {
+      "idx": 24,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 4,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 1
+    },
+    {
+      "idx": 26,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 26,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 27,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 27,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 27,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 27,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 27,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 27,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 29,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 29,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 31,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 31,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 32,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 32,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 34,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 34,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 2
+    },
+    {
+      "idx": 35,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 35,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 35,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 35,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 37,
+      "cand": 0,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 37,
+      "cand": 0,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 37,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 37,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 37,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 37,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 38,
+      "cand": 0,
+      "t_true": 3,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 38,
+      "cand": 0,
+      "t_true": 3,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 38,
+      "cand": 1,
+      "t_true": 3,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 38,
+      "cand": 1,
+      "t_true": 3,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 38,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 38,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 38,
+      "cand": 3,
+      "t_true": 3,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 38,
+      "cand": 3,
+      "t_true": 3,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 39,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 39,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 39,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 39,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 39,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 39,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 39,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 39,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 40,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 40,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 40,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 40,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 41,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 41,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 41,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 41,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 42,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 42,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 43,
+      "cand": 0,
+      "t_true": 0,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 43,
+      "cand": 0,
+      "t_true": 0,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 43,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 43,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 43,
+      "cand": 2,
+      "t_true": 0,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 43,
+      "cand": 2,
+      "t_true": 0,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 43,
+      "cand": 3,
+      "t_true": 0,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 43,
+      "cand": 3,
+      "t_true": 0,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 3
+    },
+    {
+      "idx": 44,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 44,
+      "cand": 0,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 44,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 44,
+      "cand": 1,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 44,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 44,
+      "cand": 2,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 44,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 44,
+      "cand": 3,
+      "t_true": 1,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 45,
+      "cand": 0,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 45,
+      "cand": 0,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 45,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 45,
+      "cand": 1,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 45,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 45,
+      "cand": 2,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 45,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 45,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 1,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 4
+    },
+    {
+      "idx": 46,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 46,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 46,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 3,
+      "variant": "pred_real",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 46,
+      "cand": 1,
+      "t_true": 4,
+      "t_hat": 3,
+      "variant": "pred_truth",
+      "ok": false,
+      "generated": 2
+    },
+    {
+      "idx": 47,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 47,
+      "cand": 3,
+      "t_true": 2,
+      "t_hat": 2,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 3
+    },
+    {
+      "idx": 49,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 49,
+      "cand": 0,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 49,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 49,
+      "cand": 2,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 49,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_real",
+      "ok": true,
+      "generated": 1
+    },
+    {
+      "idx": 49,
+      "cand": 3,
+      "t_true": 4,
+      "t_hat": 4,
+      "variant": "pred_truth",
+      "ok": true,
+      "generated": 1
+    }
+  ]
+}

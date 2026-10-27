@@ -1,0 +1,1843 @@
+{
+  "config": {
+    "data": "results/arith_steps_h5.pt",
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float32",
+    "device": "cuda",
+    "max_new": 5,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "limit": 0,
+    "out": "results/oracle_rewind_h5.json"
+  },
+  "n": 110,
+  "steps": 5,
+  "arms": {
+    "full_rewrite": {
+      "ok": 20,
+      "n": 110,
+      "steps": 550,
+      "wins_vs_rewrite": 0,
+      "losses_vs_rewrite": 0,
+      "same_value": 0,
+      "rate": 0.18181818181818182
+    },
+    "rewind_greedy": {
+      "ok": 17,
+      "n": 110,
+      "steps": 298,
+      "wins_vs_rewrite": 6,
+      "losses_vs_rewrite": 9,
+      "same_value": 68,
+      "rate": 0.15454545454545454
+    },
+    "hindsight": {
+      "ok": 30,
+      "n": 110,
+      "steps": 298,
+      "wins_vs_rewrite": 23,
+      "losses_vs_rewrite": 13,
+      "same_value": 15,
+      "rate": 0.2727272727272727
+    },
+    "hindsight_neutral": {
+      "ok": 30,
+      "n": 110,
+      "steps": 298,
+      "wins_vs_rewrite": 20,
+      "losses_vs_rewrite": 10,
+      "same_value": 55,
+      "rate": 0.2727272727272727
+    },
+    "rank2": {
+      "ok": 35,
+      "n": 110,
+      "steps": 298,
+      "wins_vs_rewrite": 22,
+      "losses_vs_rewrite": 7,
+      "same_value": 0,
+      "rate": 0.3181818181818182
+    },
+    "resample": {
+      "ok": 22,
+      "n": 110,
+      "steps": 298,
+      "wins_vs_rewrite": 15,
+      "losses_vs_rewrite": 13,
+      "same_value": 49,
+      "rate": 0.2
+    },
+    "oracle_force": {
+      "ok": 94,
+      "n": 110,
+      "steps": 188,
+      "wins_vs_rewrite": 0,
+      "losses_vs_rewrite": 0,
+      "same_value": 0,
+      "rate": 0.8545454545454545
+    }
+  },
+  "per_row": [
+    {
+      "split": "holdout",
+      "idx": 1,
+      "cand": 0,
+      "t": 4,
+      "bad": 27,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 1,
+      "cand": 1,
+      "t": 4,
+      "bad": 27,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 1,
+      "cand": 2,
+      "t": 3,
+      "bad": 11,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 1,
+      "cand": 3,
+      "t": 3,
+      "bad": 11,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 2,
+      "cand": 0,
+      "t": 2,
+      "bad": 17,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 2,
+      "cand": 1,
+      "t": 2,
+      "bad": 11,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 2,
+      "cand": 2,
+      "t": 2,
+      "bad": 17,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 2,
+      "cand": 3,
+      "t": 2,
+      "bad": 17,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 3,
+      "cand": 0,
+      "t": 1,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 3,
+      "cand": 1,
+      "t": 1,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 3,
+      "cand": 2,
+      "t": 1,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 3,
+      "cand": 3,
+      "t": 1,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 4,
+      "cand": 0,
+      "t": 4,
+      "bad": 29,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 4,
+      "cand": 1,
+      "t": 4,
+      "bad": 29,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 4,
+      "cand": 3,
+      "t": 4,
+      "bad": 29,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 5,
+      "cand": 1,
+      "t": 2,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": true,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 6,
+      "cand": 0,
+      "t": 3,
+      "bad": 29,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 6,
+      "cand": 1,
+      "t": 3,
+      "bad": 29,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 6,
+      "cand": 2,
+      "t": 3,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 6,
+      "cand": 3,
+      "t": 3,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 7,
+      "cand": 0,
+      "t": 4,
+      "bad": 81,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 7,
+      "cand": 1,
+      "t": 4,
+      "bad": 81,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 7,
+      "cand": 2,
+      "t": 4,
+      "bad": 81,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 7,
+      "cand": 3,
+      "t": 4,
+      "bad": 81,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 8,
+      "cand": 0,
+      "t": 1,
+      "bad": 16,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 8,
+      "cand": 1,
+      "t": 1,
+      "bad": 16,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 8,
+      "cand": 2,
+      "t": 1,
+      "bad": 16,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 8,
+      "cand": 3,
+      "t": 1,
+      "bad": 16,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 10,
+      "cand": 0,
+      "t": 4,
+      "bad": 9,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 10,
+      "cand": 1,
+      "t": 4,
+      "bad": 8,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 10,
+      "cand": 2,
+      "t": 1,
+      "bad": 4,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 10,
+      "cand": 3,
+      "t": 4,
+      "bad": 9,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 11,
+      "cand": 0,
+      "t": 1,
+      "bad": 9,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 11,
+      "cand": 1,
+      "t": 1,
+      "bad": 9,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 11,
+      "cand": 2,
+      "t": 1,
+      "bad": 9,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 11,
+      "cand": 3,
+      "t": 1,
+      "bad": 9,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 12,
+      "cand": 0,
+      "t": 4,
+      "bad": 36,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 12,
+      "cand": 1,
+      "t": 4,
+      "bad": 34,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 12,
+      "cand": 2,
+      "t": 4,
+      "bad": 34,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 12,
+      "cand": 3,
+      "t": 1,
+      "bad": 1,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 13,
+      "cand": 0,
+      "t": 4,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 13,
+      "cand": 1,
+      "t": 4,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 13,
+      "cand": 2,
+      "t": 4,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 13,
+      "cand": 3,
+      "t": 4,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 14,
+      "cand": 0,
+      "t": 1,
+      "bad": 5,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 14,
+      "cand": 1,
+      "t": 1,
+      "bad": 14,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 14,
+      "cand": 2,
+      "t": 1,
+      "bad": 3,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 14,
+      "cand": 3,
+      "t": 1,
+      "bad": 6,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 16,
+      "cand": 0,
+      "t": 1,
+      "bad": 19,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 16,
+      "cand": 1,
+      "t": 1,
+      "bad": 19,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 16,
+      "cand": 2,
+      "t": 1,
+      "bad": 19,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 16,
+      "cand": 3,
+      "t": 1,
+      "bad": 19,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 19,
+      "cand": 2,
+      "t": 1,
+      "bad": 10,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 20,
+      "cand": 0,
+      "t": 2,
+      "bad": 11,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 20,
+      "cand": 1,
+      "t": 2,
+      "bad": 11,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 20,
+      "cand": 2,
+      "t": 1,
+      "bad": 2,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 20,
+      "cand": 3,
+      "t": 2,
+      "bad": 1,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 21,
+      "cand": 0,
+      "t": 3,
+      "bad": 1,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 21,
+      "cand": 1,
+      "t": 3,
+      "bad": 1,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 21,
+      "cand": 2,
+      "t": 3,
+      "bad": 0,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 21,
+      "cand": 3,
+      "t": 3,
+      "bad": 1,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 23,
+      "cand": 0,
+      "t": 4,
+      "bad": 5,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 23,
+      "cand": 1,
+      "t": 4,
+      "bad": 3,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 23,
+      "cand": 2,
+      "t": 4,
+      "bad": 3,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 23,
+      "cand": 3,
+      "t": 4,
+      "bad": 5,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 24,
+      "cand": 2,
+      "t": 2,
+      "bad": 9,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 26,
+      "cand": 3,
+      "t": 2,
+      "bad": 19,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 27,
+      "cand": 0,
+      "t": 1,
+      "bad": 8,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 27,
+      "cand": 1,
+      "t": 1,
+      "bad": 8,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 27,
+      "cand": 3,
+      "t": 1,
+      "bad": 4,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 29,
+      "cand": 2,
+      "t": 4,
+      "bad": 7,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": true,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 31,
+      "cand": 3,
+      "t": 4,
+      "bad": -3,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 32,
+      "cand": 1,
+      "t": 1,
+      "bad": 12,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 34,
+      "cand": 3,
+      "t": 2,
+      "bad": 4,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 35,
+      "cand": 2,
+      "t": 2,
+      "bad": 6,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 35,
+      "cand": 3,
+      "t": 2,
+      "bad": 6,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 37,
+      "cand": 0,
+      "t": 2,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 37,
+      "cand": 1,
+      "t": 1,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 37,
+      "cand": 2,
+      "t": 1,
+      "bad": 10,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 38,
+      "cand": 0,
+      "t": 3,
+      "bad": 12,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 38,
+      "cand": 1,
+      "t": 3,
+      "bad": 12,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 38,
+      "cand": 2,
+      "t": 2,
+      "bad": 10,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 38,
+      "cand": 3,
+      "t": 3,
+      "bad": 12,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 39,
+      "cand": 0,
+      "t": 1,
+      "bad": 13,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 39,
+      "cand": 1,
+      "t": 1,
+      "bad": 10,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 39,
+      "cand": 2,
+      "t": 1,
+      "bad": 13,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 39,
+      "cand": 3,
+      "t": 1,
+      "bad": 12,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": false
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 40,
+      "cand": 1,
+      "t": 4,
+      "bad": 11,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 40,
+      "cand": 3,
+      "t": 4,
+      "bad": 11,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 41,
+      "cand": 2,
+      "t": 2,
+      "bad": 40,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 41,
+      "cand": 3,
+      "t": 2,
+      "bad": 5,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 42,
+      "cand": 3,
+      "t": 1,
+      "bad": 16,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": true,
+        "hindsight": true,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 43,
+      "cand": 0,
+      "t": 0,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 43,
+      "cand": 1,
+      "t": 2,
+      "bad": 24,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 43,
+      "cand": 2,
+      "t": 0,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 43,
+      "cand": 3,
+      "t": 0,
+      "bad": 15,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 44,
+      "cand": 0,
+      "t": 1,
+      "bad": 14,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 44,
+      "cand": 1,
+      "t": 1,
+      "bad": 14,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 44,
+      "cand": 2,
+      "t": 1,
+      "bad": 14,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 44,
+      "cand": 3,
+      "t": 1,
+      "bad": 14,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 45,
+      "cand": 0,
+      "t": 2,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 45,
+      "cand": 1,
+      "t": 2,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 45,
+      "cand": 2,
+      "t": 2,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 45,
+      "cand": 3,
+      "t": 2,
+      "bad": 20,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": false,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 46,
+      "cand": 0,
+      "t": 4,
+      "bad": 5,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 46,
+      "cand": 1,
+      "t": 4,
+      "bad": 5,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": false,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 47,
+      "cand": 3,
+      "t": 2,
+      "bad": 7,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": true,
+        "hindsight": false,
+        "hindsight_neutral": false,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 49,
+      "cand": 0,
+      "t": 4,
+      "bad": 26,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 49,
+      "cand": 2,
+      "t": 4,
+      "bad": 27,
+      "ok": {
+        "full_rewrite": false,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": true,
+        "oracle_force": true
+      }
+    },
+    {
+      "split": "holdout",
+      "idx": 49,
+      "cand": 3,
+      "t": 4,
+      "bad": 26,
+      "ok": {
+        "full_rewrite": true,
+        "rewind_greedy": false,
+        "hindsight": true,
+        "hindsight_neutral": true,
+        "rank2": true,
+        "resample": false,
+        "oracle_force": true
+      }
+    }
+  ]
+}

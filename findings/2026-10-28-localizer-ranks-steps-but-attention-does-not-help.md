@@ -96,6 +96,23 @@ cannot, which is why it is the column that decides here. The honest comparison
 on the metric that cannot be gamed is 0.506 (linear) against 0.293 and 0.287
 for the two free baselines.
 
+## The hidden state is not redundant with confidence
+
+The selection head was killed by one test: adding log-probability to its feature
+vector changed nothing, so the head was re-reading confidence
+([observer-ranks-but-cannot-select](2026-10-27-observer-ranks-but-cannot-select.md)).
+The same test runs here, in the other direction.
+
+| arm | top-1 | balanced |
+|---|---|---|
+| linear + SVD32 | 0.611 | 0.506 |
+| linear + SVD32 + step logprob | 0.624 | 0.503 |
+
+Adding confidence is worth +0.013 top-1 and **nothing** in balanced accuracy.
+That is the opposite of redundancy: the per-step state already contains what
+confidence contains, and confidence alone reaches only 0.445. The state is the
+richer signal, not a restatement of the logprob.
+
 ## The position confound, controlled
 
 `--demean-position` subtracts the per-step mean feature fitted on train, so the
@@ -227,6 +244,7 @@ allowed to see position.
 ```
 python experiments/arith_steps.py --steps 5 --n-train 120 --n-holdout 50 --k 3 --resume
 python experiments/localizer.py --data results/arith_steps_h5.pt --arch linear --frozen-proj 32 --seeds 5
+python experiments/localizer.py --data results/arith_steps_h5.pt --arch linear --frozen-proj 32 --linear-logprob --seeds 5
 python experiments/localizer.py --data results/arith_steps_h5.pt --arch transformer --seeds 5
 python experiments/localizer.py --data results/arith_steps_h5.pt --arch transformer --frozen-proj 32 --demean-position --seeds 5
 python experiments/localizer_pair.py --data results/arith_steps_h5.pt --seeds 5
