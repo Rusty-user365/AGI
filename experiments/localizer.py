@@ -100,10 +100,21 @@ class Standardizer:
 
 
 def svd_basis(feats: torch.Tensor, q: int) -> torch.Tensor:
-    """Frozen [d, q] basis from centred train features."""
+    """Frozen [d, q] basis from centred train features.
+
+    `torch.pca_lowrank` is a randomized SVD seeded from the global RNG, so
+    without this the basis differs on every process and none of the localizer
+    JSONs reproduce. Seeding locally and restoring the caller's state makes the
+    basis a function of the data alone.
+    """
     x = feats.reshape(-1, feats.shape[-1])
     x = x - x.mean(0, keepdim=True)
-    _u, _s, v = torch.pca_lowrank(x, q=q)
+    state = torch.get_rng_state()
+    torch.manual_seed(0)
+    try:
+        _u, _s, v = torch.pca_lowrank(x, q=q)
+    finally:
+        torch.set_rng_state(state)
     return v
 
 

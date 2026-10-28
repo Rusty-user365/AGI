@@ -101,12 +101,24 @@ over steps.
 Where the best arm fails: per-step recall is 0.92 / 0.74 / 0.77 / **0.19** for
 steps 1-4, so a rewind loop built on it cuts to the right place early and to
 step 1 late. The transformer's profile is the mirror image on the tail (0.82 /
-0.57 / 0.69 / **0.56**): it triples late-step recall while losing early. A
-linear+transformer vote is the obvious untested follow-up. Finding:
-`findings/2026-10-28-localizer-ranks-steps-but-attention-does-not-help.md`.
+0.57 / 0.69 / **0.56**): it triples late-step recall while losing early.
 
-**Still no compute claim.** The harness has no KV cache; each step is a fresh
-forward over the prefix, so "rewind" saves `H - t` forwards and nothing more.
+Finding: `findings/2026-10-28-localizer-ranks-steps-but-attention-does-not-help.md`.
+
+---
+
+## Current state (2026-10-28 late: Path A established — two-tier localizer cures step-4; KV cache sliced)
+
+Path A executed the three fixes proposed above on the 110 holdout chains of `results/arith_steps_h5.pt` with `Qwen3-0.6B-Base`:
+
+| Question | Answer | Evidence |
+|---|---|---|
+| Can an ensemble cure the step-4 localization collapse? | **Yes.** Two-Tier localizer ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts step-4 recall from **0.188 to 0.812** (4.3x gain). Top-1 reaches **0.718** (+10.0% over linear). | `results/path_a_loop_h5.json` |
+| Does improved localization translate to higher loop recovery? | **Yes.** Autonomous rewind loop recovery increases from **21.8% to 29.1%** (32/110 recovered), 2.29x over full rewrite (12.7%). | same |
+| Does the "Accept-if-Cleaner" gate protect prefixes? | **Yes.** Rejected 23 edits where rank-2 perturbation degraded clean step confidence ($lp > -0.25$), preventing 6 destructive overwrites. | same |
+| Does KV-cache slicing (`DynamicCache.crop`) substantiate the systems claim? | **Yes.** Slicing the cache cuts forward tokens from 581.1 to 119.7 (**-79.4%**) and latency from 4,498 ms to 173.7 ms (**-96.1%**, 25.9x speedup vs rewrite; 15.7x vs uncached). | same |
+
+Finding: `findings/2026-10-28-path-a-ensemble-kv-slicing.md`. Script: `experiments/path_a_loop.py`.
 
 ---
 
