@@ -41,6 +41,25 @@ URL = "https://raw.githubusercontent.com/openai/human-eval/master/data/HumanEval
 # top-level definition or start executing on import.
 STOPS = ["\nclass ", "\ndef ", "\n#", "\nif __name__", "\nprint("]
 
+# Wrapper appended after the test: on failure it prints the source line that
+# raised, which is the executable feedback the repair loop conditions on. A bare
+# `AssertionError` names nothing; `assert candidate([1, 2]) == [2, 1]` names the
+# input and the expected output. The wrapper re-raises, so the return code and
+# stderr are unchanged.
+WRAPPER = '''
+import traceback as _tb, sys as _sys
+try:
+    check({entry_point})
+except Exception:
+    _line = None
+    for _f in reversed(_tb.extract_tb(_sys.exc_info()[2])):
+        if _f.filename.endswith("prog.py"):
+            _line = _f.line
+            break
+    print("FAILED_LINE:", _line)
+    raise
+'''
+
 
 def load(path: Path) -> list[dict]:
     """Read the cached corpus, downloading it once if absent."""
@@ -67,13 +86,16 @@ def truncate(text: str) -> str:
 
 
 def run_tests(completion: str, test: str, entry_point: str,
-              timeout: float = 5.0) -> dict:
+              timeout: float = 5.0, feedback: bool = True) -> dict:
     """Execute one candidate against its test in a fresh isolated subprocess.
 
     `completion` is the full program (prompt + body). Returns pass/fail plus the
-    tail of stderr, which is the executable feedback the loop will feed back.
+    tail of stderr and, on failure, the source line that raised, which is the
+    executable feedback the loop will feed back.
     """
-    src = completion + "\n\n" + test + f"\n\ncheck({entry_point})\n"
+    tail = WRAPPER.format(entry_point=entry_point) if feedback else \
+        f"\ncheck({entry_point})\n"
+    src = completion + "\n\n" + test + tail
     with tempfile.TemporaryDirectory() as d:
         prog = Path(d) / "prog.py"
         prog.write_text(src, encoding="utf-8")
@@ -81,13 +103,20 @@ def run_tests(completion: str, test: str, entry_point: str,
             r = subprocess.run([sys.executable, "-I", str(prog)], cwd=d,
                                capture_output=True, text=True, timeout=timeout)
         except subprocess.TimeoutExpired:
-            return {"ok": False, "reason": "timeout", "stderr": "", "stdout": ""}
+            return {"ok": False, "reason": "timeout", "stderr": "", "stdout": "",
+                    "failed_line": None}
+    out = r.stdout or ""
+    line = None
+    for ln in out.splitlines():
+        if ln.startswith("FAILED_LINE:"):
+            line = ln[len("FAILED_LINE:"):].strip()
     return {
         "ok": r.returncode == 0,
         "reason": "pass" if r.returncode == 0 else "fail",
         "returncode": r.returncode,
         "stderr": (r.stderr or "")[-2000:],
-        "stdout": (r.stdout or "")[-500:],
+        "stdout": out[-500:],
+        "failed_line": line,
     }
 
 
