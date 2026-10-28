@@ -1,0 +1,167 @@
+{
+  "config": {
+    "data": "results/arith_steps_h5.pt",
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "device": "cuda",
+    "seeds": 5,
+    "max_new": 5,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "limit": 0,
+    "rows_out": "results/interp_calls_rows.jsonl",
+    "out": "results/interp_calls_h5.json",
+    "resume": false
+  },
+  "n": 110,
+  "anchors": {
+    "k0_rank2": {
+      "got": 32,
+      "expected": 32,
+      "source": "level2_ladder_h5.json rank2"
+    },
+    "k1_loc": {
+      "got": 70,
+      "expected": 70,
+      "source": "level2_ladder_h5.json oracle_value"
+    },
+    "k1_oracleloc": {
+      "got": 94,
+      "expected": 94,
+      "source": "oracle_rewind_h5.json oracle_force"
+    }
+  },
+  "localizer": {
+    "two_tier_top1": 0.7181817889213562,
+    "two_tier_bal": 0.5591555237770081,
+    "t_exact": 0.7181818181818181
+  },
+  "arms": {
+    "k0_rank2": {
+      "ok": 32,
+      "n": 110,
+      "rate": 0.2909090909090909,
+      "ci": [
+        0.214234586744393,
+        0.3816951963928785
+      ],
+      "calls": 1.0
+    },
+    "k1_loc": {
+      "ok": 70,
+      "n": 110,
+      "rate": 0.6363636363636364,
+      "ci": [
+        0.5432749318492441,
+        0.7202491226264484
+      ],
+      "calls": 1.0
+    },
+    "k2_loc": {
+      "ok": 94,
+      "n": 110,
+      "rate": 0.8545454545454545,
+      "ci": [
+        0.7767209782912426,
+        0.9084415633455579
+      ],
+      "calls": 2.0
+    },
+    "k3_loc": {
+      "ok": 100,
+      "n": 110,
+      "rate": 0.9090909090909091,
+      "ci": [
+        0.8407019514690314,
+        0.9498702119580463
+      ],
+      "calls": 3.0
+    },
+    "k1_rand": {
+      "ok": 25,
+      "n": 110,
+      "rate": 0.22727272727272727,
+      "ci": [
+        0.15894521607203976,
+        0.3140066749765752
+      ],
+      "calls": 1.0
+    },
+    "k2_rand": {
+      "ok": 52,
+      "n": 110,
+      "rate": 0.4727272727272727,
+      "ci": [
+        0.38193047126891827,
+        0.5653647178359432
+      ],
+      "calls": 2.0
+    },
+    "k3_rand": {
+      "ok": 66,
+      "n": 110,
+      "rate": 0.6,
+      "ci": [
+        0.5065687300827921,
+        0.6866822431993824
+      ],
+      "calls": 3.0
+    },
+    "k1_oracleloc": {
+      "ok": 94,
+      "n": 110,
+      "rate": 0.8545454545454545,
+      "ci": [
+        0.7767209782912426,
+        0.9084415633455579
+      ],
+      "calls": 1.0
+    },
+    "k5_all": {
+      "ok": 110,
+      "n": 110,
+      "rate": 1.0,
+      "ci": [
+        0.9662548664108728,
+        1.0
+      ],
+      "calls": 5.0
+    }
+  },
+  "paired": {
+    "k1_loc_vs_rand": {
+      "wins": 46,
+      "losses": 1,
+      "p": 6.821210263296962e-13
+    },
+    "k2_loc_vs_rand": {
+      "wins": 50,
+      "losses": 8,
+      "p": 1.5702617754687065e-08
+    },
+    "k3_loc_vs_rand": {
+      "wins": 41,
+      "losses": 7,
+      "p": 6.240408438884515e-07
+    },
+    "k1_loc_vs_k0": {
+      "wins": 38,
+      "losses": 0,
+      "p": 7.275957614183426e-12
+    }
+  },
+  "curve": {
+    "1": {
+      "loc": 70,
+      "rand": 25
+    },
+    "2": {
+      "loc": 94,
+      "rand": 52
+    },
+    "3": {
+      "loc": 100,
+      "rand": 66
+    }
+  },
+  "vram_peak_mb": 2328.01025390625
+}

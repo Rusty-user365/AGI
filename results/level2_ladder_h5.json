@@ -1,0 +1,158 @@
+{
+  "config": {
+    "data": "results/arith_steps_h5.pt",
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "device": "cuda",
+    "seeds": 5,
+    "max_new": 5,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "neq_draws": 4,
+    "best_draws": 4,
+    "ceiling_k": 4,
+    "limit": 0,
+    "rows_out": "results/level2_ladder_rows.jsonl",
+    "out": "results/level2_ladder_h5.json",
+    "resume": true
+  },
+  "n": 110,
+  "localizer": {
+    "linear_top1": 0.6181818246841431,
+    "two_tier_top1": 0.7181817889213562,
+    "two_tier_bal": 0.5591555237770081,
+    "t_exact": 0.7181818181818181
+  },
+  "arms": {
+    "rank2": {
+      "ok": 32,
+      "n": 110,
+      "rate": 0.2909090909090909,
+      "ci": [
+        0.214234586744393,
+        0.3816951963928785
+      ],
+      "same_value": 0.0,
+      "samples": 1.0
+    },
+    "span_digitset": {
+      "ok": 32,
+      "n": 110,
+      "rate": 0.2909090909090909,
+      "ci": [
+        0.214234586744393,
+        0.3816951963928785
+      ],
+      "same_value": 0.0,
+      "samples": 1.0
+    },
+    "resample_neq": {
+      "ok": 25,
+      "n": 110,
+      "rate": 0.22727272727272727,
+      "ci": [
+        0.15894521607203976,
+        0.3140066749765752
+      ],
+      "same_value": 0.2818181818181818,
+      "samples": 2.2636363636363637
+    },
+    "resample_neq_best4": {
+      "ok": 32,
+      "n": 110,
+      "rate": 0.2909090909090909,
+      "ci": [
+        0.214234586744393,
+        0.3816951963928785
+      ],
+      "same_value": 0.2727272727272727,
+      "samples": 4.0
+    },
+    "oracle_value": {
+      "ok": 70,
+      "n": 110,
+      "rate": 0.6363636363636364,
+      "ci": [
+        0.5432749318492441,
+        0.7202491226264484
+      ],
+      "same_value": 0.16363636363636364,
+      "samples": 1.0
+    },
+    "resample_at_tstar": {
+      "ok": 46,
+      "n": 110,
+      "rate": 0.41818181818181815,
+      "ci": [
+        0.3302895479049346,
+        0.5115960194096499
+      ],
+      "k": 4
+    }
+  },
+  "paired_vs_rank2": {
+    "span_digitset": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    },
+    "resample_neq": {
+      "wins": 9,
+      "losses": 16,
+      "p": 0.2295229434967041
+    },
+    "resample_neq_best4": {
+      "wins": 10,
+      "losses": 10,
+      "p": 1.0
+    },
+    "oracle_value": {
+      "wins": 38,
+      "losses": 0,
+      "p": 7.275957614183426e-12
+    },
+    "resample_at_tstar": {
+      "wins": 25,
+      "losses": 11,
+      "p": 0.028816719655878842
+    }
+  },
+  "verdict": {
+    "deployable_actuators": [
+      "span_digitset",
+      "resample_neq",
+      "resample_neq_best4"
+    ],
+    "best_deployable": "span_digitset",
+    "best_deployable_vs_rank2": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    },
+    "headroom_at_that": 38,
+    "ceiling_arms": {
+      "oracle_value": 70,
+      "resample_at_tstar": 46
+    },
+    "decision": "close_level2_actuator_branch",
+    "rule": "build iff the best DEPLOYABLE actuator beats rank2 at McNemar p<0.05 and oracle_value - rank2 >= 15 chains. oracle_value and resample_at_tstar are ceilings, not actuators: they are excluded from the best-actuator search."
+  },
+  "split_by_localization": {
+    "t_hat_eq_tstar": {
+      "n": 79,
+      "rank2": 32,
+      "span_digitset": 32,
+      "resample_neq": 23,
+      "resample_neq_best4": 30,
+      "oracle_value": 68
+    },
+    "t_hat_ne_tstar": {
+      "n": 31,
+      "rank2": 0,
+      "span_digitset": 0,
+      "resample_neq": 2,
+      "resample_neq_best4": 2,
+      "oracle_value": 2
+    }
+  },
+  "vram_peak_mb": 2293.5185546875
+}
