@@ -1,0 +1,158 @@
+{
+  "target_precision": 0.95,
+  "center_within_task": true,
+  "prefix": {
+    "1": {
+      "n_train": 480,
+      "n_holdout": 200,
+      "holdout_base_rate": 0.44999998807907104,
+      "auc": {
+        "lp_last": 0.48171716928482056,
+        "lp_mean": 0.48171716928482056,
+        "lp_min": 0.48171716928482056,
+        "judge": 0.46656566858291626
+      },
+      "auc_variants": {
+        "state": {
+          "holdout": 0.5304040312767029,
+          "train": 0.5078192949295044
+        },
+        "logprob": {
+          "holdout": 0.5554040670394897,
+          "train": 0.48565414547920227
+        },
+        "all": {
+          "holdout": 0.46656566858291626,
+          "train": 0.4956846535205841
+        }
+      },
+      "tau_train": {
+        "tau": null,
+        "precision": 0.0,
+        "recall": 0.0,
+        "commits": 0
+      },
+      "holdout_at_tau": {
+        "commits": 0,
+        "precision": NaN,
+        "recall": 0.0,
+        "false_commits": 0
+      },
+      "transfer_gap": null
+    },
+    "2": {
+      "n_train": 480,
+      "n_holdout": 200,
+      "holdout_base_rate": 0.44999998807907104,
+      "auc": {
+        "lp_last": 0.4972222149372101,
+        "lp_mean": 0.48106059432029724,
+        "lp_min": 0.5080302953720093,
+        "judge": 0.5292929410934448
+      },
+      "auc_variants": {
+        "state": {
+          "holdout": 0.5262120962142944,
+          "train": 0.5729149580001831
+        },
+        "logprob": {
+          "holdout": 0.5171211957931519,
+          "train": 0.5091567039489746
+        },
+        "all": {
+          "holdout": 0.5292929410934448,
+          "train": 0.5486189126968384
+        }
+      },
+      "tau_train": {
+        "tau": 0.7975362539291382,
+        "precision": 1.0,
+        "recall": 0.009950248756218905,
+        "commits": 2
+      },
+      "holdout_at_tau": {
+        "commits": 0,
+        "precision": NaN,
+        "recall": 0.0,
+        "false_commits": 0
+      },
+      "transfer_gap": NaN
+    },
+    "3": {
+      "n_train": 480,
+      "n_holdout": 200,
+      "holdout_base_rate": 0.44999998807907104,
+      "auc": {
+        "lp_last": 0.39287880063056946,
+        "lp_mean": 0.3968687057495117,
+        "lp_min": 0.42636364698410034,
+        "judge": 0.6294949650764465
+      },
+      "auc_variants": {
+        "state": {
+          "holdout": 0.6490404009819031,
+          "train": 0.6134471297264099
+        },
+        "logprob": {
+          "holdout": 0.5974242091178894,
+          "train": 0.5351914167404175
+        },
+        "all": {
+          "holdout": 0.6294949650764465,
+          "train": 0.597844123840332
+        }
+      },
+      "tau_train": {
+        "tau": 1.8237358331680298,
+        "precision": 1.0,
+        "recall": 0.05970149253731343,
+        "commits": 12
+      },
+      "holdout_at_tau": {
+        "commits": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "false_commits": 1
+      },
+      "transfer_gap": 1.0
+    },
+    "4": {
+      "n_train": 480,
+      "n_holdout": 200,
+      "holdout_base_rate": 0.44999998807907104,
+      "auc": {
+        "lp_last": 0.4527272582054138,
+        "lp_mean": 0.4016161561012268,
+        "lp_min": 0.4104040265083313,
+        "judge": 0.5973232388496399
+      },
+      "auc_variants": {
+        "state": {
+          "holdout": 0.6119191646575928,
+          "train": 0.6365127563476562
+        },
+        "logprob": {
+          "holdout": 0.5946969985961914,
+          "train": 0.544571042060852
+        },
+        "all": {
+          "holdout": 0.5973232388496399,
+          "train": 0.6492270231246948
+        }
+      },
+      "tau_train": {
+        "tau": 0.6774736046791077,
+        "precision": 1.0,
+        "recall": 0.07960199004975124,
+        "commits": 16
+      },
+      "holdout_at_tau": {
+        "commits": 8,
+        "precision": 0.0,
+        "recall": 0.0,
+        "false_commits": 8
+      },
+      "transfer_gap": 1.0
+    }
+  }
+}
