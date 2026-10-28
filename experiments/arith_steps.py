@@ -93,7 +93,7 @@ def make_chain(rng: random.Random, steps: int) -> tuple[list[str], list[str],
     for the same seed. The cross-check in scratch/test_arith_steps.py holds that
     invariant.
     """
-    names = list("abcdefgh")
+    names = list("abcdefghijklmnop")
     if steps >= len(names):
         raise ValueError(f"steps must be < {len(names)}, got {steps}")
     val = {names[0]: rng.randint(1, 9)}
@@ -200,7 +200,11 @@ def batched_step_value(model, tok, prompts: list[str], device: str,
         **enc, max_new_tokens=max_new, pad_token_id=tok.pad_token_id,
         eos_token_id=tok.eos_token_id, **kw)
     new = gen[:, enc["input_ids"].shape[1]:]
-    return tok.batch_decode(new, skip_special_tokens=True)
+    res = tok.batch_decode(new, skip_special_tokens=True)
+    del enc, gen, new
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    return res
 
 
 @torch.no_grad()
@@ -237,6 +241,9 @@ def batched_readout(model, tok, prompts: list[str], texts: list[str],
             continue
         res.append((float(lp[i, start - 1:length - 1].mean()),
                     hidden[i, start:length].mean(0).cpu()))
+    del out, enc, hidden, ids, mask, lp
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     return res
 
 
@@ -420,6 +427,7 @@ def main() -> int:
     ap.add_argument("--top-p", type=float, default=0.95)
     ap.add_argument("--max-new", type=int, default=5)
     ap.add_argument("--save-every", type=int, default=10)
+    ap.add_argument("--seed-offset", type=int, default=0, help="offset added to task seeds")
     ap.add_argument("--out", default=None)
     ap.add_argument("--summary", default=None)
     ap.add_argument("--show", type=int, default=2)
@@ -453,7 +461,7 @@ def main() -> int:
         for idx in range(n):
             if (split, idx) in done:
                 continue
-            seed = idx if split == "train" else HOLDOUT_OFFSET + idx
+            seed = (idx if split == "train" else HOLDOUT_OFFSET + idx) + args.seed_offset
             lines, order, truth, start = make_chain(random.Random(seed),
                                                     args.steps)
 
@@ -469,6 +477,8 @@ def main() -> int:
             built += 1
             if built % args.save_every == 0 or built == todo:
                 save(out_path, state)
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
                 rate = built / max(time.time() - t0, 1e-6)
                 print(f"  {built}/{todo} tasks  {rate:.3f} task/s  "
                       f"eta {(todo - built) / max(rate, 1e-6) / 60:.1f} min",

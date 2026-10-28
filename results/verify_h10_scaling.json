@@ -1,0 +1,66 @@
+{
+  "n": 75,
+  "arms": {
+    "full_rewrite": {
+      "ok": 0,
+      "n": 75,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.04872554590470005
+      ],
+      "tokens_mean": 1656.16,
+      "time_ms_mean": 7502.6929569244385
+    },
+    "in_context_oops": {
+      "ok": 0,
+      "n": 75,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.04872554590470005
+      ],
+      "tokens_mean": 220.56,
+      "time_ms_mean": 6003.239323298137
+    },
+    "two_tier_gated_1rewind": {
+      "ok": 0,
+      "n": 75,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.04872554590470005
+      ],
+      "tokens_mean": 165.01333333333332,
+      "time_ms_mean": 6399.243628184001
+    },
+    "two_tier_gated_max2": {
+      "ok": 0,
+      "n": 75,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.04872554590470005
+      ],
+      "tokens_mean": 171.86666666666667,
+      "time_ms_mean": 8789.807806015015
+    }
+  },
+  "paired_tests": {
+    "vs_full_rewrite": {
+      "wins_a": 0,
+      "wins_b": 0,
+      "p_value": 1.0
+    },
+    "vs_in_context_oops": {
+      "wins_a": 0,
+      "wins_b": 0,
+      "p_value": 1.0
+    },
+    "max2_vs_full_rewrite": {
+      "wins_a": 0,
+      "wins_b": 0,
+      "p_value": 1.0
+    }
+  }
+}

@@ -56,7 +56,7 @@ FEWSHOT = (
 
 def make_problem(rng: random.Random, steps: int) -> tuple[str, int]:
     """A chain of `steps` assignments with small non-negative values."""
-    names = list("abcdefgh")
+    names = list("abcdefghijklmnop")
     if steps >= len(names):
         raise ValueError(f"steps must be < {len(names)}, got {steps}")
     val = {names[0]: rng.randint(1, 9)}

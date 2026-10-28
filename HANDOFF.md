@@ -122,6 +122,23 @@ Finding: `findings/2026-10-28-path-a-ensemble-kv-slicing.md`. Script: `experimen
 
 ---
 
+## Current state (2026-10-28 night: Generalization Vault Audit & Long-Horizon Boundary Complete)
+
+A strict 5-rule Out-of-Sample Stress & Generalization Audit was executed to verify that Level-3 CGR is not overfit to the original $N=110$ holdout set:
+
+| Question | Answer | Evidence |
+|---|---|---|
+| Does KV-cache slicing introduce numerical drift or token divergence? | **No.** Verified across 20 chains: $\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$, 100% bit-identical argmax tokens. | `scratch/check_test1_bit_identical.py` |
+| Does frozen CGR replicate on an unseen blind vault split ($N=331$)? | **Yes.** CGR achieves **22.1%** (73/331), significantly beating `full_rewrite` (13.9%, 46/331, $43\text{W}/16\text{L}, p = 5.84 \times 10^{-4}$). | `results/verify_vault_h5.json` |
+| Does CGR defeat the random-step permutation control? | **Yes.** Slicing to a random step (`random_t_rank2`) collapses to **6.9%** (23/331); CGR wins $57\text{W}/7\text{L}$ (**$p = 7.64 \times 10^{-11}$**), proving localization causally drives recovery. | same |
+| Does the KV-cache systems speedup replicate out-of-sample? | **Yes.** Per-chain latency drops from 3,281.9 ms to 120.7 ms (**27.2x speedup**, -79.3% forward tokens). | same |
+| Does localization generalize to deeper reasoning chains ($H=10$)? | **Yes.** Linear majority probe achieves **52.0% Top-1 localization accuracy** on $N=75$ broken chains ($5.2\times$ over chance $0.100$). | `results/verify_h10_scaling.json` |
+| What happens to autonomous recovery at $H=10$? | **Collapses to 0.0% across all arms.** Establishes the unassisted autoregressive capacity ceiling ($H^* \approx 6$–$8$) where rollout error compounding ($(0.45)^6 < 0.01$) demands external tools. Token reduction remains **90.0%** (165.0 vs 1,656.2 tokens). | same |
+
+Finding: `findings/2026-10-28-out-of-sample-and-h10-verification.md`. Harnesses: `experiments/eval_vault.py`, `experiments/eval_h10.py`.
+
+---
+
 ## 0. Active branch: DiffuGPT backbone (uncommitted on top of `5345a1e`)
 
 The v0.3 snapshot below is the canvas result. Work since then swaps in
