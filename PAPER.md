@@ -9,14 +9,14 @@
 
 ## Abstract
 
-When multi-step autoregressive generation diverges, standard inference harnesses face an inefficient dilemma: either discard the entire trajectory and regenerate from scratch ("full rewrite"), or rely on text-prompted self-correction ("hindsight prompting"), which language models frequently ignore. In this paper, we establish that **un-pooled internal hidden states** enable precise, step-level error localization, and that pairing step localization with **physical logit-mask exclusion** and **KV-cache truncation** produces an autonomous, surgical repair loop that substantially outperforms full regeneration while reducing inference latency by an order of magnitude.
+When multi-step autoregressive generation diverges, standard inference harnesses face an inefficient dilemma: either discard the entire trajectory and regenerate from scratch ("full rewrite"), or rely on text-prompted self-correction ("hindsight prompting"), which language models frequently ignore. In this paper, we establish that **un-pooled internal hidden states** enable precise, step-level error localization, and that pairing step localization with **physical logit-mask exclusion** and **KV-cache truncation** produces an autonomous, surgical repair loop that outperforms full regeneration while cutting *generation* latency by more than an order of magnitude. The end-to-end loop is cheaper than a rewrite by a smaller factor (1.7-2.0x), because observer inference dominates the remaining cost; we report both numbers throughout and never substitute the generation-slice figure for the loop figure.
 
 Through systematic empirical dissection on multi-step reasoning chains ($H=5$, Qwen3-0.6B-Base), we show:
 1. **Falsification of Heuristic Baselines:** Sequence-level pooled observers fail to select correct trajectories better than the model's own raw token logprob ($\text{AUC} = 0.682$ yields only $+0.004$ selection accuracy over free `max-logprob`, $p=1.000$). Similarly, natural language hindsight constraints (`# constraint: x is not 7`) are statistically identical to neutral placebos ($27.3\%$ vs $27.3\%$, paired $p=1.000$).
-2. **Two-Tier Step Localization:** A frozen linear probe over SVD-reduced hidden states achieves $0.923$ recall on early divergence (Step 1) but collapses to $0.188$ on tail steps (Step 4). A cross-step Transformer encoder provides complementary tail sensitivity ($0.500$ Step-4 recall). An asymmetric Two-Tier routing rule ($P_{trf}(4) \ge 0.35$) eliminates tail collapse, elevating Step-4 recall to **$0.812$** (a $4.3\times$ gain) and overall Top-1 localization accuracy to **$0.718$** ($+10.0\%$ absolute over linear).
-3. **Autonomous Loop Recovery:** Driving a rewind loop with Two-Tier localization and rank-2 first-digit exclusion achieves **$29.1\%$** end-to-end recovery on held-out broken chains, outperforming full sampling rewrites ($12.7\%$) by **$2.29\times$** and capturing **$91.5\%$** of the theoretical oracle-localization rank-2 ceiling ($31.8\%$). An "Accept-if-Cleaner" gate safely suppresses destructive prefix edits.
-4. **Systems Efficiency:** By physically truncating the attention key-value cache via `DynamicCache.crop(target_len)`, the model avoids prompt and prefix re-computation, slashing per-chain forward tokens from $581.1$ to $119.7$ (**$-79.4\%$**) and wall-clock inference latency from $4,498.4\text{ ms}$ to $173.7\text{ ms}$—a **$25.9\times$ speedup** ($96.1\%$ latency cut).
-5. **Out-of-Sample Vault Replication & Generalization:** On an independent holdout vault ($N=331$ unseen broken chains, seed 20261028), frozen Two-Tier CGR achieves **$22.1\%$** recovery, significantly beating full rewrites ($13.9\%, p = 5.84 \times 10^{-4}$) and decisively outperforming a random-step permutation control ($6.9\%, p = 7.64 \times 10^{-11}$) with a **$27.2\times$ wall-clock speedup** and bit-identical slicing verification ($\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$).
+2. **Step Localization, and the Threshold That Did Not Survive:** A frozen linear probe over SVD-reduced hidden states achieves $0.923$ recall on early divergence (Step 1) but collapses to $0.188$ on tail steps (Step 4). A cross-step Transformer encoder provides complementary tail sensitivity ($0.500$ Step-4 recall). An asymmetric Two-Tier routing rule ($P_{trf}(4) \ge 0.35$) lifts Step-4 recall to **$0.812$** and Top-1 to **$0.718$** on the tuning holdout — but **this does not generalize**: on a frozen blind vault ($N=331$) Two-Tier falls to $0.625$ Top-1 / $0.410$ Step-4, *below the Transformer alone* ($0.677$ / $0.500$). The smooth softmax ensemble is the robust variant ($0.680$ / $0.526$). The hard threshold was fitted to the split it was scored on.
+3. **Autonomous Loop Recovery:** Driving a rewind loop with localization and rank-2 first-digit exclusion reaches **$29.1\%$** on the $N=110$ tuning holdout. On the blind vault the frozen loop recovers **$22.1\%$** ($73/331$) against $13.9\%$ ($46/331$) for full rewrites ($43\text{W}/16\text{L}$, $p = 5.84 \times 10^{-4}$), a **$1.59\times$** multiplier. The $2.29\times$ figure sometimes quoted pairs the same loop against a lower-variance draw of the stochastic rewrite baseline and is not the headline.
+4. **Systems Efficiency (Two Numbers, Not One):** Physically truncating the attention key-value cache via `DynamicCache.crop(target_len)` cuts per-chain forward tokens from $581.1$ to $119.7$ (**$-79.4\%$**) and *generation-slice* latency from $4,498.4\text{ ms}$ to $173.7\text{ ms}$ (**$25.9\times$**). The **end-to-end loop** is $2,244\text{ ms}$ per chain against $4,498.4\text{ ms}$ — **$2.0\times$** — because ten probe forward passes and the gate readout cost more than the generation they save. $25.9\times$ is a generation-slice measurement and is never a loop claim.
+5. **Out-of-Sample Vault Replication & Generalization:** On an independent holdout vault ($N=331$ unseen broken chains, seed 20261028), frozen CGR achieves **$22.1\%$** recovery, significantly beating full rewrites ($13.9\%$, $p = 5.84 \times 10^{-4}$) and decisively outperforming a random-step permutation control ($6.9\%$, $p = 7.64 \times 10^{-11}$). Slicing is bit-identical ($\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$). Loop-level speedup on the vault is **$1.70\times$** ($1,934.7$ vs $3,281.9\text{ ms}$ per chain); the $27.2\times$ in the systems block is the generation slice alone.
 
 ---
 
@@ -87,13 +87,13 @@ Step 4 Divergence: [Linear Recall: 0.188]  <<<  [Transformer Recall: 0.500]  (Tr
 
 The linear localizer defaults to Step 1 in $59\%$ of instances, failing catastrophically on late-chain errors (Step-4 recall collapses to $0.188$). Conversely, the Transformer's bidirectional attention mechanism resolves cross-step relational dependencies, allowing it to accurately identify when Step 4 deviates from an otherwise coherent prefix.
 
-### 2.3 The Two-Tier Routing Law
+### 2.3 The Two-Tier Routing Rule and Its Failure to Generalize
 
-Because the error distributions are complementary, an asymmetric ensemble rule eliminates the tail-step bottleneck without training a large unified model:
+Because the error distributions are complementary, a threshold on the transformer's step-4 posterior can lift tail recall without training a large unified model. It does so on the split the threshold is chosen on, and not out of sample — which is the point of this section:
 
 $$\hat{t} = \begin{cases} 4, & \text{if } P_{trf}(t=4) \ge 0.35 \\ \arg\max_{t} P_{lin}(t), & \text{otherwise} \end{cases}$$
 
-#### Table 1: Localizer Diagnostic Performance on Holdout Chains ($N=110$, 5 Seeds)
+#### Table 1: Localizer Diagnostic Performance on the Tuning Holdout ($N=110$, 5 Seeds) — In-Sample for $\tau$
 
 | Architecture | Top-1 Accuracy | Balanced Accuracy | Step 1 Recall ($n=39$) | Step 2 Recall ($n=23$) | Step 3 Recall ($n=13$) | Step 4 Recall ($n=32$) |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -102,7 +102,9 @@ $$\hat{t} = \begin{cases} 4, & \text{if } P_{trf}(t=4) \ge 0.35 \\ \arg\max_{t} 
 | Ensemble (Softmax Mean) | $0.691$ | **$0.571$** | $0.897$ | **$0.783$** | **$0.769$** | $0.406$ |
 | **Two-Tier Localizer** | **$0.718$** | $0.559$ | $0.846$ | $0.522$ | $0.615$ | **$0.812$** |
 
-The Two-Tier localizer achieves a **$4.3\times$ gain in Step-4 recall** ($0.188 \to 0.812$), lifting aggregate Top-1 localization accuracy from $0.618$ to **$0.718$** ($+10.0\%$ absolute).
+The Two-Tier localizer achieves a **$4.3\times$ gain in Step-4 recall** ($0.188 \to 0.812$), lifting aggregate Top-1 localization accuracy from $0.618$ to **$0.718$** ($+10.0\%$ absolute) — **on the split used to choose $\tau=0.35$**.
+
+That last qualification is load-bearing. On the frozen blind vault ($N=331$, Table 5), the same rule scores $0.625$ Top-1 and $0.410$ Step-4 recall, *below* the Transformer alone ($0.677$ / $0.500$) and below the softmax ensemble ($0.680$ / $0.526$). A single scalar threshold on one class posterior is a fitted parameter, and it drifted. The ensemble has no threshold and generalizes; the Two-Tier rule is reported here as the tuning-set maximum, not as the recommended model.
 
 ### 2.4 Dissecting the Inductive Bias: Relational Attention vs. Parameter Capacity Confound
 
@@ -173,9 +175,9 @@ When an observer mis-localizes a late defect to Step 1, applying `rank2` risks c
 * Let $lp_{orig}$ be the logprob of the original emitted token at $\hat{t}$, and $lp_{edit}$ be the logprob under rank-2 masking.
 * If the original step was confident ($lp_{orig} > -0.25$) and the edit sharply degrades confidence ($lp_{edit} < lp_{orig} - 0.35$), the edit is **rejected**, and the prefix is preserved.
 
-In empirical holdout testing, the gate rejected $23/110$ candidate edits, successfully **preventing 6 destructive overwrites** of sound prefixes. An auxiliary probe evaluated falling back to the localizer's second-highest ranked step ($\hat{t}_2$) on those 23 rejected rows: fallback hit the true step in $3/23$ instances but converted $0/23$ chains into additional recoveries, confirming that terminating when the gate rejects is the optimal compute policy.
+In empirical holdout testing, the gate rejected $23/110$ candidate edits. The gated and ungated Two-Tier arms are **numerically identical** ($32/110$, $34{,}046$ tokens, $246{,}826\text{ ms}$), because the rejected rows contributed zero recoveries when ungated. The same holds on the vault: $81/331$ rejected, $0$ recoveries among them, and the gated arm is the only arm run there. So the gate is a *conservative filter that cost nothing*, not a demonstrated recovery gain: it removes edits that would not have helped, and it buys precision ($32/87 = 36.8\%$ recovery among accepted rows on $N=110$) plus skipped compute. An auxiliary probe evaluated falling back to the localizer's second-highest ranked step ($\hat{t}_2$) on those 23 rejected rows: fallback hit the true step in $3/23$ instances but converted $0/23$ chains into additional recoveries, which is why terminating on rejection is the compute policy we use.
 
-#### Table 3: End-to-End Autonomous Loop Recovery on Holdout Set ($N=110$)
+#### Table 3: End-to-End Autonomous Loop Recovery on the Tuning Holdout ($N=110$)
 
 | Autonomous Arm | Localization Model | Intervention | Recovered / $N$ | Success Rate | 95% Wilson CI | $\hat{t} = t^*$ Exact | Accepted / $N$ |
 |---|---|---|:---:|:---:|:---:|:---:|:---:|
@@ -190,6 +192,8 @@ Autonomous loop recovery jumps from $12.7\%$ (rewrite) and $21.8\%$ (linear) to 
 
 $$\frac{29.1\%}{31.8\%} = \mathbf{91.5\% \text{ of the theoretical oracle repair ceiling}}$$
 
+This ratio is a property of the $N=110$ tuning draw and should be read as such: the oracle ceiling was not re-measured on the vault, so no vault ceiling ratio is claimed. The vault result (Section 4.3) stands on its own paired comparison against full rewrites.
+
 ### 4.2 Physical KV-Cache Slicing (`DynamicCache.crop`)
 
 Prior rewind experiments re-ran forward passes over the entire prompt and prefix. To test the systems claim, we integrated physical key-value cache slicing using HuggingFace's `DynamicCache.crop(target_len)`.
@@ -199,7 +203,7 @@ During autoregressive generation, past key-value projections for prompt tokens a
 2. The past key-value tensors are truncated in-place: `cache.crop(L_target)`.
 3. Generation resumes from step $\hat{t}$ without re-evaluating preceding tokens.
 
-#### Table 4: Systems Compute & Latency Benchmark ($N=110$ Chains, GTX 1050 4GB)
+#### Table 4: Systems Benchmark, Generation Slice Only ($N=110$ Chains, GTX 1050 4GB)
 
 | Generation Arm | Mean Tokens / Chain | Mean Latency / Chain | FLOPs / Token Reduction | Latency Reduction | Relative Speedup |
 |---|:---:|:---:|:---:|:---:|:---:|
@@ -207,7 +211,9 @@ During autoregressive generation, past key-value projections for prompt tokens a
 | **Un-cached Fresh Rewind** | $379.5$ | $2,732.2\text{ ms}$ | $-34.7\%$ | $-39.3\%$ | $1.6\times$ |
 | **KV-Cache Truncated Rewind** | **$119.7$** | **$173.7\text{ ms}$** | **$-79.4\%$** | **$-96.1\%$** | **$25.9\times$** |
 
-Compared to standard full-sequence regeneration, surgical KV-cache truncation eliminates $79.4\%$ of forward tokens and **reduces wall-clock repair latency by $96.1\%$ (a $25.9\times$ speedup)**. Even against naive un-cached rewinds, retaining the prefix key-value states delivers a **$15.7\times$ speedup** ($2,732.2\text{ ms} \to 173.7\text{ ms}$).
+Compared to standard full-sequence regeneration, surgical KV-cache truncation eliminates $79.4\%$ of forward tokens and reduces *generation-slice* wall-clock latency by $96.1\%$ (a $25.9\times$ speedup). Even against naive un-cached rewinds, retaining the prefix key-value states delivers a $15.7\times$ speedup ($2,732.2\text{ ms} \to 173.7\text{ ms}$).
+
+**This table is not loop latency.** Measured end to end, the same arm in Table 3 cost $246,826\text{ ms}$ for $110$ chains — **$2,244\text{ ms}$ per chain against $4,498.4\text{ ms}$ for a full rewrite, i.e. $2.0\times$**. The difference is the observer: ten probe forward passes plus the post-edit readout needed by the Accept-if-Cleaner gate. On the vault the same accounting gives $1,934.7\text{ ms}$ vs $3,281.9\text{ ms}$ per chain, **$1.70\times$**. The honest systems claim is therefore two-tiered: *generation* is $25.9$-$27.2\times$ cheaper, the *loop* is $1.7$-$2.0\times$ cheaper. Quoting the first as the second would overstate the system benefit by an order of magnitude.
 
 ### 4.3 Out-of-Sample Vault Replication ($N=331$) and Anti-Self-Deception Controls
 
@@ -221,14 +227,14 @@ To eliminate post-hoc threshold overfitting concerns on small holdout splits, we
 | `random_t_rank2` | Uniform random $\hat{t} \in \{1 \dots 4\}$ + `rank2` | 23 / 331 | $0.069$ | $[0.047, 0.102]$ | $0.245$ | — |
 | **`two_tier_gated` (CGR)** | **Two-Tier Probe + Gate + `rank2`** | **73 / 331** | **$0.221$** | **$[0.179, 0.268]$** | **$0.625$** | **250 / 331** |
 
-1. **Zero Overfitting on Blind Holdout (Rule 1 PASS):**  
-   If routing or gating thresholds had been overfit to the initial $N=110$ holdout set, accuracy would degrade on fresh, unseen seeds. Instead, the relational inductive bias strengthened out-of-sample: Transformer Majority Top-1 reached **$0.677$** (vs $0.604$ for Linear), and the Ensemble Average reached **$0.680$** (balanced accuracy $0.636$). This proves that cross-step attention generalizes robustly without hyperparameter memorization.
+1. **Localization Generalizes; the Hard Threshold Does Not (Rule 1, qualified):**  
+   The relational inductive bias holds out of sample: Transformer Majority Top-1 reached **$0.677$** (vs $0.604$ for Linear), up from $0.618$ on the tuning holdout, and the Ensemble Average held at **$0.680$** (balanced $0.636$, vs $0.691$ in-sample) — a $0.011$ drop, not a collapse. The **Two-Tier rule, however, degrades to $0.625$ / $0.410$ Step-4 recall**, below both. $\tau_{trf}=0.35$ was selected on the same $110$ rows where it scored $0.812$; on unseen seeds it is calibration drift, not a law. The transferable finding is the *complementarity* of linear and cross-step attention, not the threshold that exploits it.
 2. **Defeating the Permutation Control (Rule 3 PASS):**  
    Slicing back to a uniformly random step with rank-2 exclusion (`random_t_rank2`) collapses to **$6.9\%$ recovery** ($23/331$)—performing at roughly half the recovery rate of doing a standard full rewrite ($13.9\%$). Arbitrary rewinds actively destroy sound prefixes. In contrast, Two-Tier CGR achieves **$22.1\%$** ($73/331$). The paired McNemar test demonstrates decisive statistical superiority:
    $$\mathbf{57\text{ Wins} \; / \; 7\text{ Losses}} \quad (p = 7.64 \times 10^{-11})$$
    The paired odds ratio of $8.14 : 1$ confirms that recovery is causally driven by accurate hidden-state localization rather than stochastic perturbation.
-3. **Replicating Out-of-Sample Systems Speedups (Rule 2 PASS):**  
-   CGR significantly outperforms full-chain rewrites ($22.1\%$ vs $13.9\%$, $43\text{W}/16\text{L}, p = 5.84 \times 10^{-4}$) while slashing forward tokens from $580.6$ to $120.1$ ($-79.3\%$) and per-chain latency from $3,281.9\text{ ms}$ to $120.7\text{ ms}$—a **$27.2\times$ wall-clock speedup** replicating our initial $25.9\times$ benchmark on a $3\times$ larger sample.
+3. **Replicating Out-of-Sample Systems Savings (Rule 2, qualified):**  
+   CGR significantly outperforms full-chain rewrites ($22.1\%$ vs $13.9\%$, $43\text{W}/16\text{L}, p = 5.84 \times 10^{-4}$) while slashing forward tokens from $580.6$ to $120.1$ ($-79.3\%$) and per-chain latency from $3,281.9\text{ ms}$ to $120.7\text{ ms}$—a **$27.2\times$ generation-slice speedup**, with the end-to-end loop at $1,934.7\text{ ms}$ vs $3,281.9\text{ ms}$ per chain ($1.70\times$).
 4. **Bit-Identical Slicing Verification (Rule 4 PASS):**  
    To ensure cache slicing does not introduce numerical artifacts or cross-attention corruption, we benchmarked `DynamicCache.crop` against un-cached recomputations across 20 validation sequences. The maximum absolute logit divergence was bounded by $\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$ (well below single-precision epsilon), with $100\%$ bit-identical argmax token sequences.
 
@@ -248,13 +254,13 @@ To establish the limits of test-time KV rewinds as reasoning chains deepen, we s
 
 1. **Robust Localization vs. Multiplicative Rollout Decay:** While the localizer reliably identifies the erroneous step with **$52.0\%$ accuracy** ($5.2\times$ over chance), every generation arm collapsed to $0.0\%$ full-chain recovery. Because per-step conditional accuracy on sub-1B models hovers at $p \approx 0.35$–$0.50$, the joint probability of completing the remaining $10 - t$ steps correct without error decays exponentially: $\prod_{k=t+1}^{10} p_k \le (0.50)^6 \approx 0.015$.
 2. **Identification of the Autoregressive Horizon Boundary ($H^*$):** For small language models, unassisted autoregressive arithmetic possesses an empirical horizon ceiling at $H^* \approx 6$–$8$. Beyond $H^*$, error recovery cannot rely solely on test-time branch exploration; it strictly necessitates external symbolic tool invocations (e.g. calculator tool) or checkpoint scaling to preserve late-step fidelity.
-3. **Super-Linear Token Conservation:** Even at the generative capacity ceiling, surgical KV-cache truncation reduces token forward evaluation by **$90.0\%$** ($165.0$ vs $1,656.2$ tokens), proving that the computational savings of state-level rewinds compound super-linearly with horizon length.
+3. **Token Conservation Does Not Become Latency:** Even at the generative capacity ceiling, surgical KV-cache truncation reduces token forward evaluation by **$90.0\%$** ($165.0$ vs $1,656.2$ tokens). Wall-clock latency, however, moves from $7,502.7\text{ ms}$ to $6,399.2\text{ ms}$ — **$1.17\times$** — because un-batched single-sequence inference at this scale is dominated by framework launch and prefill overhead rather than decode FLOPs. A $90\%$ token reduction therefore does not imply a $90\%$ latency reduction, and at $H=10$ the loop is only marginally faster while recovering nothing.
 
 ---
 
 ## 5. Limitations & Remaining Headroom
 
-While Path A resolves the localization bottleneck and validates the systems claim, several fundamental challenges remain:
+While Path A substantially resolves the localization bottleneck and establishes that KV slicing is real, three claims required correction after the blind-vault audit, and they are reported as such above: the Two-Tier threshold does not generalize, the loop speedup is 1.7-2.0x rather than 27x, and the rewrite multiplier is 1.59x rather than 2.29x. Beyond those corrections, several challenges remain.
 
 1. **The Rank-2 to Oracle Gap ($31.8\%$ vs $79.5\%$):**  
    Under an oracle that directly injects the ground-truth value, $79.5\%$ of non-trivial broken chains are restored. Under `rank2`, recovery caps at $31.8\%$. First-digit exclusion guarantees that the model will not repeat its previous answer, but when numbers span multi-digit ranges ($[1, 99]$), excluding one digit still leaves multiple plausible incorrect candidates. Closing this remaining headroom requires token-level value steering or beam-guided branch exploration at step $\hat{t}$.
@@ -267,9 +273,9 @@ While Path A resolves the localization bottleneck and validates the systems clai
 
 ## 6. Conclusion
 
-Autonomous reasoning repair does not require fine-tuning the base language model or relying on fickle text-based self-correction prompts. By reading un-pooled intermediate hidden states with a complementary Two-Tier localizer, enforcing physical logit exclusion, and surgically cropping the key-value cache, language models can detect and repair reasoning divergence at a fraction of the computational cost of regeneration.
+Autonomous reasoning repair does not require fine-tuning the base language model or relying on fickle text-based self-correction prompts. By reading un-pooled intermediate hidden states, enforcing physical logit exclusion, and surgically cropping the key-value cache, language models can detect and repair reasoning divergence at a fraction of the computational cost of regeneration: 1.59x the recovery rate of a full rewrite on a blind 331-chain vault, with the repair's generation step 26x faster than regenerating the chain.
 
-Surgical KV-cache rewinds transform error recovery from an expensive $4.5$-second full trajectory discard into a sub-$200$ millisecond in-memory cache crop, providing a scalable, mathematically principled foundation for reliable test-time reasoning.
+Surgical KV-cache rewinds turn error recovery from a $4.5$-second full trajectory discard into a sub-$200$ millisecond in-memory cache crop for the generation step. The full loop, including observer inference, runs at $1.7$-$2.0\times$ the speed of a rewrite; making the observer cheaper is the clearest remaining systems headroom.
 
 ---
 
@@ -277,6 +283,6 @@ Surgical KV-cache rewinds transform error recovery from an expensive $4.5$-secon
 
 All code, trained weights, raw outputs, and evaluation logs are deterministic and tracked:
 * **Harness & Pipelines:** [`experiments/path_a_loop.py`](file:///d:/kaggle%20research/experiments/path_a_loop.py)
-* **Raw JSON Metrics:** [`results/path_a_loop_h5.json`](file:///d:/kaggle%20research/results/path_a_loop_h5.json)
-* **Underlying Corpus:** [`results/arith_steps_h5.pt`](file:///d:/kaggle%20research/results/arith_steps_h5.pt)
-* **Detailed Finding Report:** [`findings/2026-10-28-path-a-ensemble-kv-slicing.md`](file:///d:/kaggle%20research/findings/2026-10-28-path-a-ensemble-kv-slicing.md)
+* **Raw JSON Metrics:** [`results/path_a_loop_h5.json`](file:///d:/kaggle%20research/results/path_a_loop_h5.json), [`results/verify_vault_h5.json`](file:///d:/kaggle%20research/results/verify_vault_h5.json), [`results/verify_h10_scaling.json`](file:///d:/kaggle%20research/results/verify_h10_scaling.json), [`results/oracle_rewind_h5.json`](file:///d:/kaggle%20research/results/oracle_rewind_h5.json)
+* **Underlying Corpus:** [`results/arith_steps_h5.pt`](file:///d:/kaggle%20research/results/arith_steps_h5.pt) (tuning), [`results/arith_steps_h5_vault.pt`](file:///d:/kaggle%20research/results/arith_steps_h5_vault.pt) (blind vault)
+* **Detailed Finding Reports:** [`findings/2026-10-28-out-of-sample-and-h10-verification.md`](file:///d:/kaggle%20research/findings/2026-10-28-out-of-sample-and-h10-verification.md) (vault + H=10, authoritative for the systems and generalization numbers above); [`findings/2026-10-28-path-a-ensemble-kv-slicing.md`](file:///d:/kaggle%20research/findings/2026-10-28-path-a-ensemble-kv-slicing.md) (Path A; corrected in place on 2026-10-28 after the vault audit)

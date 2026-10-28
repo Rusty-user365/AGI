@@ -4,7 +4,7 @@
 
 ## Why this audit exists
 
-To prove that the Level-3 Commitment-Gated Reasoning (CGR) architecture is not a post-hoc artifact of a single 5-step dataset ($H=5, N=110$)—and to refute the skepticism that routing thresholds ($\tau_{trf}=0.35$) or gate thresholds were overfit—we executed a strict 5-rule anti-self-deception verification audit:
+To test whether the Level-3 Commitment-Gated Reasoning (CGR) architecture is a post-hoc artifact of a single 5-step dataset ($H=5, N=110$)—and whether routing thresholds ($\tau_{trf}=0.35$) or gate thresholds were overfit—we executed a strict 5-rule anti-self-deception verification audit. The audit found that the loop result replicates and the threshold does not; both outcomes are reported below.
 
 1. **Rule 1 (Blind Vault Holdout):** All weights and thresholds frozen prior to generating brand-new unseen tasks with a fresh disjoint seed (`seed=20261028`, $N=331$ broken chains).
 2. **Rule 2 (Iso-Compute Baseline):** Direct token and latency tracking against full rewrites.
@@ -55,6 +55,8 @@ Every component of Level-3 CGR was frozen:
 
 The Transformer encoder and Ensemble Average generalize strongly to the unseen vault split, achieving **$0.677$–$0.680$ Top-1 accuracy** and **$0.636$–$0.641$ balanced accuracy**.
 
+The **Two-Tier rule does not**: at the frozen $\tau = 0.35$ it scores $0.625$ Top-1 and $0.410$ step-4 recall, below both components it routes between (Transformer $0.677$ / $0.500$). The threshold was selected on the same 110 rows where it reached $0.812$ step-4; on unseen seeds it is calibration drift. The transferable claim is the complementarity of the two observers, not the scalar that exploits it.
+
 ### 2.2 End-to-End Autonomous Loop Recovery ($N=331$ Unseen Broken Chains)
 
 | Generation Arm | Recovered / $N$ | Success Rate | 95% Wilson CI | $t_{exact}$ Match | Gate Accepted |
@@ -72,14 +74,16 @@ The Transformer encoder and Ensemble Average generalize strongly to the unseen v
   $$\mathbf{57\text{ Wins} \; / \; 7\text{ Losses}} \quad (p = 7.64 \times 10^{-11})$$
   Random-step rewinds collapse to $6.9\%$ recovery, while CGR achieves $22.1\%$. The paired odds ratio is **$8.14 : 1$**, definitively disproving the hypothesis that rewind recovery is an artifact of random perturbation.
 
-### 2.4 Systems Latency & FLOPs Benchmark on Vault ($N=331$)
+### 2.4 Systems Latency & FLOPs Benchmark on Vault ($N=331$, Generation Slice)
 
-| Arm | Mean Tokens / Chain | Mean Latency / Chain | FLOP Reduction | Latency Reduction | Speedup |
+| Arm | Mean Tokens / Chain | Mean Generation Latency / Chain | FLOP Reduction | Latency Reduction | Speedup |
 |---|:---:|:---:|:---:|:---:|:---:|
 | Full Rewrite | $580.6$ | $3,281.9\text{ ms}$ | Baseline | Baseline | $1.0\times$ |
 | **KV-Cache Truncated Rewind** | **$120.1$** | **$120.7\text{ ms}$** | **$-79.3\%$** | **$-96.3\%$** | **$27.2\times$** |
 
-Surgical KV-cache truncation reduces per-chain inference latency from $3.28$ seconds to **$120.7$ milliseconds**—a **$27.2\times$ wall-clock speedup** replicating the earlier $25.9\times$ finding on a $3\times$ larger sample.
+Surgical KV-cache truncation reduces per-chain *generation* latency from $3.28$ seconds to **$120.7$ milliseconds**—a **$27.2\times$ generation-slice speedup** replicating the earlier $25.9\times$ finding on a $3\times$ larger sample.
+
+**The loop is a different number.** `verify_vault_h5.json` also stores end-to-end time per arm: `two_tier_gated` took 640,401 ms for 331 chains = **1,934.7 ms per chain**, against 3,281.9 ms for a full rewrite, i.e. **1.70x**. The observer (ten probe passes plus the gate readout) consumes the difference. The 27.2x figure must not be quoted as a loop speedup.
 
 ---
 
@@ -128,7 +132,7 @@ This confirms the pre-registered verification boundary:
    $$P(\text{recovery} \mid \text{correct step } t) = \prod_{k=t+1}^9 P(v_k = y_k)$$
    When $t \le 4$, completing the remaining $6+$ steps with per-step accuracy $p \approx 0.35$–$0.50$ yields $(0.45)^6 \approx 0.0083$. Across $75$ trials, the expected number of successful full chains is $< 0.1$.
 2. **The Capacity Ceiling:** Small sub-1B models without symbolic tools (e.g. calculator tool) cannot maintain multi-step arithmetic chains beyond horizon $H^* \approx 6$–$8$. Once past $H^*$, error recovery requires per-step verification or external tool integration, as raw autoregressive rollout inevitably derails.
-3. **Compute Efficiency Invariance:** Even at $H=10$, KV-cache rewind reduced token generation by **$90.0\%$** ($165.0$ vs $1,656.2$ tokens), proving that systems benefits scale super-linearly with chain length even when the generator hits its arithmetic reasoning ceiling.
+3. **Token Conservation Does Not Become Latency:** Even at $H=10$, KV-cache rewind reduced token generation by **$90.0\%$** ($165.0$ vs $1,656.2$ tokens). Wall-clock latency moved only from $7,502.7$ ms to $6,399.2$ ms — **$1.17\times$** — because un-batched single-sequence inference at this scale is dominated by launch and prefill overhead rather than decode FLOPs. Systems benefits therefore do *not* compound super-linearly with horizon length in wall-clock terms; the token reduction is real, the latency reduction is modest.
 
 ---
 
@@ -136,8 +140,8 @@ This confirms the pre-registered verification boundary:
 
 | Rule | Pre-Registered Requirement | Observed Result | Status |
 |---|---|---|:---:|
-| **Rule 1 (Blind Vault Holdout)** | Frozen CGR weights/thresholds must generalize to unseen seed ($N \ge 300$). | **$22.1\%$** ($73/331$) vs full rewrite **$13.9\%$** ($p = 5.84 \times 10^{-4}$). | **PASS** |
-| **Rule 2 (Iso-Compute Baseline)** | Direct token/latency tracking vs full rewrite at equal/greater compute. | CGR uses **$120.1$** tokens vs **$580.6$** ($79.3\%$ FLOP cut, $27.2\times$ faster). | **PASS** |
+| **Rule 1 (Blind Vault Holdout)** | Frozen CGR weights/thresholds must generalize to unseen seed ($N \ge 300$). | Loop: **$22.1\%$** ($73/331$) vs full rewrite **$13.9\%$** ($p = 5.84 \times 10^{-4}$). Threshold: Two-Tier falls to $0.625$ / $0.410$ step-4, below Transformer-alone ($0.677$ / $0.500$). | **PASS (loop) / FAIL (threshold)** |
+| **Rule 2 (Iso-Compute Baseline)** | Direct token/latency tracking vs full rewrite at equal/greater compute. | CGR uses **$120.1$** tokens vs **$580.6$** ($79.3\%$ fewer). Generation slice **$27.2\times$** faster; **loop $1.70\times$** (1,934.7 vs 3,281.9 ms/chain). | **PASS (qualified)** |
 | **Rule 3 (Permutation Control)** | CGR must beat random-step rewind (`random_t_rank2`) at $p < 0.01$. | CGR $22.1\%$ vs Random $6.9\%$ ($57\text{W}/7\text{L}$, **$p = 7.64 \times 10^{-11}$**). | **PASS** |
 | **Rule 4 (Bit-Identical Slicing)** | $\max |\Delta\text{logit}| < 10^{-4}$ on 20 chains vs fresh un-cached recomputation. | **$\max |\Delta\text{logit}| = 4.86 \times 10^{-5}$**, $100\%$ argmax token identity. | **PASS** |
 | **Rule 5 (Horizon Boundary $H^*$)** | Test scaling to $H=10$ to establish generator capacity ceiling. | Localizer Top-1 = **$0.520$** ($5.2\times$ over chance); Rollout collapses at $H > 6$. | **ESTABLISHED** |

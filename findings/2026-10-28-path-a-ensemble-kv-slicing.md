@@ -1,6 +1,14 @@
-# Two-tier localization cures step-4 collapse; KV-cache slicing yields a 93% latency cut (2026-10-28)
+# Two-tier localization cures step-4 collapse in-sample; KV-cache slicing yields a 26x generation-slice cut (2026-10-28)
 
 Artifacts: `experiments/path_a_loop.py`, `results/path_a_loop_h5.json`
+
+> **Correction (2026-10-28, after the blind-vault audit).** Three numbers in this report predate `results/verify_vault_h5.json` and `results/verify_h10_scaling.json` and do not survive them. They are corrected in place below, and summarized here so the report cannot be read at face value.
+>
+> 1. **Latency is a generation-slice number, not a loop number.** The 25.9x / 96.1% figure is `systems.cached_rewind_time_ms`: the cropped-cache decode alone, excluding the ten observer passes and the gate readout. The full loop is 246,826 ms / 110 = **2,244 ms per chain against 4,498.4 ms (2.0x)**; on the vault, 640,401 / 331 = **1,934.7 ms vs 3,281.9 ms (1.70x)**. Generation is 26x cheaper; the loop is 1.7-2.0x cheaper.
+> 2. **The step-4 cure is in-sample.** `tau = 0.35` was selected on these same 110 rows. On the frozen vault ($N=331$) Two-Tier scores **0.625 Top-1 / 0.410 step-4 recall**, below the Transformer alone (0.677 / 0.500) and below the softmax ensemble (0.680 / 0.526). The complementarity finding generalizes; the threshold does not.
+> 3. **The 2.29x multiplier is one rewrite draw.** It pairs 29.1% against this run's 12.7% `full_rewrite`. The same 110 rows gave 18.2% (20/110) in `oracle_rewind_h5.json`, i.e. 1.60x. The stable estimate is the vault's **1.59x** (22.1% vs 13.9%, 43W/16L, $p = 5.84 \times 10^{-4}$).
+>
+> The gate claim is also corrected: it did not "prevent 6 destructive overwrites". The gated and ungated Two-Tier arms are numerically identical in `path_a_loop_h5.json` (32/110, 34,046 tokens, 246,825.5 ms) because the rejected rows contained zero recoveries.
 
 ## Why this experiment exists
 
@@ -10,7 +18,7 @@ The previous investigation answered the foundational questions: un-pooled hidden
 3. **The Unverified Systems Claim:** The original harness ran fresh forward passes over the full prefix at every step, so "rewind" only saved `H - t` autoregressive decode steps while paying full quadratic prefix re-computation costs.
 
 Path A addresses all three:
-- **Fix 1 (Two-Tier Ensemble Localizer):** Combines the linear localizer (0.92 recall on step 1) with the transformer localizer (0.50 recall on step 4) via an ensemble routing rule to solve step-4 collapse.
+- **Fix 1 (Two-Tier Ensemble Localizer):** Combines the linear localizer (0.92 recall on step 1) with the transformer localizer (0.50 recall on step 4) via an ensemble routing rule, in an attempt to cure step-4 collapse.
 - **Fix 2 (Accept-if-Cleaner Gate):** Measures per-step confidence degradation under rank-2 perturbation; if the prefix was already clean ($lp > -0.25$) and the edit causes a confidence drop ($lp_{edit} < lp_{orig} - 0.35$), the edit is rejected.
 - **Fix 3 (Real KV-Cache Slicing):** Implements physical `DynamicCache.crop(target_len)` truncation to quantify the actual FLOP and wall-clock latency savings in the rewind loop.
 
@@ -37,8 +45,10 @@ Holdout candidate count: $N = 110$ complete broken chains, $H = 5$ steps, 5 rand
 | 3 | 13 | **0.769 (10/13)** | 0.692 (9/13) | **0.769 (10/13)** | 0.615 (8/13) |
 | 4 | 32 | 0.188 (6/32) | 0.500 (16/32) | 0.406 (13/32) | **0.812 (26/32)** |
 
-**The Step-4 Bottleneck is Resolved:**
+**The Step-4 Bottleneck is Resolved In-Sample:**
 The transformer localizer provides high sensitivity to late tail divergence that linear projection misses. By dispatching to step 4 when the transformer's calibrated tail posterior exceeds 0.35, step-4 recall jumps from **0.188 to 0.812** (a **4.3x gain**), while retaining strong early recall (0.846 on step 1). Top-1 localization accuracy improves by **+10.0% absolute** (0.618 to 0.718).
+
+Both the threshold and the gain are properties of this split. `tau = 0.35` was chosen on these 110 rows; on the frozen vault the same rule scores 0.625 Top-1 and 0.410 step-4, below Transformer-alone (0.677 / 0.500). See `findings/2026-10-28-out-of-sample-and-h10-verification.md`.
 
 ---
 
@@ -56,33 +66,36 @@ Evaluated across all 110 broken holdout chains in `results/arith_steps_h5.pt` us
 | **`two_tier_gated`** | **32/110** | **0.291** | **[0.214, 0.382]** | **0.718** | **87/110** |
 
 ### Key Observations:
-1. **Recovery Gains (+7.3% absolute over linear, +16.4% over full rewrite):**
-   The two-tier localizer lifts end-to-end loop recovery from 21.8% (`linear_ungated`, matching the prior 22.7% run) to **29.1%** (32 of 110 recovered chains). This represents a **2.29x recovery multiplier** over full rewrite generation.
-2. **The "Accept-if-Cleaner" Gate Safely Prunes False Alarms:**
-   The gate rejected 23 edits in `two_tier_gated` and 44 in `ensemble_gated`. When a late defect was mis-localized to step 1, the model's clean step 1 logprob (typically $-0.01$) dropped sharply to $\approx -1.58$ under the rank-2 digit exclusion mask. The gate rejected these edits, preventing 6 destructive overwrites on previously correct prefixes.
+1. **Recovery Gains (+7.3% absolute over linear, +16.4% over this run's rewrite draw):**
+   The two-tier localizer lifts end-to-end loop recovery from 21.8% (`linear_ungated`, matching the prior 22.7% run) to **29.1%** (32 of 110 recovered chains). Against this run's `full_rewrite` (12.7%) that is **2.29x**, but the rewrite arm is a stochastic draw: the same 110 rows gave 18.2% (20/110) in `oracle_rewind_h5.json`, where the same loop is 1.60x. The stable, pre-registered estimate is the blind vault's **22.1% vs 13.9% (1.59x, 43W/16L, p=5.84e-4)**.
+2. **The "Accept-if-Cleaner" Gate Prunes Edits Without Costing Recovery:**
+   The gate rejected 23 edits in `two_tier_gated` and 44 in `ensemble_gated`. When a late defect was mis-localized to step 1, the model's clean step 1 logprob (typically $-0.01$) dropped sharply to $\approx -1.58$ under the rank-2 digit exclusion mask. But the gated and ungated arms recover the same number of chains (32/110, with identical token totals and wall-clock to the millisecond), because the rejected rows contributed **zero** recoveries when ungated; the same holds on the vault (81/331 rejected, 0 recoveries among them). The gate's measured value is precision among accepted rows (32/87 = 36.8%) and skipped compute, not recovery.
 
 ---
 
-## 3. Systems FLOPs and Latency Savings (Fix 3)
+## 3. Systems FLOPs and Generation Latency Savings (Fix 3)
 
-Physical KV-cache slicing was measured using `DynamicCache.crop(target_len)` at the rewind target $t_{pred}$.
+Physical KV-cache slicing was measured using `DynamicCache.crop(target_len)` at the rewind target $t_{pred}$. **These are generation-slice measurements**: they time the cropped-cache decode, not the loop.
 
 | Metric | Full Rewrite (T=0.8) | Un-cached Fresh Rewind | KV-Cache Truncated Rewind | Savings vs Un-cached | Savings vs Rewrite |
 |---|---|---|---|---|---|
 | **Forward Tokens / Chain** | 581.1 | 379.5 | **119.7** | **-68.5%** | **-79.4%** |
-| **Wall-Clock Latency / Chain** | 4,498.4 ms | 2,732.2 ms | **173.7 ms** | **-93.6% (15.7x speedup)** | **-96.1% (25.9x speedup)** |
+| **Generation Latency / Chain** | 4,498.4 ms | 2,732.2 ms | **173.7 ms** | **-93.6% (15.7x speedup)** | **-96.1% (25.9x speedup)** |
 
 ### Why KV Slicing is Crucial:
 In a naive rewind implementation without cache reuse, rewinding to step $t$ requires re-encoding the full prompt prefix `truth[:t]` and prompt instructions on every forward pass ($O(L^2)$ token-computation). 
 By slicing the existing `past_key_values` with `DynamicCache.crop`:
 - The prefix attention keys and values are retained byte-for-byte.
 - The model only performs single-token autoregressive decodes for the remaining $H - t$ steps.
-- This produces a **93.6% reduction in wall-clock rewind latency** (from 2,732 ms down to 173 ms per chain).
+- This produces a **93.6% reduction in generation latency** (from 2,732 ms down to 173 ms per chain).
+
+### What the loop actually costs
+The same arm, timed end to end in `path_a_loop_h5.json`, is **246,826 ms / 110 = 2,244 ms per chain** against 4,498.4 ms for a full rewrite: **2.0x**, not 25.9x. On the vault (`verify_vault_h5.json`) it is **1,934.7 ms vs 3,281.9 ms = 1.70x**. The residual is observer inference: ten probe forward passes plus the post-edit readout for the gate. At $H=10$ the gap closes further, to 6,399.2 vs 7,502.7 ms (1.17x), despite a 90.0% token cut. Token reductions of this size do not translate into proportional latency reductions on un-batched single-sequence inference.
 
 ---
 
 ## 4. Architectural Summary
 
-1. **Localizer complementarity is real and exploitable:** Linear localizers have high precision and recall on early steps (0.92 recall on step 1) but collapse on tail steps (0.19 on step 4). Transformer localizers capture cross-step relational divergence and preserve tail recall (0.50–0.81). A two-tier ensemble combines both strengths without training a unified model.
+1. **Localizer complementarity is real; the threshold exploiting it is not:** Linear localizers have high precision and recall on early steps (0.92 recall on step 1) but collapse on tail steps (0.19 on step 4). Transformer localizers capture cross-step relational divergence and preserve tail recall (0.50-0.81). A softmax ensemble combines both strengths without training a unified model and holds up out of sample (0.680 / 0.526 on the vault); the hard two-tier threshold (0.718 / 0.812 in-sample) falls to 0.625 / 0.410 on unseen seeds and should not be presented as the transferable result.
 2. **Logit exclusion outperforms prompting:** Rank-2 first-digit exclusion reliably steers the autoregressive step away from the broken path without relying on negative hindsight prompt compliance.
-3. **DAG rewinds provide concrete systems leverage:** Slicing KV caches rather than re-running the prefix turns a 4.5s regeneration pass into a 173ms surgical fix, saving 79.4% of token forwards and 96.1% of wall-clock latency while simultaneously achieving higher task accuracy.
+3. **DAG rewinds provide concrete systems leverage, bounded by observer cost:** Slicing KV caches rather than re-running the prefix turns a 4.5s regeneration pass into a 173ms generation step, saving 79.4% of token forwards and 96.1% of *generation* latency while simultaneously achieving higher task accuracy. End to end the loop is 1.7-2.0x faster than a rewrite, not 26x, because the observer costs more than the generation it saves.

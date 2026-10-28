@@ -9,10 +9,10 @@ The empirical investigation into step localization, surgical KV rewinds, and out
 
 | Component | State / Result | Evidence / Artifact |
 |---|---|---|
-| **Step-4 Tail Bottleneck** | **Resolved.** Two-Tier localizer ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts Step-4 recall from **0.188 to 0.812** (4.3x gain). Top-1 reaches **0.718**. | `results/path_a_loop_h5.json` |
-| **Autonomous Loop Recovery** | **Resolved.** Recovers **29.1%** (32/110) on held-out broken chains, capturing **91.5%** of the 31.8% oracle-rank2 ceiling and beating full rewrite (12.7%) by 2.29x. | same |
-| **Accept-if-Cleaner Gate** | **Resolved.** Suppressed 23 destructive edits where rank-2 degraded clean steps ($lp > -0.25$), protecting 6 sound prefixes. Fallback-to-top-2 probe yielded 0/23 recoveries. | same |
-| **Physical KV-Cache Slicing** | **Resolved.** `DynamicCache.crop(target_len)` cuts latency from 4,498.4 ms to 173.7 ms (**25.9x speedup**, -79.4% forward tokens). | same |
+| **Step-4 Tail Bottleneck** | **In-sample only.** Two-Tier ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts Step-4 recall **0.188 to 0.812** and Top-1 to **0.718** — but on the frozen vault it degrades to **0.625 / 0.410**, below Transformer alone (0.677 / 0.500) and the softmax ensemble (0.680 / 0.526). The threshold did not generalize. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
+| **Autonomous Loop Recovery** | **Resolved on the vault.** **22.1%** (73/331) vs full rewrite **13.9%** (46/331), 43W/16L, p=5.84e-4, **1.59x**. The N=110 figure is 29.1% (32/110); the 2.29x sometimes quoted uses a low-variance rewrite draw and is not the headline. | `results/verify_vault_h5.json` |
+| **Accept-if-Cleaner Gate** | **Implemented; no measurable recovery effect.** Rejected 23/110 and 81/331 edits where rank-2 degraded a confident step ($lp > -0.25$); those rows contained **0 recoveries in both runs**, and gated == ungated Two-Tier exactly (32/110, same tokens/time). It is a conservative filter: precision among accepted rows is 32/87 = 36.8%, and it skips compute. Fallback-to-top-2 probe yielded 0/23 recoveries. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
+| **Physical KV-Cache Slicing** | **Resolved, two numbers.** Generation slice: 4,498.4 ms to 173.7 ms (**25.9x**, -79.4% tokens). Full loop incl. observer + gate: **2,244 ms vs 4,498.4 ms (2.0x)**; on the vault **1,934.7 vs 3,281.9 ms (1.70x)**. The 25.9x/27.2x figures are generation-slice only. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
 | **Test 1: Bit-Identical Assertion** | **Pass (100%).** Verified on 20 chains: $\max \|\Delta\text{logit}\| = 4.86 \times 10^{-5} < 10^{-4}$; all argmax tokens bit-identical. | `scratch/check_test1_bit_identical.py` |
 | **Test 2: Blind Vault Replication** | **Pass (p=5.84e-4).** Frozen CGR evaluated on unseen seed (`seed=20261028`, $N=331$ broken chains): **22.1%** (73/331) vs full rewrite **13.9%** (46/331). | `results/verify_vault_h5.json` |
 | **Permutation Control (`random_t`)** | **Decisive (p=7.64e-11).** Uniform random-step rewind collapses to **6.9%** (23/331); CGR wins 57W / 7L, proving localization causally drives repair. | same |
@@ -29,7 +29,7 @@ The empirical investigation into step localization, surgical KV rewinds, and out
   - To load the Level-2 specialist (`DiffuGPT-S/` bidirectional diffusion or `checkpoints/hf/qwen2.5-1.5b-instruct` infiller proxy at ~2.2 GB), the script **must unload the primary model** (`del model; torch.cuda.empty_cache()`) and verify VRAM drops below 200 MB before loading the specialist.
 - **Success Criteria:**
   - 🟢 **Total Success:** Rescues 25–35 of the 78 chains, pushing combined recovery to $>50\%$.
-  - 🟡 **Partial Success:** Rescues 5–10 chains; paper frames Level-3 Edge CGR (29.1% recovery at 25.9x speedup) as primary contribution and Level-2 as theoretical upper-bound ablation.
+  - 🟡 **Partial Success:** Rescues 5-10 chains; paper frames Level-3 Edge CGR (22.1% vault recovery at 1.7x loop speedup) as primary contribution and Level-2 as theoretical upper-bound ablation.
   - 🔴 **Failure:** If second model causes OOM or syntax formatting hallucinations, drop Level-2 from claims and keep locked Level-3 paper.
 
 ---
@@ -127,16 +127,16 @@ Finding: `findings/2026-10-28-localizer-ranks-steps-but-attention-does-not-help.
 
 ---
 
-## Current state (2026-10-28 late: Path A established — two-tier localizer cures step-4; KV cache sliced)
+## Current state (2026-10-28 late: Path A — two-tier localizer fixes step-4 in-sample; KV cache sliced)
 
 Path A executed the three fixes proposed above on the 110 holdout chains of `results/arith_steps_h5.pt` with `Qwen3-0.6B-Base`:
 
 | Question | Answer | Evidence |
 |---|---|---|
-| Can an ensemble cure the step-4 localization collapse? | **Yes.** Two-Tier localizer ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts step-4 recall from **0.188 to 0.812** (4.3x gain). Top-1 reaches **0.718** (+10.0% over linear). | `results/path_a_loop_h5.json` |
-| Does improved localization translate to higher loop recovery? | **Yes.** Autonomous rewind loop recovery increases from **21.8% to 29.1%** (32/110 recovered), 2.29x over full rewrite (12.7%). | same |
-| Does the "Accept-if-Cleaner" gate protect prefixes? | **Yes.** Rejected 23 edits where rank-2 perturbation degraded clean step confidence ($lp > -0.25$), preventing 6 destructive overwrites. | same |
-| Does KV-cache slicing (`DynamicCache.crop`) substantiate the systems claim? | **Yes.** Slicing the cache cuts forward tokens from 581.1 to 119.7 (**-79.4%**) and latency from 4,498 ms to 173.7 ms (**-96.1%**, 25.9x speedup vs rewrite; 15.7x vs uncached). | same |
+| Can an ensemble cure the step-4 localization collapse? | **In-sample only.** Two-Tier ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts step-4 recall **0.188 to 0.812** and Top-1 to **0.718** — on the split used to pick the threshold. On the frozen vault it falls to **0.625 / 0.410**, below Transformer alone (0.677 / 0.500) and the ensemble (0.680 / 0.526). | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
+| Does improved localization translate to higher loop recovery? | **Yes, on the vault.** 22.1% (73/331) vs rewrite 13.9% (46/331), 43W/16L, p=5.84e-4, **1.59x**. The N=110 run is 29.1% (32/110); 2.29x uses a low-variance rewrite draw. | `results/verify_vault_h5.json` |
+| Does the "Accept-if-Cleaner" gate protect prefixes? | **No measurable effect on recovery.** Rejected 23 edits where rank-2 degraded a confident step ($lp > -0.25$); the rejected rows contained 0 recoveries in both the N=110 and N=331 runs, and gated == ungated exactly (32/110, same tokens/time). Its value is precision (32/87 = 36.8% among accepted) and skipped compute. | same |
+| Does KV-cache slicing (`DynamicCache.crop`) substantiate the systems claim? | **Yes, at the slice level.** Generation: 581.1 to 119.7 tokens (-79.4%), 4,498 ms to 173.7 ms (**25.9x**). Full loop: **2,244 ms (2.0x)**; vault **1,934.7 vs 3,281.9 ms (1.70x)**. Observer inference dominates the residual. | same |
 
 Finding: `findings/2026-10-28-path-a-ensemble-kv-slicing.md`. Script: `experiments/path_a_loop.py`.
 
@@ -151,7 +151,7 @@ A strict 5-rule Out-of-Sample Stress & Generalization Audit was executed to veri
 | Does KV-cache slicing introduce numerical drift or token divergence? | **No.** Verified across 20 chains: $\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$, 100% bit-identical argmax tokens. | `scratch/check_test1_bit_identical.py` |
 | Does frozen CGR replicate on an unseen blind vault split ($N=331$)? | **Yes.** CGR achieves **22.1%** (73/331), significantly beating `full_rewrite` (13.9%, 46/331, $43\text{W}/16\text{L}, p = 5.84 \times 10^{-4}$). | `results/verify_vault_h5.json` |
 | Does CGR defeat the random-step permutation control? | **Yes.** Slicing to a random step (`random_t_rank2`) collapses to **6.9%** (23/331); CGR wins $57\text{W}/7\text{L}$ (**$p = 7.64 \times 10^{-11}$**), proving localization causally drives recovery. | same |
-| Does the KV-cache systems speedup replicate out-of-sample? | **Yes.** Per-chain latency drops from 3,281.9 ms to 120.7 ms (**27.2x speedup**, -79.3% forward tokens). | same |
+| Does the KV-cache systems speedup replicate out-of-sample? | **Generation only.** Per-chain generation latency 3,281.9 to 120.7 ms (**27.2x**, -79.3% tokens); the loop is 1,934.7 vs 3,281.9 ms (**1.70x**). | same |
 | Does localization generalize to deeper reasoning chains ($H=10$)? | **Yes.** Linear majority probe achieves **52.0% Top-1 localization accuracy** on $N=75$ broken chains ($5.2\times$ over chance $0.100$). | `results/verify_h10_scaling.json` |
 | What happens to autonomous recovery at $H=10$? | **Collapses to 0.0% across all arms.** Establishes the unassisted autoregressive capacity ceiling ($H^* \approx 6$–$8$) where rollout error compounding ($(0.45)^6 < 0.01$) demands external tools. Token reduction remains **90.0%** (165.0 vs 1,656.2 tokens). | same |
 
