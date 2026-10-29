@@ -30,9 +30,19 @@ The claim this can support: localized calls reach a given accuracy with fewer
 interpreter calls than random calls. It cannot support "more puzzles solved",
 because k5_all solves everything by construction.
 
+The localizer is trained on `--train-data` and evaluated on `--data`. They are
+the same file for the h5 holdout run; for the frozen vault, `--train-data` stays
+at the h5 file so the localizer weights are frozen and the vault is genuinely
+out of sample. The reproduction anchors (32/110, 70/110, 94/110, 0.718) are
+claims about the h5 holdout and are enforced only when `--data` is that file.
+
 Usage:
     python experiments/interp_calls.py --limit 6
     python experiments/interp_calls.py
+    python experiments/interp_calls.py --data results/arith_steps_h5_vault.pt \
+        --train-data results/arith_steps_h5.pt \
+        --out results/interp_calls_vault.json \
+        --rows-out results/interp_calls_vault_rows.jsonl
 """
 from __future__ import annotations
 
@@ -118,6 +128,9 @@ def fill_with(emitted, truth, injected: set[int], lines, order, start, steps,
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data", default="results/arith_steps_h5.pt")
+    ap.add_argument("--train-data", default="results/arith_steps_h5.pt",
+                    help="localizer training corpus; leave at the h5 file when "
+                         "--data is the frozen vault so the weights are frozen")
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--seeds", type=int, default=5)
@@ -134,6 +147,15 @@ def main() -> int:
     data_path = Path(args.data)
     if not data_path.is_absolute():
         data_path = root / data_path
+    train_path = Path(args.train_data)
+    if not train_path.is_absolute():
+        train_path = root / train_path
+    # The anchors are claims about the h5 holdout run. They cannot hold on a
+    # different corpus, and a flag someone can forget to set would silently hide
+    # a broken arm, so the gate is tied to the eval file itself.
+    anchor = data_path.resolve() == (root / "results/arith_steps_h5.pt").resolve()
+    print(f"eval data: {data_path.name} | train data: {train_path.name}")
+    print(f"anchors: {'enforced (h5 holdout)' if anchor else 'skipped (eval data is not the h5 holdout)'}")
     rows_out = Path(args.rows_out)
     if not rows_out.is_absolute():
         rows_out = root / rows_out
@@ -153,9 +175,11 @@ def main() -> int:
     assert bad == 0, f"{bad} holdout tasks: subprocess evaluator != stored truth"
     print(f"evaluator: 0 mismatches on holdout definition blocks")
 
-    cands = load_candidates(data_path, steps)
-    train = [c for c in cands if c["split"] == "train"]
-    hold = [c for c in cands if c["split"] == "holdout"]
+    hold = [c for c in load_candidates(data_path, steps) if c["split"] == "holdout"]
+    train = [c for c in load_candidates(train_path, steps) if c["split"] == "train"]
+    assert train, f"no train candidates in {train_path}"
+    assert hold, f"no holdout candidates in {data_path}"
+    print(f"localizer: {len(train)} train candidates, {len(hold)} eval candidates")
     lab = torch.tensor([c["label"] for c in hold])
 
     feats = torch.stack([c["feat"] for c in train])
@@ -183,8 +207,9 @@ def main() -> int:
     for i in range(len(hold)):
         if trf_mean[i, 4] >= 0.35:
             two_tier[i] = 4
-    assert abs(float((two_tier == lab).float().mean()) - 0.7181818) < 1e-4, \
-        "two-tier localizer did not reproduce 0.718"
+    if anchor:
+        assert abs(float((two_tier == lab).float().mean()) - 0.7181818) < 1e-4, \
+            "two-tier localizer did not reproduce 0.718"
     ens = (lin_mean + trf_mean) / 2.0
 
     def ranked_steps(i: int) -> list[int]:
@@ -324,7 +349,7 @@ def main() -> int:
     # k1_loc    -> results/level2_ladder_h5.json  (oracle_value)
     # k1_oracleloc -> results/oracle_rewind_h5.json (oracle_force)
     anchors = {}
-    if n == 110:
+    if anchor:
         anchors["k0_rank2"] = {"got": summary["k0_rank2"]["ok"], "expected": 32,
                                "source": "level2_ladder_h5.json rank2"}
         anchors["k1_loc"] = {"got": summary["k1_loc"]["ok"], "expected": 70,
@@ -342,6 +367,8 @@ def main() -> int:
     payload = {
         "config": vars(args),
         "n": n,
+        "anchor_enforced": anchor,
+        "train_candidates": len(train),
         "anchors": anchors,
         "localizer": {
             "two_tier_top1": float((two_tier == lab).float().mean()),
