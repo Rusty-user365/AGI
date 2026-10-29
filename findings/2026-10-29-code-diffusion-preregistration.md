@@ -126,6 +126,32 @@ The same rule is applied to `ar_hinted`, so the localization quality is matched
 across arms. A difference between arms therefore cannot come from one arm
 getting a better cut.
 
+### Deviations from the first implementation, recorded before the corrected result
+
+The first implementation produced 0/5 on the stage-1 repair set. Inspecting the
+bodies showed single-token corruption (`[delimeter]` -> `[elimimeter]`,
+`numbers_list` -> `_list_list`, an extra `[`), not a broken pipeline. Two real
+bugs caused it, and both are corrections toward the rule above rather than
+tuning toward a positive:
+
+1. **The span was not the statement.** The code reused the AR harness's
+   `localize_cut`, which walks back to the enclosing 4-space statement so that
+   an AR continuation starts on a valid line. An infill needs no valid prefix.
+   Reusing it meant a traceback inside a top-level `for` masked from that `for`
+   to the end of the function, so almost every "infill" was a full-body rewrite
+   with no right-hand context -- the one condition the hypothesis needs was
+   destroyed. The span is now the innermost traceback statement, as written
+   above. The buggy rows are kept at `results/diffusion_v0_walkback/`.
+2. **The budget was capped per attempt, not in total.** A 20-token span finishes
+   in ~20 passes, so a 190-pass per-attempt cap left most of the AR arm's budget
+   unspent (`nfe` 84 against a 190 budget on `HumanEval/5`). The arms were
+   therefore not matched at all. Leftover budget now rolls into further
+   attempts, up to 8, which is the AR arm's `max_repairs`.
+
+**Freeze:** after these two corrections the configuration is fixed. No further
+change will be made in response to an arm's score. If the corrected run is still
+negative, that is the result.
+
 ## Matched compute, defined precisely
 
 A forward pass is the unit. KV-cached AR generation of *L* tokens costs *L*

@@ -55,7 +55,7 @@ import torch
 
 from experiments.code_bench import (failure_kind, load as load_corpus,
                                     run_tests, truncate)
-from experiments.code_loop import feedback_of, localize_cut
+from experiments.code_loop import FRAME, feedback_of
 from experiments.level2_ladder import mcnemar
 from experiments.localizer import wilson
 
@@ -218,34 +218,57 @@ def hint_of(res: dict) -> str:
 
 def run_infill(model, tok, r, args, body0: str, res0: dict, budgets: list[int],
                hint: bool):
-    """Attempt up to len(budgets) infills, each costing its matched step count."""
+    """Attempt infills until the AR arm's forward-pass budget is spent.
+
+    Two rules here are corrections to the first implementation, both recorded in
+    the pre-registration as deviations:
+
+    1. The masked span is the *innermost* traceback statement, not the block
+       reached by walking back to a 4-space statement. The walk-back exists so an
+       AR continuation starts on a valid line; an infill needs no valid prefix, so
+       reusing it masked from a top-level `for` to the end of the function and
+       destroyed the right-hand context the hypothesis is about. The
+       pre-registration already said "mask exactly that statement"; the code did
+       not.
+    2. The budget is the AR arm's *total* over its attempts, not one cap per
+       attempt. A short span finishes in ~20 passes, so a per-attempt cap of 190
+       left most of the budget unspent and the arms were not matched at all.
+       Leftover now rolls forward into further attempts, up to `--max-attempts`.
+    """
     prompt_lines = len(r["prompt"].splitlines())
     body = body0
     res = res0
     tests = 0
     nfe = 0
     cuts = []
-    for steps in budgets[:args.max_attempts]:
-        if res["ok"] or steps <= 0:
+    total = max(0, sum(budgets))
+    spent = 0
+    i = 0
+    while not res["ok"] and i < args.max_attempts and total - spent > 8:
+        if res0["ok"]:
             break
-        cut, _kind = localize_cut(body.splitlines(), res, prompt_lines)
-        # cut > 0 is the only real localization (an exception frame inside the
-        # body). Everything else is cut = 0, which means "we do not know where
-        # the bug is", so the whole body is masked. Masking only the top-level
-        # statement block at cut = 0 would be an undocumented localization and
-        # would flatter the treatment on exactly the branch that has none.
-        span = (0, len(body)) if cut == 0 else statement_span(body, cut)
+        # Localization: the innermost frame inside the body, or the whole body.
+        span = (0, len(body))
+        frames = FRAME.findall(res.get("stderr") or "")
+        if frames:
+            line = int(frames[-1])
+            if prompt_lines < line <= prompt_lines + len(body.splitlines()):
+                span = statement_span(body, line - prompt_lines - 1)
+        step_cap = budgets[i] if i < len(budgets) else budgets[-1]
+        steps = min(step_cap, total - spent)
         suffix = hint_of(res) if hint else ""
         body, used = infill_once(model, tok, r["prompt"], body, suffix, span,
                                  steps, args.temperature, args.device,
                                  tok.mask_token_id)
         nfe += used
-        cuts.append(cut)
+        spent += used
+        cuts.append([span[0], span[1]])
         res = run_tests(r["prompt"] + body, r["test"], r["entry_point"],
                         args.timeout)
         tests += 1
+        i += 1
     return {"ok": res["ok"], "nfe": nfe, "tests": tests, "cuts": cuts,
-            "attempts": len(cuts), "body_final": body,
+            "attempts": len(cuts), "budget": total, "body_final": body,
             "kind": None if res0["ok"] else failure_kind(res0["stderr"])}
 
 
@@ -266,7 +289,9 @@ def main() -> int:
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--compare", action="store_true")
     ap.add_argument("--limit", type=int, default=0)
-    ap.add_argument("--max-attempts", type=int, default=4)
+    ap.add_argument("--max-attempts", type=int, default=8,
+                    help="matches the AR arm's max_repairs; the cap is on total "
+                         "forward passes, so short spans get more attempts")
     ap.add_argument("--temperature", type=float, default=0.8,
                     help="matched to the AR arm's sampling temperature")
     ap.add_argument("--timeout", type=float, default=5.0)
