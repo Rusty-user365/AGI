@@ -9,6 +9,14 @@ The empirical investigation into step localization, surgical KV rewinds, and out
 
 ### Current state (2026-10-29: code pilot stopped, repair loop is a null)
 
+> **Read this before interpreting any null below.** CGR is framed as a
+> **tool-budget allocator** (detector -> slicer -> external payload), not as a
+> reasoner. The code null and the closed actuator branch say the *payload* was
+> wrong, not that the allocator is unnecessary. The standing framing, with every
+> number bound to its artifact and three overclaim corrections, is
+> `findings/2026-10-29-cgr-as-tool-budget-allocator.md`. Do not re-derive it
+> from memory, and do not restate a null as "CGR is useless".
+
 The HumanEval line was built, audited, and stopped at Stage 1 (N=24) under its
 pre-registered falsifier. The finding is that the treatment is negative, not
 that the sample is small.
