@@ -5,6 +5,37 @@
 **Active Working Context:**  
 The empirical investigation into step localization, surgical KV rewinds, and out-of-sample generalization is **complete, verified, and locked**. Every finding is backed by deterministic scripts, raw JSON metrics, Wilson 95% CIs, and exact paired hypothesis tests.
 
+---
+
+### Current state (2026-10-29: code pilot stopped, repair loop is a null)
+
+The HumanEval line was built, audited, and stopped at Stage 1 (N=24) under its
+pre-registered falsifier. The finding is that the treatment is negative, not
+that the sample is small.
+
+| Question | Answer | Evidence |
+|---|---|---|
+| Does hinted localized repair beat `best_of_4` at matched tokens? | **No.** 16/24 vs 16/24, 2W/2L, p=1.00. Falsifier fired. | `results/code_pilot_stage1.json` |
+| Was the apparent 0.518x token win real? | **No.** It was early stopping. A sequential baseline on the same samples costs 0.369x of `best_of_4` and 0.71x of `cgr`. | `results/code_pilot_decompose.json` |
+| Does the treatment beat a plain retry loop? | **No, it loses.** `greedy_seq` (greedy, then unhinted samples) 17/24 at 11,930 tok; `cgr` 16/24 at 13,741 tok. | same |
+| Where does the cost come from? | Structural: 30-60 extra prompt tokens per hinted attempt, and longer generations (~190 vs ~110 tokens), with no accuracy gain. | same |
+| Is the verifier trustworthy? | **Yes.** Stub bodies fail 164/164; all tests call `check()`; localization frame math and reassembly verified. | `experiments/code_audit.py` |
+
+Finding: `findings/2026-10-29-code-pilot-null.md`.
+Harness: `experiments/code_loop.py`, `code_bench.py`, `code_audit.py`,
+`code_gate.py`, `code_decompose.py`.
+
+**Protocol deviation, disclosed:** the mechanical futility gate did not fire
+(2W/2L). The stop is based on the falsifier plus the post-hoc decomposition,
+which uses only stored samples and re-runs the verifier.
+
+**Consequence for the architecture:** localization is not the binding
+constraint on code yet. Finding the right line does not help if the 0.6B model
+cannot write a correct replacement for it. Any future code claim must use
+`greedy_seq` as the baseline, not `best_of_4`.
+
+---
+
 ### Executive Status Summary (2026-10-28)
 
 | Component | State / Result | Evidence / Artifact |
@@ -20,7 +51,16 @@ The empirical investigation into step localization, surgical KV rewinds, and out
 
 ---
 
-### Immediate Next Task Queue: Level-2 Hybrid Specialist Ablation
+### Superseded: Level-2 Hybrid Specialist Ablation
+
+> **Superseded on 2026-10-28.** The actuator ladder closed this branch:
+> `span_digitset` was bit-identical to `rank2` (0/110 disagreements), and no
+> deployable branch operator beat rank-2. `oracle_value` (70/110) opened the
+> value branch, and the call-allocation curve then showed localization is the
+> binding constraint. See
+> `findings/2026-10-28-level2-actuator-ladder.md` and
+> `findings/2026-10-29-call-allocation-curve.md`. The text below is kept only
+> as the record of what was planned.
 
 - **Objective:** Evaluate bidirectional span infilling on the **78 failed holdout chains** from `results/path_a_loop_h5.json` where Level-3's single-token rank-2 exclusion fell short.
 - **Script Location:** `experiments/level2_hybrid_test.py`

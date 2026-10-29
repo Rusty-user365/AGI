@@ -1,0 +1,103 @@
+{
+  "config": {
+    "data": "data/humaneval.jsonl.gz",
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "device": "cuda",
+    "limit": 24,
+    "max_new": 192,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "timeout": 5.0,
+    "best_k": 4,
+    "max_repairs": 8,
+    "seed": 1234,
+    "rows_out": "results\\code_pilot_rows.jsonl",
+    "out": "results\\code_pilot_stage1.json",
+    "resume": false
+  },
+  "n": 24,
+  "arms": {
+    "greedy": {
+      "ok": 13,
+      "n": 24,
+      "rate": 0.5416666666666666,
+      "ci": [
+        0.35074553553106635,
+        0.7210894164831857
+      ],
+      "tokens": 4974,
+      "tokens_per_solve": 382.61538461538464,
+      "tests": 24,
+      "tests_per_solve": 1.8461538461538463
+    },
+    "best_of": {
+      "ok": 16,
+      "n": 24,
+      "rate": 0.6666666666666666,
+      "ci": [
+        0.4670595949408046,
+        0.8202802131162036
+      ],
+      "tokens": 26508,
+      "tokens_per_solve": 1656.75,
+      "tests": 63,
+      "tests_per_solve": 3.9375
+    },
+    "cgr": {
+      "ok": 16,
+      "n": 24,
+      "rate": 0.6666666666666666,
+      "ci": [
+        0.4670595949408046,
+        0.8202802131162036
+      ],
+      "tokens": 13741,
+      "tokens_per_solve": 858.8125,
+      "tests": 61,
+      "tests_per_solve": 3.8125
+    }
+  },
+  "paired": {
+    "cgr_vs_best": {
+      "wins": 2,
+      "losses": 2,
+      "p": 1.0
+    },
+    "best_vs_greedy": {
+      "wins": 4,
+      "losses": 1,
+      "p": 0.375
+    },
+    "cgr_vs_greedy": {
+      "wins": 3,
+      "losses": 0,
+      "p": 0.25
+    }
+  },
+  "by_greedy_failure_kind": {
+    "assert": {
+      "n": 8,
+      "greedy": 0,
+      "best_of": 2,
+      "cgr": 3
+    },
+    "exception": {
+      "n": 3,
+      "greedy": 0,
+      "best_of": 2,
+      "cgr": 0
+    },
+    "None": {
+      "n": 13,
+      "greedy": 13,
+      "best_of": 12,
+      "cgr": 13
+    }
+  },
+  "localization": {
+    "repaired": 11,
+    "first_repair_ok": 2,
+    "mean_repairs": 1.5416666666666667
+  },
+  "vram_peak_mb": 2648.10888671875
+}

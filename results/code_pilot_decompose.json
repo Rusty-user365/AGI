@@ -1,0 +1,281 @@
+{
+  "rows": 24,
+  "arms": {
+    "best_of_4": {
+      "ok": 16,
+      "tokens": 26508,
+      "tests": 63
+    },
+    "sequential": {
+      "ok": 16,
+      "tokens": 9774,
+      "tests": 63
+    },
+    "greedy_seq": {
+      "ok": 17,
+      "tokens": 11930,
+      "tests": 62
+    },
+    "cgr": {
+      "ok": 16,
+      "tokens": 13741,
+      "tests": 61
+    }
+  },
+  "cgr_vs_sequential": {
+    "wins": 2,
+    "losses": 2,
+    "p": 1.0
+  },
+  "cgr_vs_greedy_seq": {
+    "wins": 1,
+    "losses": 2,
+    "p": 1.0
+  },
+  "ratio_cgr_seq": 1.4058727235522817,
+  "ratio_cgr_greedy_seq": 1.151802179379715,
+  "ratio_cgr_best": 0.5183718122830844,
+  "note": "sequential tokens are re-tokenized approximations; cgr and best_of use exact recorded counts",
+  "detail": [
+    {
+      "task_id": "HumanEval/0",
+      "ok": true,
+      "tokens": 161,
+      "tests": 1,
+      "greedy_ok": false,
+      "cgr_ok": true,
+      "cgr_tokens": 676,
+      "cgr_tests": 2
+    },
+    {
+      "task_id": "HumanEval/1",
+      "ok": false,
+      "tokens": 797,
+      "tests": 4,
+      "greedy_ok": false,
+      "cgr_ok": false,
+      "cgr_tokens": 1037,
+      "cgr_tests": 5
+    },
+    {
+      "task_id": "HumanEval/10",
+      "ok": false,
+      "tokens": 962,
+      "tests": 4,
+      "greedy_ok": false,
+      "cgr_ok": false,
+      "cgr_tokens": 1316,
+      "cgr_tests": 5
+    },
+    {
+      "task_id": "HumanEval/11",
+      "ok": true,
+      "tokens": 301,
+      "tests": 3,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 268,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/12",
+      "ok": true,
+      "tokens": 117,
+      "tests": 1,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 114,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/13",
+      "ok": true,
+      "tokens": 89,
+      "tests": 1,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 259,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/14",
+      "ok": true,
+      "tokens": 249,
+      "tests": 3,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 138,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/15",
+      "ok": true,
+      "tokens": 171,
+      "tests": 2,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 100,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/16",
+      "ok": true,
+      "tokens": 72,
+      "tests": 1,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 257,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/17",
+      "ok": false,
+      "tokens": 867,
+      "tests": 4,
+      "greedy_ok": false,
+      "cgr_ok": false,
+      "cgr_tokens": 1432,
+      "cgr_tests": 5
+    },
+    {
+      "task_id": "HumanEval/18",
+      "ok": true,
+      "tokens": 649,
+      "tests": 4,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 275,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/19",
+      "ok": false,
+      "tokens": 639,
+      "tests": 4,
+      "greedy_ok": false,
+      "cgr_ok": false,
+      "cgr_tokens": 892,
+      "cgr_tests": 5
+    },
+    {
+      "task_id": "HumanEval/2",
+      "ok": true,
+      "tokens": 174,
+      "tests": 2,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 272,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/20",
+      "ok": false,
+      "tokens": 867,
+      "tests": 4,
+      "greedy_ok": false,
+      "cgr_ok": false,
+      "cgr_tokens": 1260,
+      "cgr_tests": 5
+    },
+    {
+      "task_id": "HumanEval/21",
+      "ok": false,
+      "tokens": 617,
+      "tests": 4,
+      "greedy_ok": false,
+      "cgr_ok": true,
+      "cgr_tokens": 1195,
+      "cgr_tests": 5
+    },
+    {
+      "task_id": "HumanEval/22",
+      "ok": true,
+      "tokens": 100,
+      "tests": 1,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 101,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/23",
+      "ok": true,
+      "tokens": 43,
+      "tests": 1,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 230,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/3",
+      "ok": false,
+      "tokens": 545,
+      "tests": 4,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 145,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/4",
+      "ok": true,
+      "tokens": 208,
+      "tests": 1,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 151,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/5",
+      "ok": true,
+      "tokens": 406,
+      "tests": 3,
+      "greedy_ok": false,
+      "cgr_ok": false,
+      "cgr_tokens": 683,
+      "cgr_tests": 4
+    },
+    {
+      "task_id": "HumanEval/6",
+      "ok": false,
+      "tokens": 773,
+      "tests": 4,
+      "greedy_ok": false,
+      "cgr_ok": false,
+      "cgr_tokens": 1192,
+      "cgr_tests": 5
+    },
+    {
+      "task_id": "HumanEval/7",
+      "ok": true,
+      "tokens": 100,
+      "tests": 1,
+      "greedy_ok": true,
+      "cgr_ok": true,
+      "cgr_tokens": 101,
+      "cgr_tests": 1
+    },
+    {
+      "task_id": "HumanEval/8",
+      "ok": true,
+      "tokens": 314,
+      "tests": 2,
+      "greedy_ok": false,
+      "cgr_ok": true,
+      "cgr_tokens": 503,
+      "cgr_tests": 2
+    },
+    {
+      "task_id": "HumanEval/9",
+      "ok": true,
+      "tokens": 553,
+      "tests": 4,
+      "greedy_ok": false,
+      "cgr_ok": false,
+      "cgr_tokens": 1144,
+      "cgr_tests": 5
+    }
+  ]
+}
