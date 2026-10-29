@@ -271,7 +271,105 @@ While Path A substantially resolves the localization bottleneck and establishes 
 
 ---
 
-## 6. Conclusion
+## 6. Dynamic Adapter Routing and the Bridge Protocol
+
+> **Status: design proposal, not a measurement.** Nothing in this section has
+> been executed. It specifies a mechanism and the artefacts that would
+> falsify it. It appears here because the systems constraint it addresses —
+> specialised intervention under a $\le 4\text{ GB}$ budget — is real, not
+> because the proposal has been validated. No number in this section may be
+> quoted as a result.
+
+Full-checkpoint escalation was measured and closed. On the $N=110$ ladder no
+deployable actuator beat `rank2` (`findings/2026-10-28-level2-actuator-ladder.md`),
+and the memory arithmetic is unforgiving on the target hardware: the AR backbone
+occupies $\sim$1.2 GB and a 1.5–2.5B-class specialist a further $\sim$2.2 GB, so
+a two-checkpoint policy spends $\sim$3.4 GB before activations on a 4 GB budget.
+The alternative is to swap low-rank adapter weights ($\sim$10–50 MB) instead of
+a parameter backbone. The CGR line already produces adapters in that band — the
+matched LoRA control trains $22.3\text{M}$ parameters
+(`findings/2026-10-25-steering-capacity-control.md`), $\approx 45\text{ MB}$ at
+fp16 — but none of them is a code-repair specialist, which is the specialist
+this section assumes.
+
+### 6.1 KV-Cache Coherence Under Adapter Intervention
+
+A fundamental systems constraint in recurrent adapter intervention is
+**Key-Value Cache Coherence**: updating attention projections
+($\Delta W_q, \Delta W_k, \Delta W_v$) or feed-forward layers
+($\Delta W_{\text{MLP}}$) alters the activation distribution, rendering cached
+tensors mathematically misaligned with subsequent decoding steps. Two
+operational paths can manage this boundary.
+
+**Path 1 — Query-Restricted Adaptation (in-stream persistence).** Adapters are
+constrained during training to low-rank perturbations of query and MLP
+projections ($\Delta W_q, \Delta W_{\text{MLP}}$), keeping the key-value
+projection weights ($W_k, W_v$) strictly frozen. When an error is localized at
+index $\hat{t}_{\min}$, the controller crops the cache via
+`DynamicCache.crop` to $\hat{t}_{\min}-1$. Because $W_k$ and $W_v$ are
+invariant, adapter-generated queries at $\hat{t}_{\min}$ attend directly to
+cached prefix states without projection distortion. When the specialised task
+spans the remainder of the sequence, the adapter stays active to the termination
+boundary, which avoids cross-distribution attention artifacts.
+
+The crop operation itself is measured, not assumed: on 20 validation sequences
+`DynamicCache.crop` reproduced un-cached recomputation to
+$\max|\Delta\text{logit}| \le 4.86 \times 10^{-5}$ with $100\%$ bit-identical
+argmax sequences (Section 4.3, Rule 4). What is *not* measured is whether an
+adapter's $\Delta W_q$ keeps that equivalence — the bit-identity result was
+obtained with the base weights only.
+
+### 6.2 The Bridge Protocol: Targeted Re-Encoding
+
+When a specialised adapter is needed only for a localized sub-routine — repairing
+code or symbolic arithmetic at steps $\hat{t} \dots \hat{t}+k$ — before returning
+to general causal generation, retaining adapter overhead across the remaining
+sequence is wasteful. The **Bridge Protocol** treats adapter generation as an
+isolated, temporary patch:
+
+1. **Surgical truncation.** The cache is cropped to $\hat{t}-1$, preserving
+   verified prefix representations.
+2. **Specialist execution.** The task-specific adapter is engaged to generate the
+   localized patch tokens $S_{\text{patch}} = \{x_{\hat{t}}, \dots, x_{\hat{t}+k}\}$.
+3. **Distribution re-alignment (the bridge).** The adapter is disengaged. Rather
+   than flushing the context window or retaining adapted latent vectors, the raw
+   text tokens of $S_{\text{patch}}$ pass through a single non-generative forward
+   prefill under the frozen base weights. This re-encodes the patch's keys and
+   values directly into the base distribution.
+4. **Resumption.** Autoregressive decoding resumes under the base policy at step
+   $\hat{t}+k+1$.
+
+The economic argument is that prefill over a short window is parallel, so
+re-encoding $k$ tokens costs one forward pass rather than $k$ sequential decode
+steps, and the specialist's weights can be de-allocated immediately. That
+argument is plausible but **its cost is not established here**, and Section 4.4
+cuts against the optimistic reading: at $H=10$ a $90\%$ reduction in forwarded
+tokens bought only $1.17\times$ wall-clock, because launch and prefill overhead
+dominate at this scale. Any claim that the bridge is "imperceptible" or
+"single-digit milliseconds" would therefore contradict a measurement already in
+this paper. It has to be timed.
+
+**What would count as evidence.** The protocol is worth adopting only if, against
+query-restricted persistence (Path 1) on the same rows, it satisfies all three:
+
+1. **Cost:** re-encoding $+$ adapter swap is cheaper in wall-clock than keeping
+   the adapter resident for the remaining $T - (\hat{t}+k)$ steps. Tokens
+   forwarded is the wrong metric; Section 4.4 shows it decouples from latency.
+2. **Quality:** end-to-end recovery is not lower. The bridge rewrites the patch
+   into the base distribution, so the failure mode to watch is a specialist edit
+   that the base model then treats as out-of-distribution and talks itself out of.
+3. **Coherence:** $\max|\Delta\text{logit}|$ between bridged and fully-base
+   decoding over the same token sequence stays within the $4.86 \times 10^{-5}$
+   envelope already established for crop.
+
+If (1) fails, the protocol collapses to Path 1 with extra machinery. If (2)
+fails, the adapter was load-bearing for more than the patch and targeted
+re-encoding is the wrong abstraction. Either outcome is a result; neither is
+currently known.
+
+---
+
+## 7. Conclusion
 
 Autonomous reasoning repair does not require fine-tuning the base language model or relying on fickle text-based self-correction prompts. By reading un-pooled intermediate hidden states, enforcing physical logit exclusion, and surgically cropping the key-value cache, language models can detect and repair reasoning divergence at a fraction of the computational cost of regeneration: 1.59x the recovery rate of a full rewrite on a blind 331-chain vault, with the repair's generation step 26x faster than regenerating the chain.
 

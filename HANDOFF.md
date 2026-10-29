@@ -1,9 +1,34 @@
 # Handoff — snapshot `v1.1-cgr-path-a-vault-verified-and-level2-ready`
 
-**Date:** 2026-10-28 late night  
-**Branch:** `main` (tracked at `origin/main` commit `26f08ef`)  
+**Date:** 2026-10-29  
+**Branch:** `main` (tracked at `origin/main` commit `20448c2`)  
 **Active Working Context:**  
-The empirical investigation into step localization, surgical KV rewinds, and out-of-sample generalization is **complete, verified, and locked**. Every finding is backed by deterministic scripts, raw JSON metrics, Wilson 95% CIs, and exact paired hypothesis tests.
+The Path-A empirical line — step localization, surgical KV rewinds, and
+out-of-sample vault generalization — is **complete and locked**: the §4 numbers
+are backed by deterministic scripts, raw JSON metrics, Wilson 95% CIs, and exact
+paired hypothesis tests. Anything dated 2026-10-29 is **not** locked: the
+code-repair line closed under its falsifier (below), the vault allocator rows
+are still partial (314/331), and `PAPER.md` §6 is a labelled design proposal
+with no measurement behind it.
+
+### 2026-10-29: hardware move (RTX 1050 machine is dead)
+
+Work continues on an i5-11320H / Intel Iris Xe iGPU laptop (16 GB RAM, no CUDA).
+Consequences, all measured:
+
+- `torch.xpu` **does not work here**: `torch 2.9.1+xpu` installs cleanly, but
+  `torch.xpu.is_available()` is `False` and `device_count()` is `0`. The
+  installed driver is `30.0.101.1003` (2021); PyTorch requires
+  `32.0.101.8801+`, and Tiger Lake is not on its validated client-GPU list.
+  OpenVINO is the remaining Intel-GPU path and has not been benchmarked yet.
+- `experiments/_device.py` now routes device/memory/seed calls through
+  `cuda`/`xpu`/`mps`/`cpu`, and `--device` defaults to `auto` in 17 scripts.
+  Previously they defaulted to `cuda` and called
+  `torch.cuda.reset_peak_memory_stats()` unconditionally, which raises
+  `AttributeError` on a CPU-only torch build — i.e. the harness could not run
+  on this machine at all.
+- Results now carry `peak_backend`; `peak_mb` is `0.0` only when no accelerator
+  counter exists, so a CPU run cannot be misread as "used no VRAM".
 
 ---
 
