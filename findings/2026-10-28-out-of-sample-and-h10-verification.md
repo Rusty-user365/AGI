@@ -46,16 +46,27 @@ Every component of Level-3 CGR was frozen:
 
 ### 2.1 Diagnostic Localizer Accuracy on Unseen Candidates ($N=331$)
 
-| Localizer Architecture | Top-1 Accuracy | Balanced Accuracy | Step-4 Recall |
-|---|:---:|:---:|:---:|
-| Linear Majority (5 seeds) | $0.604$ | $0.526$ | $0.342$ |
-| **Transformer Majority (5 seeds)** | **$0.677$** | **$0.641$** | **$0.500$** |
-| **Ensemble Average (Softmax Mean)** | **$0.680$** | **$0.636$** | **$0.526$** |
-| Two-Tier Localizer (Frozen $\tau=0.35$) | $0.625$ | $0.580$ | $0.410$ |
+> **Correction (2026-10-29).** The Step-4 column below was headed "recall" but
+> held *precision*: `eval_vault.py` called `per_step_recall(lab, pred)` when the
+> signature is `per_step_recall(pred, lab)`, and the same swap affected
+> `balanced_accuracy`. Corrected per-step recall and precision, from a
+> deterministic CPU re-fit, are in
+> `results/verify_vault_h5_localizer_refit.json`. The re-fit is not the original
+> fit (which never stored its predictions): Linear and Transformer Top-1
+> reproduce within `0.01`, the two threshold-dependent arms move by `0.027`.
+> The two fits agree that Two-Tier has the **highest** Step-4 recall and the
+> **lowest** Step-4 precision. The loop arms in §2.2 were not re-run.
 
-The Transformer encoder and Ensemble Average generalize strongly to the unseen vault split, achieving **$0.677$–$0.680$ Top-1 accuracy** and **$0.636$–$0.641$ balanced accuracy**.
+| Localizer Architecture | Top-1 (orig fit) | Balanced (orig, = macro-precision) | Step-4 "Recall" (was precision) | Step-4 Recall (corrected) | Step-4 Precision (corrected) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Linear Majority (5 seeds) | $0.604$ | $0.526$ | $0.342$ | $0.394$ | $0.342$ |
+| **Transformer Majority (5 seeds)** | **$0.677$** | **$0.641$** | **$0.500$** | **$0.545$** | **$0.400$** |
+| **Ensemble Average (Softmax Mean)** | **$0.680$** | **$0.636$** | **$0.526$** | **$0.485$** | **$0.471$** |
+| Two-Tier Localizer (Frozen $\tau=0.35$) | $0.625$ | $0.580$ | $0.410$ | **$0.667$** | $0.324$ |
 
-The **Two-Tier rule does not**: at the frozen $\tau = 0.35$ it scores $0.625$ Top-1 and $0.410$ step-4 recall, below both components it routes between (Transformer $0.677$ / $0.500$). The threshold was selected on the same 110 rows where it reached $0.812$ step-4; on unseen seeds it is calibration drift. The transferable claim is the complementarity of the two observers, not the scalar that exploits it.
+The Transformer encoder and Ensemble Average generalize strongly to the unseen vault split, achieving **$0.677$–$0.680$ Top-1 accuracy** and **$0.636$–$0.641$ balanced accuracy** (the latter is a macro-precision for the reasons above and is not directly comparable to a macro-recall).
+
+The **Two-Tier rule does not collapse; it over-fires**: at the frozen $\tau = 0.35$ it scores $0.625$ Top-1, below both components it routes between, because it calls Step 4 on $68$ of $331$ rows when only $33$ are Step 4. That buys the highest Step-4 recall ($0.667$, vs Transformer $0.545$) at the lowest Step-4 precision ($0.324$, vs $0.400$). The threshold was selected on the same 110 rows where it reached $0.812$ step-4; on unseen seeds it is an over-aggressive recall lever, not a calibrated classifier. The transferable claim is the complementarity of the two observers, not the scalar that exploits it.
 
 ### 2.2 End-to-End Autonomous Loop Recovery ($N=331$ Unseen Broken Chains)
 
@@ -140,7 +151,7 @@ This confirms the pre-registered verification boundary:
 
 | Rule | Pre-Registered Requirement | Observed Result | Status |
 |---|---|---|:---:|
-| **Rule 1 (Blind Vault Holdout)** | Frozen CGR weights/thresholds must generalize to unseen seed ($N \ge 300$). | Loop: **$22.1\%$** ($73/331$) vs full rewrite **$13.9\%$** ($p = 5.84 \times 10^{-4}$). Threshold: Two-Tier falls to $0.625$ / $0.410$ step-4, below Transformer-alone ($0.677$ / $0.500$). | **PASS (loop) / FAIL (threshold)** |
+| **Rule 1 (Blind Vault Holdout)** | Frozen CGR weights/thresholds must generalize to unseen seed ($N \ge 300$). | Loop: **$22.1\%$** ($73/331$) vs full rewrite **$13.9\%$** ($p = 5.84 \times 10^{-4}$). Threshold: Two-Tier reaches $0.625$ Top-1 — below Transformer-alone ($0.677$) — but **$0.667$** Step-4 recall vs $0.545$ (corrected 2026-10-29; the $0.410$ previously quoted here was a precision). | **PASS (loop) / FAIL on Top-1, not on tail recall** |
 | **Rule 2 (Iso-Compute Baseline)** | Direct token/latency tracking vs full rewrite at equal/greater compute. | CGR uses **$120.1$** tokens vs **$580.6$** ($79.3\%$ fewer). Generation slice **$27.2\times$** faster; **loop $1.70\times$** (1,934.7 vs 3,281.9 ms/chain). | **PASS (qualified)** |
 | **Rule 3 (Permutation Control)** | CGR must beat random-step rewind (`random_t_rank2`) at $p < 0.01$. | CGR $22.1\%$ vs Random $6.9\%$ ($57\text{W}/7\text{L}$, **$p = 7.64 \times 10^{-11}$**). | **PASS** |
 | **Rule 4 (Bit-Identical Slicing)** | $\max |\Delta\text{logit}| < 10^{-4}$ on 20 chains vs fresh un-cached recomputation. | **$\max |\Delta\text{logit}| = 4.86 \times 10^{-5}$**, $100\%$ argmax token identity. | **PASS** |

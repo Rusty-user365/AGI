@@ -30,6 +30,32 @@ Consequences, all measured:
 - Results now carry `peak_backend`; `peak_mb` is `0.0` only when no accelerator
   counter exists, so a CPU run cannot be misread as "used no VRAM".
 
+### 2026-10-29: metric audit (two claims changed, not just wording)
+
+1. **The vault Step-4 column was a precision.** `eval_vault.py` passed
+   `(lab, pred)` to `per_step_recall` / `balanced_accuracy`, whose signature is
+   `(pred, lab)`. Fixed; `per_step_precision` now exists as its own function so
+   the two cannot be conflated. `eval_vault.py --diagnostics-only` recomputes
+   the localizer block only and refuses to overwrite a fit it cannot reproduce.
+   The corrected block lives in `results/verify_vault_h5_localizer_refit.json`;
+   `results/verify_vault_h5.json` is annotated in place with its numbers
+   untouched. **The 46/23/73 recovery counts, the paired tests and the systems
+   block were not re-run.** Two-tier: Top-1 `0.625`, Step-4 recall `0.667`
+   (highest), Step-4 precision `0.324` (lowest) — a mistuned recall lever, not a
+   failed localizer. The re-fit is deterministic here (two runs identical) but
+   is not the 2026-10-28 fit: it moves the two threshold-dependent arms by
+   `0.027`, which is itself evidence that `tau=0.35` is brittle.
+2. **§1.3 described a control that does not exist.** The text's `+0.105` against
+   "parameter-equivalent LoRA (`8.15M` vs `442K`)" matches no artifact: `8.15M`
+   vs `442K` is the *unmatched* pair and gave `+0.135`; the matched control is
+   `22.3M` vs `22.3M` and gave `+0.035 [-0.045, +0.115]`, not significant.
+   `+0.105` appears nowhere in `results/`.
+
+Both are written up in the Errata section of `PAPER.md` and in
+`findings/2026-10-28-out-of-sample-and-h10-verification.md`,
+`findings/2026-10-28-path-a-ensemble-kv-slicing.md` and the two summary rows
+above.
+
 ---
 
 ### Current state (2026-10-29: code pilot stopped, repair loop is a null)
@@ -122,7 +148,7 @@ Read that file before interpreting any null as "CGR is unnecessary".
 
 | Component | State / Result | Evidence / Artifact |
 |---|---|---|
-| **Step-4 Tail Bottleneck** | **In-sample only.** Two-Tier ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts Step-4 recall **0.188 to 0.812** and Top-1 to **0.718** — but on the frozen vault it degrades to **0.625 / 0.410**, below Transformer alone (0.677 / 0.500) and the softmax ensemble (0.680 / 0.526). The threshold did not generalize. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
+| **Step-4 Tail Bottleneck** | **In-sample only.** Two-Tier ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts Step-4 recall **0.188 to 0.812** and Top-1 to **0.718** — but on the frozen vault its Top-1 drops to **0.625**, below Transformer alone (0.677) and the softmax ensemble (0.680). It is not below on tail recall: corrected 2026-10-29, it calls step 4 on 68/331 rows when 33 are true, giving the *highest* step-4 recall (**0.667** vs 0.545/0.485) at the lowest precision (0.324 vs 0.400/0.471). The threshold is a mistuned recall lever, not a failed localizer. | `results/path_a_loop_h5.json`, `results/verify_vault_h5_localizer_refit.json` |
 | **Autonomous Loop Recovery** | **Resolved on the vault.** **22.1%** (73/331) vs full rewrite **13.9%** (46/331), 43W/16L, p=5.84e-4, **1.59x**. The N=110 figure is 29.1% (32/110); the 2.29x sometimes quoted uses a low-variance rewrite draw and is not the headline. | `results/verify_vault_h5.json` |
 | **Accept-if-Cleaner Gate** | **Implemented; no measurable recovery effect.** Rejected 23/110 and 81/331 edits where rank-2 degraded a confident step ($lp > -0.25$); those rows contained **0 recoveries in both runs**, and gated == ungated Two-Tier exactly (32/110, same tokens/time). It is a conservative filter: precision among accepted rows is 32/87 = 36.8%, and it skips compute. Fallback-to-top-2 probe yielded 0/23 recoveries. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
 | **Physical KV-Cache Slicing** | **Resolved, two numbers.** Generation slice: 4,498.4 ms to 173.7 ms (**25.9x**, -79.4% tokens). Full loop incl. observer + gate: **2,244 ms vs 4,498.4 ms (2.0x)**; on the vault **1,934.7 vs 3,281.9 ms (1.70x)**. The 25.9x/27.2x figures are generation-slice only. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
@@ -255,7 +281,7 @@ Path A executed the three fixes proposed above on the 110 holdout chains of `res
 
 | Question | Answer | Evidence |
 |---|---|---|
-| Can an ensemble cure the step-4 localization collapse? | **In-sample only.** Two-Tier ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts step-4 recall **0.188 to 0.812** and Top-1 to **0.718** — on the split used to pick the threshold. On the frozen vault it falls to **0.625 / 0.410**, below Transformer alone (0.677 / 0.500) and the ensemble (0.680 / 0.526). | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
+| Can an ensemble cure the step-4 localization collapse? | **In-sample only.** Two-Tier ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts step-4 recall **0.188 to 0.812** and Top-1 to **0.718** — on the split used to pick the threshold. On the frozen vault its Top-1 falls to **0.625**, below Transformer alone (0.677) and the ensemble (0.680) — but on corrected 2026-10-29 metrics it has the *highest* step-4 recall (0.667 vs 0.545), because it calls step 4 on 68/331 rows when 33 are true. | `results/path_a_loop_h5.json`, `results/verify_vault_h5_localizer_refit.json` |
 | Does improved localization translate to higher loop recovery? | **Yes, on the vault.** 22.1% (73/331) vs rewrite 13.9% (46/331), 43W/16L, p=5.84e-4, **1.59x**. The N=110 run is 29.1% (32/110); 2.29x uses a low-variance rewrite draw. | `results/verify_vault_h5.json` |
 | Does the "Accept-if-Cleaner" gate protect prefixes? | **No measurable effect on recovery.** Rejected 23 edits where rank-2 degraded a confident step ($lp > -0.25$); the rejected rows contained 0 recoveries in both the N=110 and N=331 runs, and gated == ungated exactly (32/110, same tokens/time). Its value is precision (32/87 = 36.8% among accepted) and skipped compute. | same |
 | Does KV-cache slicing (`DynamicCache.crop`) substantiate the systems claim? | **Yes, at the slice level.** Generation: 581.1 to 119.7 tokens (-79.4%), 4,498 ms to 173.7 ms (**25.9x**). Full loop: **2,244 ms (2.0x)**; vault **1,934.7 vs 3,281.9 ms (1.70x)**. Observer inference dominates the residual. | same |

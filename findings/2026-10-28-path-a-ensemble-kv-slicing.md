@@ -5,7 +5,18 @@ Artifacts: `experiments/path_a_loop.py`, `results/path_a_loop_h5.json`
 > **Correction (2026-10-28, after the blind-vault audit).** Three numbers in this report predate `results/verify_vault_h5.json` and `results/verify_h10_scaling.json` and do not survive them. They are corrected in place below, and summarized here so the report cannot be read at face value.
 >
 > 1. **Latency is a generation-slice number, not a loop number.** The 25.9x / 96.1% figure is `systems.cached_rewind_time_ms`: the cropped-cache decode alone, excluding the ten observer passes and the gate readout. The full loop is 246,826 ms / 110 = **2,244 ms per chain against 4,498.4 ms (2.0x)**; on the vault, 640,401 / 331 = **1,934.7 ms vs 3,281.9 ms (1.70x)**. Generation is 26x cheaper; the loop is 1.7-2.0x cheaper.
-> 2. **The step-4 cure is in-sample.** `tau = 0.35` was selected on these same 110 rows. On the frozen vault ($N=331$) Two-Tier scores **0.625 Top-1 / 0.410 step-4 recall**, below the Transformer alone (0.677 / 0.500) and below the softmax ensemble (0.680 / 0.526). The complementarity finding generalizes; the threshold does not.
+> 2. **The step-4 cure is in-sample.** `tau = 0.35` was selected on these same 110 rows.
+>    **Correction (2026-10-29):** every `0.410` step-4 figure below for the Two-Tier
+>    rule is a **precision**, not a recall. `eval_vault.py` called
+>    `per_step_recall(lab, pred)` where the signature is `(pred, lab)`. Corrected
+>    values from a deterministic re-fit: Two-Tier step-4 **recall $0.667$**, the
+>    highest of any arm (Transformer $0.545$, ensemble $0.485$), at the lowest
+>    precision ($0.324$). Its Top-1 is still $0.625$ vs $0.677$/$0.680$, so the
+>    "threshold does not transfer" conclusion survives on accuracy — but not on
+>    tail recall. See the Errata in `PAPER.md` and
+>    `results/verify_vault_h5_localizer_refit.json`.
+>
+>    On the frozen vault ($N=331$) Two-Tier scores **0.625 Top-1 / $0.410$ step-4 recall**, below the Transformer alone (0.677 / 0.500) and below the softmax ensemble (0.680 / 0.526). The complementarity finding generalizes; the threshold does not.
 > 3. **The 2.29x multiplier is one rewrite draw.** It pairs 29.1% against this run's 12.7% `full_rewrite`. The same 110 rows gave 18.2% (20/110) in `oracle_rewind_h5.json`, i.e. 1.60x. The stable estimate is the vault's **1.59x** (22.1% vs 13.9%, 43W/16L, $p = 5.84 \times 10^{-4}$).
 >
 > The gate claim is also corrected: it did not "prevent 6 destructive overwrites". The gated and ungated Two-Tier arms are numerically identical in `path_a_loop_h5.json` (32/110, 34,046 tokens, 246,825.5 ms) because the rejected rows contained zero recoveries.
@@ -48,7 +59,7 @@ Holdout candidate count: $N = 110$ complete broken chains, $H = 5$ steps, 5 rand
 **The Step-4 Bottleneck is Resolved In-Sample:**
 The transformer localizer provides high sensitivity to late tail divergence that linear projection misses. By dispatching to step 4 when the transformer's calibrated tail posterior exceeds 0.35, step-4 recall jumps from **0.188 to 0.812** (a **4.3x gain**), while retaining strong early recall (0.846 on step 1). Top-1 localization accuracy improves by **+10.0% absolute** (0.618 to 0.718).
 
-Both the threshold and the gain are properties of this split. `tau = 0.35` was chosen on these 110 rows; on the frozen vault the same rule scores 0.625 Top-1 and 0.410 step-4, below Transformer-alone (0.677 / 0.500). See `findings/2026-10-28-out-of-sample-and-h10-verification.md`.
+Both the threshold and the gain are properties of this split. `tau = 0.35` was chosen on these 110 rows; on the frozen vault the same rule scores 0.625 Top-1, below Transformer-alone (0.677). Its step-4 *precision* is 0.410 (corrected 2026-10-29: the figure was mislabelled as recall; true recall is 0.667, the highest of any arm). See `findings/2026-10-28-out-of-sample-and-h10-verification.md`.
 
 ---
 
@@ -96,6 +107,6 @@ The same arm, timed end to end in `path_a_loop_h5.json`, is **246,826 ms / 110 =
 
 ## 4. Architectural Summary
 
-1. **Localizer complementarity is real; the threshold exploiting it is not:** Linear localizers have high precision and recall on early steps (0.92 recall on step 1) but collapse on tail steps (0.19 on step 4). Transformer localizers capture cross-step relational divergence and preserve tail recall (0.50-0.81). A softmax ensemble combines both strengths without training a unified model and holds up out of sample (0.680 / 0.526 on the vault); the hard two-tier threshold (0.718 / 0.812 in-sample) falls to 0.625 / 0.410 on unseen seeds and should not be presented as the transferable result.
+1. **Localizer complementarity is real; the threshold exploiting it is not:** Linear localizers have high precision and recall on early steps (0.92 recall on step 1) but collapse on tail steps (0.19 on step 4). Transformer localizers capture cross-step relational divergence and preserve tail recall (0.50-0.81). A softmax ensemble combines both strengths without training a unified model and holds up out of sample (0.680 on the vault); the hard two-tier threshold (0.718 / 0.812 in-sample) drops to 0.625 Top-1 on unseen seeds and should not be presented as the transferable result. (Its 0.410 step-4 figure was a precision; corrected recall is 0.667 — the highest of any arm — which is why the threshold is best described as a mistuned recall lever.)
 2. **Logit exclusion outperforms prompting:** Rank-2 first-digit exclusion reliably steers the autoregressive step away from the broken path without relying on negative hindsight prompt compliance.
 3. **DAG rewinds provide concrete systems leverage, bounded by observer cost:** Slicing KV caches rather than re-running the prefix turns a 4.5s regeneration pass into a 173ms generation step, saving 79.4% of token forwards and 96.1% of *generation* latency while simultaneously achieving higher task accuracy. End to end the loop is 1.7-2.0x faster than a rewrite, not 26x, because the observer costs more than the generation it saves.
