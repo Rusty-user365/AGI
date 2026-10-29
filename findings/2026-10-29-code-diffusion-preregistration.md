@@ -199,6 +199,39 @@ any arithmetic result.
 - Absolute pass rates are not a capability claim. HumanEval is public and almost
   certainly in pretraining.
 
+## Baseline measured, and the power problem it creates
+
+The AR twin was run on the stage-1 set before any diffusion arm:
+
+| arm | ok | rate | tokens |
+|---|---|---|---|
+| `greedy` | 19/24 | 0.792 | 6,574 |
+| `best_of` | 21/24 | 0.875 | 27,556 |
+| `cgr` (hinted) | 22/24 | 0.917 | 9,258 |
+
+`cgr` vs `greedy` is 3W/0L, p=0.25; vs `best_of` 3W/2L, p=1.00. The direction
+reverses the 0.6B pilot, but neither is significant.
+
+**The repair set is 5 problems** (`HumanEval/5, 10, 14, 17, 19`). Three of the
+five first repairs passed; the two that did not are both `exception` cases, and
+one of them (`HumanEval/5`) localized to cut = 0, i.e. not at all.
+
+Five is too few for a paired test: at n=5 the exact McNemar cannot reach
+significance unless the split is 5W/0L, which is p=0.0625 and still not < 0.05.
+So a diffusion-vs-AR comparison on this set produces a number, not a finding.
+
+**Decision, recorded before the diffusion arms run:** the stage-1 set is used
+only as a pipeline smoke (it validates budgets, span masking, splicing, and
+verification end to end). The comparative claim is made on the full 164
+problems, appended to the AR twin with `--resume`, and the diffusion arms are
+then resumed onto the new rows. If the extension does not produce at least ~15
+repair problems, the comparison is reported as underpowered and no directional
+claim is made.
+
+This is the "extend to 164" branch of the pre-registered rule, not a new rule
+chosen after seeing an arm's score: the repair-set size depends only on the AR
+baseline, which is fixed.
+
 ## Cost
 
 Measured by `--check` on the 1050, fp32, before any arm was run:
