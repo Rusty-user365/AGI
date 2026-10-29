@@ -47,6 +47,20 @@ stage 1 passes its gate.
 `sequential` (the same four samples tested one at a time) is also derived
 offline. It is reported but is not the primary baseline.
 
+## Sampling parameters, stated because they are inherited
+
+The loop sets `temperature=0.8`, `top_p=0.95`, and `do_sample` per arm, but it
+does **not** override two values in the coder's `generation_config.json`:
+
+- `top_k = 20`
+- `repetition_penalty = 1.1`
+
+They apply to both sampling and greedy decoding, and to every arm, so the
+arm comparison is internally valid. They are recorded because they differ from
+the 0.6B base run (which had no such config), so absolute rates are not compared
+across models. The model card recommends these values for Qwen2.5-Coder, which
+is why they were left in place rather than neutralised after the run started.
+
 ## Primary comparison
 
 **`cgr` vs `greedy_seq` at matched generated tokens**, paired exact McNemar, on
