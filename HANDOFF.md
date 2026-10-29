@@ -44,6 +44,55 @@ cannot write a correct replacement for it. Any future code claim must use
 
 ---
 
+### Current state (2026-10-29: the code diffusion payload is not usable at 0.5B)
+
+The pivot back to diffusion was the right test: the Level-2 ladder closed
+diffusion on arithmetic and named "a program that must compile" as the excluded
+case. That case was run, with a capacity-matched pair.
+
+| Question | Answer | Evidence |
+|---|---|---|
+| Is the diffusion checkpoint really bidirectional? | **Yes.** Perturbing the last token moves the first token's hidden state by 3.85. The 470M Dual-LM failed this same test. | `results/_diffusion_check.log` |
+| Does it fit the 4 GB card? | **Yes.** 1,885 MB at load, 2,313 MB peak, fp32. | same |
+| Does infill repair a failing body? | **No.** 0/5 at T=0.8 and 0/5 at T=0.0, against 3/5 for the AR twin's hinted repair. | `results/diffusion/`, `results/diffusion_t0/` |
+| Why not? | **It cannot emit valid Python.** 4/5 (T=0.8) and 3/5 (T=0.0) final bodies are syntactically invalid. On `HumanEval/5` it reproduced the buggy body byte-identically in 8 attempts: its mode *is* the AR model's mode. | same |
+| Does that falsify the two-sided constraint? | **No.** The hypothesis is untested, because the payload cannot produce valid syntax. Same error as the 0.6B AR null: a model-bound result read as an architecture result. | `findings/2026-10-29-code-diffusion-null.md` |
+
+Finding: `findings/2026-10-29-code-diffusion-null.md`.
+Harness: `experiments/code_diffusion.py`.
+
+**Three harness bugs were found and fixed before the result stood**, and all
+runs are kept rather than overwritten: wrong span rule
+(`results/diffusion_v0_walkback/`), per-attempt instead of total budget
+(`results/diffusion_v1_fullsplice/`), and a one-character splice error when the
+span began at character 0. After the third fix the config was frozen; the
+temperature-0 run is a sampler control, not a fourth attempt at a positive.
+
+**The branch is blocked, not closed.** A 7B code diffusion model exists
+(`apple/DiffuCoder-7B`); it does not fit this card in any precision. Closing the
+hypothesis would require treating unmatched brackets as evidence about
+bidirectionality.
+
+---
+
+### Current state (2026-10-29: CGR framed as a tool-budget allocator)
+
+The framing that the nulls do not overturn, written down with every number bound
+to its artifact: `findings/2026-10-29-cgr-as-tool-budget-allocator.md`.
+
+- one localized call returns **70/110** against 25 for a random call; three
+  return **100** against 66, capturing **87.2%** of the 5-call headroom;
+- `oracle_value` is **38W/0L, p=7.28e-12**, and **68 of the 79**
+  correctly-localized chains recover;
+- the gate's value is **precision (32/87 = 36.8%) and skipped compute**, not
+  recovery: gated and ungated are numerically identical;
+- latency: **173.7 ms vs 2,732.2 ms (25.9x)** on the generation slice, **2.0x**
+  end to end, **1.70x** on the vault. Never quote 26x as loop latency.
+
+Read that file before interpreting any null as "CGR is unnecessary".
+
+---
+
 ### Executive Status Summary (2026-10-28)
 
 | Component | State / Result | Evidence / Artifact |

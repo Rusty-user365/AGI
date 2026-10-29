@@ -26,6 +26,7 @@ are recorded in the same entry rather than quietly deleted.
 | 2026-10-27 | [arithmetic-out-of-support](2026-10-27-arithmetic-out-of-support.md) | The 470M is at chance on arithmetic (top-1 token `1` on `9 + 9 =`), but the task family does produce wrong-but-well-formed answers, so the benchmark design is validated and the generator is not |
 | 2026-10-27 | [instruct-model-fluent-but-wrong](2026-10-27-instruct-model-fluent-but-wrong.md) | Qwen2.5-1.5B-Instruct answers money problems as bare integers 100% of the time and is wrong most of the time, but p1 0.03-0.22 leaves too little headroom to select from |
 | 2026-10-27 | [observer-ranks-but-cannot-select](2026-10-27-observer-ranks-but-cannot-select.md) | On a 500-task corpus with 1096 wrong-but-well-formed holdout candidates, a head reaches AUC 0.682 (permutation 0.496) yet ties max-logprob 12W-11L, p=1.00, so the routing loop is unjustified |
+| 2026-10-29 | [code-diffusion-null](2026-10-29-code-diffusion-null.md) | The code-trained 0.5B MDLM cannot emit valid syntax in a masked span (4/5 bodies invalid), so the two-sided-constraint hypothesis stays untested; blocked by capacity, not falsified |
 
 Open gaps, tracked here so they are not forgotten:
 
