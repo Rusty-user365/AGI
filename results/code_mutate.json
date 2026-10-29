@@ -1,0 +1,63 @@
+{
+  "arm": "greedy",
+  "failures": 11,
+  "local": 0,
+  "structural": 11,
+  "detail": [
+    {
+      "task_id": "HumanEval/0",
+      "local": false,
+      "tried": 8
+    },
+    {
+      "task_id": "HumanEval/1",
+      "local": false,
+      "tried": 0
+    },
+    {
+      "task_id": "HumanEval/10",
+      "local": false,
+      "tried": 14
+    },
+    {
+      "task_id": "HumanEval/17",
+      "local": false,
+      "tried": 9
+    },
+    {
+      "task_id": "HumanEval/19",
+      "local": false,
+      "tried": 0
+    },
+    {
+      "task_id": "HumanEval/20",
+      "local": false,
+      "tried": 0
+    },
+    {
+      "task_id": "HumanEval/21",
+      "local": false,
+      "tried": 1
+    },
+    {
+      "task_id": "HumanEval/5",
+      "local": false,
+      "tried": 5
+    },
+    {
+      "task_id": "HumanEval/6",
+      "local": false,
+      "tried": 0
+    },
+    {
+      "task_id": "HumanEval/8",
+      "local": false,
+      "tried": 7
+    },
+    {
+      "task_id": "HumanEval/9",
+      "local": false,
+      "tried": 6
+    }
+  ]
+}
