@@ -61,6 +61,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import torch
+from experiments._device import resolve as _resolve_device
 
 from cgr.config import Config
 from cgr.data.corpus import build_corpus
@@ -290,7 +291,7 @@ def main() -> int:
     ap.add_argument("--candidates", type=int, default=4)
     ap.add_argument("--steps", type=int, default=8)
     ap.add_argument("--seed", type=int, default=0)
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--cond-mode", default="none",
                     choices=["none", "reasoner", "learned"])
     ap.add_argument("--len-tol", type=int, default=2)
@@ -305,6 +306,7 @@ def main() -> int:
                          "training a head directly on the selection objective")
     ap.add_argument("--out", default="results/observer_diagnostic.json")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

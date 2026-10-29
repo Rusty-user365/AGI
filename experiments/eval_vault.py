@@ -21,6 +21,7 @@ from experiments.arith_steps import build_prompt, parse_value, readout, wilson
 from experiments.localizer import load_candidates, Standardizer, svd_basis, run_seed, balanced_accuracy
 from experiments.localizer_pair import majority, per_step_recall
 from experiments.oracle_rewind import MaskBadFirstDigit, gen_step, finish_chain
+from experiments._device import resolve as _resolve_device
 
 def mask_for(tok, value: int):
     digit_ids = [tok(" " + str(d))["input_ids"][-1] for d in range(10)]
@@ -45,12 +46,13 @@ def main():
     parser.add_argument("--train-data", default="results/arith_steps_h5.pt")
     parser.add_argument("--vault-data", default="results/arith_steps_h5_vault.pt")
     parser.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
-    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--device", default="auto")
     parser.add_argument("--seeds", type=int, default=5)
     parser.add_argument("--max-new", type=int, default=5)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out", default="results/verify_vault_h5.json")
     args = parser.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     # 1. Load Training Data (Original 279 candidates)
     print("Loading original training corpus to freeze localizer weights...", flush=True)

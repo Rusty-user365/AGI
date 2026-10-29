@@ -53,11 +53,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import torch
 
+from experiments._device import manual_seed_all, peak_mb, reset_peak, synchronize
 from experiments.code_bench import (failure_kind, load as load_corpus,
                                     run_tests, truncate)
 from experiments.code_loop import FRAME, feedback_of
 from experiments.level2_ladder import mcnemar
 from experiments.localizer import wilson
+from experiments._device import resolve as _resolve_device
 
 ARMS = ["mdlm_full", "mdlm_infill", "mdlm_infill_nohint"]
 
@@ -284,7 +286,7 @@ def main() -> int:
     ap.add_argument("--data", default="data/humaneval.jsonl.gz")
     ap.add_argument("--model",
                     default="checkpoints/hf/qwen2.5-coder-0.5b-diffusion-mdlm")
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--dtype", default="fp32",
                     choices=["fp32", "fp16", "bf16"],
                     help="fp32 default: the checkpoint is bf16-trained and "
@@ -306,10 +308,11 @@ def main() -> int:
     ap.add_argument("--resume", action="store_true")
     ap.add_argument("--out-dir", default="results/diffusion")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     root = Path(__file__).resolve().parents[1]
     torch.manual_seed(args.seed)
-    torch.cuda.manual_seed_all(args.seed)
+    manual_seed_all(args.seed)
 
     dtype = {"fp32": torch.float32, "fp16": torch.float16,
              "bf16": torch.bfloat16}[args.dtype]
@@ -320,14 +323,14 @@ def main() -> int:
     model_path = Path(args.model)
     if not model_path.is_absolute():
         model_path = root / model_path
-    torch.cuda.reset_peak_memory_stats()
+    reset_peak(args.device)
     t0 = time.time()
     model, tok = load_diffusion(model_path, dtype, args.device)
     load_s = time.time() - t0
     if tok.mask_token_id is None:
         raise SystemExit("tokenizer has no mask token; not an MDLM checkpoint")
     print(f"loaded in {load_s:.0f}s  mask_id={tok.mask_token_id}  "
-          f"vram={torch.cuda.max_memory_allocated() / 2**20:.0f}MB", flush=True)
+          f"vram={peak_mb(args.device):.0f}MB", flush=True)
 
     if args.check:
         return check(model, tok, args, root)
@@ -358,7 +361,7 @@ def main() -> int:
                 continue
             seed = args.seed + j
             torch.manual_seed(seed)
-            torch.cuda.manual_seed_all(seed)
+            manual_seed_all(seed)
             rec = {"task_id": r["task_id"], "entry_point": r["entry_point"]}
 
             if args.arm == "mdlm_full":
@@ -397,7 +400,7 @@ def main() -> int:
                   f"kind={rec.get('greedy_kind')} ({time.time() - t0:.0f}s)",
                   flush=True)
 
-    print(f"peak VRAM {torch.cuda.max_memory_allocated() / 2**20:.0f} MB")
+    print(f"peak VRAM {peak_mb(args.device):.0f} MB")
     return compare(out_dir)
 
 
@@ -498,7 +501,7 @@ def check(model, tok, args, root: Path) -> int:
           f"({dt / max(nfe, 1) * 1000:.0f} ms/step) ok={res['ok']}")
     print(f"masked text was: {canon[span[0]:span[1]]!r}")
     print(f"filled text is:  {filled[span[0]:span[1] + 60]!r}")
-    print(f"peak VRAM {torch.cuda.max_memory_allocated() / 2**20:.0f} MB")
+    print(f"peak VRAM {peak_mb(args.device):.0f} MB")
     return 0
 
 

@@ -49,6 +49,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import torch
 
+from experiments._device import (manual_seed_all, peak_backend, peak_mb,
+                                 reset_peak, resolve as _resolve_device)
 from experiments.arith_pilot import load as load_model
 from experiments.code_bench import (failure_kind, load as load_corpus,
                                     run_tests, truncate)
@@ -230,7 +232,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data", default="data/humaneval.jsonl.gz")
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--dtype", default="fp32", choices=["fp32", "fp16", "bf16"],
                     help="fp16 is required for a 1.5B model on a 4 GB card")
     ap.add_argument("--limit", type=int, default=0)
@@ -245,6 +247,7 @@ def main() -> int:
     ap.add_argument("--out", default="results/code_pilot_h5.json")
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     root = Path(__file__).resolve().parents[1]
     data = Path(args.data)
@@ -274,7 +277,7 @@ def main() -> int:
                             args.device, "auto")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    torch.cuda.reset_peak_memory_stats()
+    reset_peak(args.device)
 
     t0 = time.time()
     with rows_out.open("a", encoding="utf-8") as fh:
@@ -285,7 +288,7 @@ def main() -> int:
             # regenerates a problem exactly as an uninterrupted run would.
             seed = args.seed + j
             torch.manual_seed(seed)
-            torch.cuda.manual_seed_all(seed)
+            manual_seed_all(seed)
             g = arm_greedy(model, tok, r, args)
             b = arm_best_of(model, tok, r, args, args.best_k)
             c = arm_cgr(model, tok, r, args, b["tokens"])
@@ -349,7 +352,8 @@ def main() -> int:
         "paired": paired,
         "by_greedy_failure_kind": by_kind,
         "localization": loc,
-        "vram_peak_mb": torch.cuda.max_memory_allocated() / 2 ** 20,
+        "vram_peak_mb": peak_mb(args.device),
+        "peak_backend": peak_backend(args.device),
     }
 
     print("\n" + "=" * 78)

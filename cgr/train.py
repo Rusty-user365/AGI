@@ -126,14 +126,30 @@ def side_channel_stats(backbone, reasoner, reasoner_ref, probe_ids,
 
 
 def pick_device(name: str | None = None) -> torch.device:
-    """Resolve a device name. `None`/"auto" means CUDA when it is available.
+    """Resolve a device name. `None`/"auto" means the best available accelerator.
 
     Kept in one place because the choice is recorded in the result files: a
     number produced on a 4 GB card and a number produced on CPU are the same
     model but not the same run, and the paper has to say which one it was.
+
+    Precedence is CUDA, then Intel XPU, then Apple MPS, then CPU. XPU is in the
+    list because the project outlived the 4 GB card it was written on and the
+    replacement machine has only an Iris Xe iGPU. An explicit name is passed
+    through unchanged, so `--device cuda` on a machine without CUDA fails
+    loudly instead of quietly reporting CPU timings as GPU timings.
     """
     if name in (None, "", "auto"):
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        for backend, probe in (
+            ("cuda", lambda: torch.cuda.is_available()),
+            ("xpu", lambda: hasattr(torch, "xpu") and torch.xpu.is_available()),
+            ("mps", lambda: torch.backends.mps.is_available()),
+        ):
+            try:
+                if probe():
+                    return torch.device(backend)
+            except Exception:  # noqa: BLE001 - a broken driver must not be fatal
+                continue
+        return torch.device("cpu")
     return torch.device(name)
 
 

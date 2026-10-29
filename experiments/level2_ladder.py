@@ -57,6 +57,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import torch
 import torch.nn.functional as F
 
+from experiments._device import (peak_backend, peak_mb, reset_peak,
+                                 resolve as _resolve_device)
 from experiments.arith_pilot import load
 from experiments.arith_steps import build_prompt, parse_value, readout
 from experiments.localizer import (Standardizer, balanced_accuracy, load_candidates,
@@ -218,7 +220,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data", default="results/arith_steps_h5.pt")
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--max-new", type=int, default=5)
     ap.add_argument("--temperature", type=float, default=0.8)
@@ -231,6 +233,7 @@ def main() -> int:
     ap.add_argument("--out", default="results/level2_ladder_h5.json")
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     root = Path(__file__).resolve().parents[1]
     data_path = Path(args.data)
@@ -285,7 +288,7 @@ def main() -> int:
     model, tok = load(model_path, torch.float32, args.device, "auto")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    torch.cuda.reset_peak_memory_stats()
+    reset_peak(args.device)
 
     tasks = {(t["split"], t["idx"]): t for t in raw["tasks"]}
     rows = [r for r in raw["rows"]
@@ -421,7 +424,8 @@ def main() -> int:
                    for a in arms},
             },
         },
-        "vram_peak_mb": torch.cuda.max_memory_allocated() / 2 ** 20,
+        "vram_peak_mb": peak_mb(args.device),
+        "peak_backend": peak_backend(args.device),
     }
 
     print("\n" + "=" * 78)

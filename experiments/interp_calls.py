@@ -59,6 +59,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import torch
 import torch.nn.functional as F
 
+from experiments._device import (peak_backend, peak_mb, reset_peak,
+                                 resolve as _resolve_device)
 from experiments.arith_pilot import load
 from experiments.arith_steps import build_prompt, parse_value
 from experiments.level2_ladder import (MaskDigitSet, first_digit_mask, gen,
@@ -132,7 +134,7 @@ def main() -> int:
                     help="localizer training corpus; leave at the h5 file when "
                          "--data is the frozen vault so the weights are frozen")
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--max-new", type=int, default=5)
     ap.add_argument("--temperature", type=float, default=0.8)
@@ -142,6 +144,7 @@ def main() -> int:
     ap.add_argument("--out", default="results/interp_calls_h5.json")
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     root = Path(__file__).resolve().parents[1]
     data_path = Path(args.data)
@@ -227,7 +230,7 @@ def main() -> int:
     model, tok = load(model_path, torch.float32, args.device, "auto")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    torch.cuda.reset_peak_memory_stats()
+    reset_peak(args.device)
 
     rows = [r for r in raw["rows"]
             if r["split"] == "holdout" and r["complete"] and r["first_error"] is not None]
@@ -378,7 +381,8 @@ def main() -> int:
         "arms": summary,
         "paired": paired,
         "curve": curve,
-        "vram_peak_mb": torch.cuda.max_memory_allocated() / 2 ** 20,
+        "vram_peak_mb": peak_mb(args.device),
+        "peak_backend": peak_backend(args.device),
     }
 
     print("\n" + "=" * 80)

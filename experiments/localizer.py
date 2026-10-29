@@ -58,6 +58,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import torch
+from experiments._device import resolve as _resolve_device
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -315,9 +316,10 @@ def main() -> int:
     ap.add_argument("--linear-logprob", action="store_true",
                     help="linear arm only: append the step logprob as a feature")
     ap.add_argument("--seeds", type=int, default=5)
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     path = Path(args.data)
     raw = torch.load(path, weights_only=False)

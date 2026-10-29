@@ -59,6 +59,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import torch
 
 from experiments.arith_pilot import load
+from experiments._device import resolve as _resolve_device
 
 HOLDOUT_OFFSET = 10_000_000
 STEP_RE = re.compile(r"Step\s*(\d+)\s*:\s*([^\n]*)")
@@ -327,7 +328,7 @@ def main() -> int:
     ap.add_argument("--arch", default="auto", choices=["dlm", "auto"])
     ap.add_argument("--dtype", default="float32",
                     choices=["float16", "float32"])
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--horizon", type=int, default=10)
     ap.add_argument("--boxes", type=int, default=2)
     ap.add_argument("--max-move", type=int, default=1)
@@ -344,6 +345,7 @@ def main() -> int:
     ap.add_argument("--show", type=int, default=2)
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     args.max_new = args.max_new or 14 * args.horizon + 24
     tag = f"b{args.boxes}m{args.max_move}_h{args.horizon}"

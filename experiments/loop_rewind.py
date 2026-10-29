@@ -39,6 +39,7 @@ from experiments.arith_pilot import load
 from experiments.arith_steps import build_prompt, parse_value
 from experiments.localizer import Standardizer, load_candidates, run_seed, svd_basis
 from experiments.oracle_rewind import finish_chain, gen_step, wilson
+from experiments._device import resolve as _resolve_device
 
 
 def mask_for(tok, value: int):
@@ -53,12 +54,13 @@ def main() -> int:
     ap.add_argument("--data", default="results/arith_steps_h5.pt")
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
     ap.add_argument("--arch", default="auto")
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--max-new", type=int, default=5)
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--out", default="results/loop_rewind_h5.json")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     path = Path(args.data)
     raw = torch.load(path, weights_only=False)

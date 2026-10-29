@@ -32,6 +32,7 @@ from experiments.localizer import (Standardizer, balanced_accuracy, load_candida
                                    run_seed, sign_test, svd_basis, wilson)
 from experiments.localizer_pair import bootstrap_diff, majority, per_step_recall
 from experiments.oracle_rewind import MaskBadFirstDigit, finish_chain, gen_step
+from experiments._device import resolve as _resolve_device
 
 
 def mask_for(tok, value: int):
@@ -45,12 +46,13 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--data", default="results/arith_steps_h5.pt")
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--max-new", type=int, default=5)
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--out", default="results/path_a_loop_h5.json")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     root = Path(__file__).resolve().parents[1]
     data_path = Path(args.data)

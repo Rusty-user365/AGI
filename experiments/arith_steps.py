@@ -65,6 +65,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import torch
 
 from experiments.arith_pilot import load, make_problem
+from experiments._device import resolve as _resolve_device
 
 HOLDOUT_OFFSET = 10_000_000
 
@@ -418,7 +419,7 @@ def main() -> int:
     ap.add_argument("--arch", default="auto", choices=["dlm", "auto"])
     ap.add_argument("--dtype", default="float32",
                     choices=["float16", "float32"])
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--steps", type=int, default=5)
     ap.add_argument("--k", type=int, default=3)
     ap.add_argument("--n-train", type=int, default=60)
@@ -433,6 +434,7 @@ def main() -> int:
     ap.add_argument("--show", type=int, default=2)
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     args.out = args.out or f"results/arith_steps_h{args.steps}.pt"
     args.summary = args.summary or f"results/arith_steps_h{args.steps}.json"

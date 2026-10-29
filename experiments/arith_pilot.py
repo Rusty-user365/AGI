@@ -37,6 +37,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import torch
+from experiments._device import resolve as _resolve_device
 from transformers import AutoTokenizer, LlamaConfig
 
 NUM_RE = re.compile(r"-?\d+")
@@ -199,9 +200,10 @@ def main() -> int:
     ap.add_argument("--arch", default="dlm", choices=["dlm", "auto"],
                     help="dlm = this repo's Dual-LM remote code; auto = any "
                          "transformers causal LM, including a hub repo id")
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--out", default="results/arith_pilot.json")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     dtype = torch.float16 if args.dtype == "float16" else torch.float32
     model, tok = load(Path(args.model).resolve() if Path(args.model).is_dir()

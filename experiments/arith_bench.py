@@ -40,6 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import torch
 
 from experiments.arith_pilot import FEWSHOT, load, make_problem, score
+from experiments._device import resolve as _resolve_device
 
 HOLDOUT_OFFSET = 10_000_000
 
@@ -114,7 +115,7 @@ def main() -> int:
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
     ap.add_argument("--arch", default="auto", choices=["dlm", "auto"])
     ap.add_argument("--dtype", default="float32", choices=["float16", "float32"])
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--steps", type=int, default=2, help="chain length")
     ap.add_argument("--k", type=int, default=8, help="samples per task")
     ap.add_argument("--n-train", type=int, default=250)
@@ -127,6 +128,7 @@ def main() -> int:
     ap.add_argument("--summary", default="results/arith_bench.json")
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     out_path = Path(args.out)
     state = {"rows": [], "tasks": [], "config": vars(args)}

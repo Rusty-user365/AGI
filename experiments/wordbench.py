@@ -44,6 +44,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import torch
 
 from experiments.arith_pilot import load
+from experiments._device import resolve as _resolve_device
 
 HOLDOUT_OFFSET = 10_000_000
 
@@ -210,7 +211,7 @@ def main() -> int:
     ap.add_argument("--model", default="checkpoints/hf/qwen2.5-1.5b-instruct")
     ap.add_argument("--arch", default="auto", choices=["dlm", "auto"])
     ap.add_argument("--dtype", default="float16", choices=["float16", "float32"])
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--level", type=int, default=1)
     ap.add_argument("--items", type=int, default=2, choices=[1, 2],
                     help="how many priced item types the problem asks about")
@@ -229,6 +230,7 @@ def main() -> int:
                     help="how many wrong-but-admitted examples to print")
     ap.add_argument("--resume", action="store_true")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     out_path = Path(args.out)
     state = {"rows": [], "tasks": [], "config": vars(args)}

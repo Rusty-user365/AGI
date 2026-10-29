@@ -49,6 +49,7 @@ import torch
 
 from experiments.arith_pilot import load
 from experiments.arith_steps import (build_prompt, parse_value, step_value)
+from experiments._device import resolve as _resolve_device
 
 try:
     from transformers import LogitsProcessor
@@ -175,13 +176,14 @@ def main() -> int:
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
     ap.add_argument("--arch", default="auto")
     ap.add_argument("--dtype", default="float32", choices=["float16", "float32"])
-    ap.add_argument("--device", default="cuda")
+    ap.add_argument("--device", default="auto")
     ap.add_argument("--max-new", type=int, default=5)
     ap.add_argument("--temperature", type=float, default=0.8)
     ap.add_argument("--top-p", type=float, default=0.95)
     ap.add_argument("--limit", type=int, default=0, help="0 = all holdout rows")
     ap.add_argument("--out", default="results/oracle_rewind.json")
     args = ap.parse_args()
+    args.device = str(_resolve_device(args.device))
 
     state = torch.load(Path(args.data), weights_only=False)
     steps = int(state["config"]["steps"])
