@@ -163,18 +163,29 @@ def denoise(model, x, mask_pos, steps: int, temperature: float, device: str):
 
 def build_infill(tok, prefix: str, body: str, suffix: str, span, mask_id: int,
                  device: str):
-    """Tokenize prefix+body+suffix and mask the tokens covering `span`."""
+    """Tokenize prefix+body+suffix and mask tokens inside `span` of the body.
+
+    Only tokens *fully inside the body* are masked. A token that straddles the
+    prompt/body boundary cannot be regenerated without rewriting the prompt, and
+    that also breaks the fixed-length slice used to read the result back. The
+    covered character range is returned so the replacement is spliced by what
+    the tokens actually cover, not by an assumed length.
+    """
     text = prefix + body + suffix
     ids, offs = token_ids(tok, text)
-    lo, hi = len(prefix) + span[0], len(prefix) + span[1]
-    mask_pos = torch.zeros(len(ids), dtype=torch.bool, device=device)
-    hit = [i for i, (a, b) in enumerate(offs) if b > lo and a < hi]
+    pl, bl = len(prefix), len(body)
+    lo, hi = pl + span[0], pl + span[1]
+    hit = [i for i, (a, b) in enumerate(offs)
+           if a >= pl and b <= pl + bl and b > lo and a < hi]
     if not hit:
         return None
-    for i in hit:
+    first, last = hit[0], hit[-1]
+    mask_pos = torch.zeros(len(ids), dtype=torch.bool, device=device)
+    for i in range(first, last + 1):
         mask_pos[i] = True
+    cover = (offs[first][0] - pl, offs[last][1] - pl)
     x = torch.tensor([ids], device=device)
-    return x, mask_pos, text
+    return x, mask_pos, (first, last) + cover
 
 
 def infill_once(model, tok, prefix, body, suffix, span, steps, temperature,
@@ -182,19 +193,15 @@ def infill_once(model, tok, prefix, body, suffix, span, steps, temperature,
     built = build_infill(tok, prefix, body, suffix, span, mask_id, device)
     if built is None:
         return body, 0
-    x, mask_pos, text = built
+    x, mask_pos, (first, last, clo, chi) = built
     x, nfe = denoise(model, x, mask_pos, steps, temperature, device)
-    full = tok.decode(x[0].tolist(), skip_special_tokens=True)
-    # Qwen's byte-level BPE round-trips, so decoding the whole sequence gives
-    # `text` with only the masked span replaced. Splicing token-by-token would
-    # introduce boundary-space artifacts that then get verified as if they were
-    # the model's output.
-    if full.startswith(prefix):
-        out = full[len(prefix):]
-    else:                                   # fall back to a character splice
-        lo = len(prefix) + span[0]
-        out = full[len(prefix):len(prefix) + span[0]] + body[span[0]:]
-        _ = lo
+    # Decoding a contiguous token range is exact for byte-level BPE (verified:
+    # 0 failures in 100 subranges), so the replacement is spliced by the covered
+    # character range. Slicing the whole decode at `len(prefix)` was wrong
+    # whenever a masked token reached into the prompt.
+    mid = tok.decode(x[0, first:last + 1].tolist(), skip_special_tokens=True)
+    assert 0 <= clo <= chi <= len(body), "covered range outside the body"
+    out = body[:clo] + mid + body[chi:]
     if suffix and out.endswith(suffix):
         out = out[:-len(suffix)]
     return out, nfe

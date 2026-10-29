@@ -152,6 +152,24 @@ tuning toward a positive:
 change will be made in response to an arm's score. If the corrected run is still
 negative, that is the result.
 
+### Third correction: the splice, which is a bug and not a config choice
+
+The second run spent the full budget but still scored 0/5, and two outputs showed
+indentation corruption (`   _int_list` with three spaces where the body has
+four). That is a splice defect, not a model error: when `span[0] == 0` the mask
+could include a token that *starts inside the prompt*, so regenerating it
+rewrote prompt text and the fixed `len(prefix)` slice landed one character off.
+
+Verified before changing anything: decoding a contiguous token range is exact for
+byte-level BPE, 0 failures in 100 subranges across 20 problems. So the
+replacement is now spliced by the covered character range, and only tokens fully
+inside the body are masked. Rows from the two earlier versions are kept at
+`results/diffusion_v0_walkback/` and `results/diffusion_v1_fullsplice/`.
+
+This is the last change. It fixes a defect that corrupts output independently of
+the model; it does not tune a parameter. Both earlier runs and this one are
+reported, not just the last.
+
 ## Matched compute, defined precisely
 
 A forward pass is the unit. KV-cached AR generation of *L* tokens costs *L*
