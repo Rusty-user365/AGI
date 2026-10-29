@@ -1,0 +1,39 @@
+
+==================================================================
+Experiment 5 — gate usage, overrides, triage
+==================================================================
+[common] loaded checkpoints\smoke_s1\stage_b.pt
+  condition            n   acc   model_top  model_top_share  model_actions  oracle_actions
+  -------------------  --  ----  ---------  ---------------  -------------  --------------
+  clean doc            40  1     ANS        1                1              1             
+  claim                40  1     DELIB      0.4              3              3             
+  repair: local        20  0.9   REP        0.9              2              1             
+  repair: cross_block  20  0.95  REV        0.95             2              1             
+  action  model    oracle 
+  ------  -------  -------
+  ANS     0.3333   0.3333 
+  DELIB   0.1333   0.1333 
+  VER     0.1333   0.1333 
+  REP     0.1583   0.1667 
+  REORD   0        0      
+  REV     0.175    0.1667 
+  DEF     0.06667  0.06667
+  UPD     0        0      
+
+  gate accuracy vs oracle: 0.975
+  overrides: {'surprise': 0.0, 'risk_ladder': 0.0, 'none': 1.0}
+  cost/correct: model 3.41  oracle 3.36
+  head health: {'scope': {'ece': 0.0196697860956192, 'acc': 0.949999988079071, 'conf_mean': 0.933388352394104, 'conf_sd': 0.17984214425086975}, 'epistemic': {'ece': 0.0065607428550720215, 'acc': 1.0, 'conf_mean': 0.993439257144928, 'conf_sd': 0.01758475974202156}, 'value': {'sd': 0.2282991260290146, 'mean': 0.8351698517799377}, 'tau': {'sd': 0.2750004827976227, 'mean': 1.3525397777557373}, 'scope_epistemic_conf_corr': 0.048927389085292816}
+  ordering          marks
+  ----------------  -----
+  sequential        24   
+  triage (tau asc)  24   
+  random (mean)     22.41
+  hardest first     16   
+  budget = 24 of 120; random 95% CI [22.3, 22.5]
+  attainable max = 24; gain +1.59 of 1.59 (100%); permutation p = 0.196
+
+  ! Never offered by the curriculum: ['REORD', 'UPD']. These have no training signal; report the effective action space, not the nominal eight.
+  ! Triage does not establish an advantage over random (triage 24, random mean 22.4, CI [22.3, 22.5]; gain +1.59 of an attainable 1.59 = 100%; permutation p=0.196; budget 24 of 120, solvable base rate 0.93). Report the null, and note the ceiling: with this mix the metric can only move by 1.6 marks.
+  ! 'Sequential' scores the maximum (24) because the eval set is concatenated docs-then-claims; it is an artefact of arrival order, not evidence about any policy. Compare triage to random only.
+

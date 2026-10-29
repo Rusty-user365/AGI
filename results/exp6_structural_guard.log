@@ -1,0 +1,20 @@
+
+==================================================================
+Experiment 6 — structural guard (C1), independent of the editor
+==================================================================
+[common] loaded checkpoints\smoke_s1\stage_b.pt
+  check                 value  verdict
+  --------------------  -----  -------
+  A gradient masking    0      pass   
+  B immutability        1      pass   
+  C memory guard        1      pass   
+  D rejection learning  1.395  pass   
+  control         A_fails  B_fails  C_fails
+  --------------  -------  -------  -------
+  unguarded       True     True     True   
+  verified-right  -        -        -      
+
+  ! C1 passes with a valid instrument: verified-wrong examples leave the plastic substrate bit-identical and create no memory entry, while the gate still receives a rejection gradient. This is a structural guarantee about the pipeline and is independent of whether the editor can generate good repairs.
+  ! B2 (not pre-registered): under AdamW with weight decay, a *zero-tensor* gradient still moves the parameter, because decay is applied whenever grad is not None. Masking leaves the plastic grad as None, which AdamW skips, so the guard holds on this path — but a production optimizer should exclude the plastic parameters from weight decay rather than rely on that.
+  ! C2 (does the guard improve held-out behaviour?) is a different claim and is unresolved: exp2's NLL diff-in-diff is within its minimum detectable effect at this scale. C1 does not depend on it.
+

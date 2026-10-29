@@ -1,0 +1,15 @@
+
+==================================================================
+Experiment 3 — side-channel causality
+==================================================================
+[common] loaded checkpoints\smoke_s1\stage_b.pt
+  condition  loss   vs_full  value_mae  repair_consistency
+  ---------  -----  -------  ---------  ------------------
+  full       3.105  0        0.07874    0                 
+  shuffled   3.25   0.1454   0.07834    0                 
+  constant   3.259  0.1549   0.06718    0                 
+  none       3.842  0.7371   0.06472    0                 
+  oracle     3.153  0.0488   0.1004     0                 
+
+  ! The positive control did not beat `full`: the steering vector could not carry information the input lacked. A null shuffle result is therefore uninterpretable and must not be reported as 'reasoning is decorative'.
+

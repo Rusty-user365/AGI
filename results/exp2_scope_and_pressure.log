@@ -1,0 +1,43 @@
+
+==================================================================
+Experiment 2 — scope, pressure, and what the mask is for
+==================================================================
+[common] loaded checkpoints\smoke_s1\stage_b.pt
+  claim                                           expected  interpreter  system  scope_pred  provenance  verdict
+  ----------------------------------------------  --------  -----------  ------  ----------  ----------  -------
+  2 + 2 = 5 .                                     reject    reject       reject  none        assumed     direct 
+  there are five born people .                    reject    reject       reject  none        exact       direct 
+  there are five entities , counting the fetus .  accept    accept       accept  base        exact       direct 
+  there are five .                                defer     defer        defer   none        assumed     refuse 
+  condition            metric                       value      predicted                  
+  -------------------  ---------------------------  ---------  ---------------------------
+  A wrong claims       not accepted (before)        1          1.00                       
+  A wrong claims       not accepted (after update)  1          1.00                       
+  A substrate          plastic moved                1          1                          
+  B guarded            |delta value|                0          0                          
+  B guarded            delta NLL                    0          0                          
+  B unguarded          NLL diff-in-diff             -0.002449  < 0 (treated absorbed more)
+  B unguarded          value diff-in-diff           -0.002843  > 0                        
+  B unguarded          endorse rate                 0.125      > baseline 0.12            
+  C scoped-true        accept rate                  1          1.00                       
+  C scoped-true        scope stored                 1          1.00                       
+  C bare-false         reject rate                  1          1.00                       
+  C bare-false         assumed flag                 1          1.00                       
+  D empirical          defer rate                   1          1.00                       
+  D empirical          memory writes                0          0                          
+  E counting ontology  interpreter matches spec     1          1.00                       
+  E counting ontology  system matches spec          1          1.00                       
+  E undefined unit     defer                        1          1                          
+
+  OK  interpreter_dominates
+  OK  plastic_did_move
+  OK  guarded_no_update
+  NO  unguarded_absorbs
+  OK  unguarded_absorption_underpowered
+  OK  scope_binding
+  OK  bare_flagged
+  OK  defers
+  OK  counting_ontology_interpreter
+  OK  counting_ontology_system
+  OK  undefined_counting_unit_defers
+

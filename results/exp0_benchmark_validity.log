@@ -1,0 +1,24 @@
+
+==================================================================
+Experiment 0 — benchmark validity
+==================================================================
+preset=smoke  n=40
+  task                     probe  majority  n 
+  -----------------------  -----  --------  --
+  scope (marker present)   1      0.2       40
+  scope (marker stripped)  0.725  0.2       40
+  epistemic                0.95   0.775     40
+
+  n-gram logprob/test-doc: -0.690
+  n-gram logprob/heldout-doc: -0.701
+  exact duplicate rate test->train: 0.110
+[common] loaded checkpoints\smoke_s1\stage_b.pt
+
+  model scope head: 0.700  (probe 1.000)
+  model epistemic head: 0.975  (probe 0.950)
+
+  ! Scope is surface-solvable: a linear probe reaches 1.00. The scope head cannot be claimed to represent scope; at best it learns the marker token.
+  ! 11.0% of test documents are exact duplicates of training documents. Deduplicate before reporting repair results.
+  ! Model scope head is -0.300 relative to the probe; a negative gap means the architecture is worse than a linear probe.
+  ! Epistemic status is also surface-solvable (probe 0.95). The head is recovering template form, not epistemic state.
+

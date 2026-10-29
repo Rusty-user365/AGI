@@ -1,0 +1,24 @@
+{
+  "rows": 2,
+  "stage1": 2,
+  "verdict": "stop_for_futility",
+  "arms": {
+    "greedy": 0,
+    "best_of": 1,
+    "cgr": 0
+  },
+  "paired_cgr_vs_best": {
+    "wins": 0,
+    "losses": 1,
+    "p": 1.0
+  },
+  "tokens": {
+    "best_of": 2332,
+    "cgr": 2332
+  },
+  "tests": {
+    "best_of": 5,
+    "cgr": 9
+  },
+  "rule": "stop if wins==0 or cgr <= best_of - 3"
+}

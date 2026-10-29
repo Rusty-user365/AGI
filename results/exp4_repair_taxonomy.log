@@ -1,0 +1,38 @@
+
+==================================================================
+Experiment 4 — revision scope under a matched budget
+==================================================================
+[common] loaded checkpoints\smoke_s1\stage_b.pt
+
+  oracle solvability gate (deterministic editor, ground truth)
+  condition                   anchor  c_edit  c_all   quality  blocks_changed  tokens_spent  n 
+  --------------------------  ------  ------  ------  -------  --------------  ------------  --
+  local/one_block             1       1       1       1        1               14.6          40
+  local/global                1       1       1       1        3.9             53.92         40
+  local/repeated_local        1       1       1       1        1               14.6          40
+  cross_block/one_block       1       0.2675  0.4192  0.3729   1               14.45         40
+  cross_block/global          1       1       1       1        3.9             53.92         40
+  cross_block/repeated_local  1       1       1       1        3.9             53.92         40
+  gate: local/one_block=ok, local/global=ok, local/repeated_local=ok, cross_block/one_block=ok, cross_block/global=ok, cross_block/repeated_local=ok, anchor_preserved_all=ok
+
+  model grid
+  condition                   anchor  c_edit  c_all   c_target  q_target  quality  blocks_changed  tokens_spent  consistent  improvement  preservation  seam      n 
+  --------------------------  ------  ------  ------  --------  --------  -------  --------------  ------------  ----------  -----------  ------------  --------  --
+  local/one_block             1       0.7325  0.7904  0         0         0.6271   1               13.95         0           0.2735       1             -0.02506  40
+  local/global                1       0       0.2096  0         0         0        3.9             47.45         0           0.1023       1             0.0155    40
+  local/repeated_local        1       0       0.2096  0         0         0        3.9             47.8          0           0.2676       1             -0.01214  40
+  cross_block/one_block       1       0       0.2096  0         0         0        1               12.18         0           -0.289       1             0.002835  40
+  cross_block/global          1       0       0.2096  0         0         0        3.9             45.83         0           -0.1824      1             0.0343    40
+  cross_block/repeated_local  1       0       0.2096  0         0         0        3.9             46.67         0           0.01894      1             0.04927   40
+  local/gate_selected         1       0.7838  0.8308  0.2       0         0.6271   0.8             11.38         0.2         0.2507       1             -0.02717  40
+  cross_block/gate_selected   1       0       0.2096  0         0         0        0               0             0           0            1             0         40
+
+  no-op baseline on the edited blocks (what doing nothing scores)
+  condition          c_target  q_target
+  -----------------  --------  --------
+  local/no_op        1         0       
+  cross_block/no_op  0         0       
+
+  ! Infill sanity: the backbone produces a parseable, on-thesis block only 0% of the time (parses 0%; no-op baseline parses 100% and is on-thesis 100%; byte-identical copy 0%). Below the 0.2 ability gate, every repair number is at the floor; the scope comparison is NOT decidable with this editor. The oracle gate above shows the task itself is solvable, so this is a model failure, not a task failure. Report the floor and do not interpret the grid or the gate-selected row.
+  ! On the edited blocks, no method beats doing nothing (c_target and q_target are at or below the no-op baseline in every condition). The document-level c_edit/quality numbers therefore come from blocks the method left untouched, not from a repair. Do not read the model grid as an editor result.
+

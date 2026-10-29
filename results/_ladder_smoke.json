@@ -1,0 +1,149 @@
+{
+  "config": {
+    "data": "results/arith_steps_h5.pt",
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "device": "cuda",
+    "seeds": 5,
+    "max_new": 5,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "neq_draws": 4,
+    "best_draws": 4,
+    "ceiling_k": 4,
+    "limit": 6,
+    "rows_out": "results/_ladder_smoke_rows.jsonl",
+    "out": "results/_ladder_smoke.json",
+    "resume": true
+  },
+  "n": 6,
+  "localizer": {
+    "linear_top1": 0.6181818246841431,
+    "two_tier_top1": 0.7181817889213562,
+    "two_tier_bal": 0.5591555237770081,
+    "t_exact": 0.8333333333333334
+  },
+  "arms": {
+    "rank2": {
+      "ok": 2,
+      "n": 6,
+      "rate": 0.3333333333333333,
+      "ci": [
+        0.09676933255921683,
+        0.7000116786584712
+      ],
+      "same_value": 0.0,
+      "samples": 1.0
+    },
+    "span_digitset": {
+      "ok": 2,
+      "n": 6,
+      "rate": 0.3333333333333333,
+      "ci": [
+        0.09676933255921683,
+        0.7000116786584712
+      ],
+      "same_value": 0.0,
+      "samples": 1.0
+    },
+    "resample_neq": {
+      "ok": 1,
+      "n": 6,
+      "rate": 0.16666666666666666,
+      "ci": [
+        0.03005258587173032,
+        0.563509436563646
+      ],
+      "same_value": 0.16666666666666666,
+      "samples": 1.5
+    },
+    "resample_neq_best4": {
+      "ok": 2,
+      "n": 6,
+      "rate": 0.3333333333333333,
+      "ci": [
+        0.09676933255921683,
+        0.7000116786584712
+      ],
+      "same_value": 0.0,
+      "samples": 4.0
+    },
+    "oracle_value": {
+      "ok": 3,
+      "n": 6,
+      "rate": 0.5,
+      "ci": [
+        0.18761280689940868,
+        0.8123871931005913
+      ],
+      "same_value": 0.0,
+      "samples": 1.0
+    },
+    "resample_at_tstar": {
+      "ok": 1,
+      "n": 6,
+      "rate": 0.16666666666666666,
+      "ci": [
+        0.03005258587173032,
+        0.563509436563646
+      ],
+      "k": 4
+    }
+  },
+  "paired_vs_rank2": {
+    "span_digitset": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    },
+    "resample_neq": {
+      "wins": 0,
+      "losses": 1,
+      "p": 1.0
+    },
+    "resample_neq_best4": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    },
+    "oracle_value": {
+      "wins": 1,
+      "losses": 0,
+      "p": 1.0
+    },
+    "resample_at_tstar": {
+      "wins": 0,
+      "losses": 1,
+      "p": 1.0
+    }
+  },
+  "verdict": {
+    "best_actuator": "oracle_value",
+    "headroom_at_that": 1,
+    "best_vs_rank2": {
+      "wins": 1,
+      "losses": 0,
+      "p": 1.0
+    },
+    "decision": "close_level2",
+    "rule": "build iff best actuator beats rank2 at McNemar p<0.05 and oracle_value - rank2 >= 15 chains"
+  },
+  "split_by_localization": {
+    "t_hat_eq_tstar": {
+      "n": 5,
+      "rank2": 2,
+      "span_digitset": 2,
+      "resample_neq": 1,
+      "resample_neq_best4": 2,
+      "oracle_value": 3
+    },
+    "t_hat_ne_tstar": {
+      "n": 1,
+      "rank2": 0,
+      "span_digitset": 0,
+      "resample_neq": 0,
+      "resample_neq_best4": 0,
+      "oracle_value": 0
+    }
+  },
+  "vram_peak_mb": 2293.5185546875
+}

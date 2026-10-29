@@ -1,0 +1,97 @@
+{
+  "horizon": 3,
+  "splits": {
+    "train": {
+      "tasks": 6,
+      "candidates": 24,
+      "emitted_rate": 1.625,
+      "seq_p1_greedy": 0.0,
+      "seq_p1_sampled": 0.0,
+      "seq_pass_at_k": 0.0,
+      "seq_pass_at_k_ci": [
+        0.0,
+        0.3903430336530645
+      ],
+      "first_error_dist": {
+        "0": 2,
+        "1": 0,
+        "2": 0,
+        "none": 0,
+        "missing": 16
+      },
+      "first_error_missing_frac": 0.8888888888888888,
+      "first_error_none_frac": 0.0,
+      "step_acc": [
+        0.0,
+        0.0,
+        0.5
+      ],
+      "cond_step_acc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "recovered_frac": 0.5,
+      "localize_eligible": 2,
+      "localize_chance": 0.3333333333333333,
+      "localize_argmin_logprob": 1.0,
+      "localize_at_or_after": 1.0
+    },
+    "holdout": {
+      "tasks": 3,
+      "candidates": 12,
+      "emitted_rate": 1.1666666666666667,
+      "seq_p1_greedy": 0.0,
+      "seq_p1_sampled": 0.0,
+      "seq_pass_at_k": 0.0,
+      "seq_pass_at_k_ci": [
+        0.0,
+        0.5615060804490177
+      ],
+      "first_error_dist": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "none": 0,
+        "missing": 9
+      },
+      "first_error_missing_frac": 1.0,
+      "first_error_none_frac": 0.0,
+      "step_acc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "cond_step_acc": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "recovered_frac": 0.0,
+      "localize_eligible": 0,
+      "localize_chance": 0.3333333333333333,
+      "localize_argmin_logprob": 0.0,
+      "localize_at_or_after": 0.0
+    }
+  },
+  "config": {
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float32",
+    "device": "cuda",
+    "horizon": 3,
+    "boxes": 2,
+    "max_move": 1,
+    "k": 3,
+    "n_train": 6,
+    "n_holdout": 3,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 66,
+    "save_every": 3,
+    "out": "results/_smoke_sl3.pt",
+    "summary": "results/_smoke_sl3.json",
+    "show": 2,
+    "resume": false
+  }
+}

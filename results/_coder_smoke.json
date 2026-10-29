@@ -1,0 +1,92 @@
+{
+  "config": {
+    "data": "data/humaneval.jsonl.gz",
+    "model": "checkpoints/hf/qwen2.5-coder-1.5b-instruct",
+    "device": "cuda",
+    "dtype": "fp16",
+    "limit": 1,
+    "max_new": 192,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "timeout": 5.0,
+    "best_k": 4,
+    "max_repairs": 8,
+    "seed": 1234,
+    "rows_out": "results\\_coder_smoke_rows.jsonl",
+    "out": "results\\_coder_smoke.json",
+    "resume": false
+  },
+  "n": 1,
+  "arms": {
+    "greedy": {
+      "ok": 1,
+      "n": 1,
+      "rate": 1.0,
+      "ci": [
+        0.20654329147389294,
+        1.0
+      ],
+      "tokens": 310,
+      "tokens_per_solve": 310.0,
+      "tests": 1,
+      "tests_per_solve": 1.0
+    },
+    "best_of": {
+      "ok": 1,
+      "n": 1,
+      "rate": 1.0,
+      "ci": [
+        0.20654329147389294,
+        1.0
+      ],
+      "tokens": 1240,
+      "tokens_per_solve": 1240.0,
+      "tests": 1,
+      "tests_per_solve": 1.0
+    },
+    "cgr": {
+      "ok": 1,
+      "n": 1,
+      "rate": 1.0,
+      "ci": [
+        0.20654329147389294,
+        1.0
+      ],
+      "tokens": 310,
+      "tokens_per_solve": 310.0,
+      "tests": 1,
+      "tests_per_solve": 1.0
+    }
+  },
+  "paired": {
+    "cgr_vs_best": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    },
+    "best_vs_greedy": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    },
+    "cgr_vs_greedy": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    }
+  },
+  "by_greedy_failure_kind": {
+    "None": {
+      "n": 1,
+      "greedy": 1,
+      "best_of": 1,
+      "cgr": 1
+    }
+  },
+  "localization": {
+    "repaired": 0,
+    "first_repair_ok": 0,
+    "mean_repairs": 0.0
+  },
+  "vram_peak_mb": 3024.21484375
+}

@@ -1,0 +1,95 @@
+{
+  "steps": 3,
+  "splits": {
+    "train": {
+      "tasks": 6,
+      "candidates": 18,
+      "complete_rate": 1.0,
+      "chain_p1_greedy": 1.0,
+      "chain_p1_sampled": 0.75,
+      "chain_pass_at_k": 0.8333333333333334,
+      "chain_pass_at_k_ci": [
+        0.43649056343635395,
+        0.9699474141282697
+      ],
+      "step_acc": [
+        1.0,
+        0.8333333333333334,
+        0.75
+      ],
+      "cond_step_acc": [
+        1.0,
+        0.8333333333333334,
+        0.9
+      ],
+      "first_error_dist": {
+        "0": 0,
+        "1": 2,
+        "2": 1,
+        "none": 9,
+        "incomplete": 0
+      },
+      "first_error_none_frac": 0.75,
+      "first_error_incomplete_frac": 0.0,
+      "localize_eligible": 2,
+      "localize_chance": 0.3333333333333333,
+      "localize_always_first": 0.0,
+      "localize_argmin_logprob": 0.0,
+      "localize_at_or_after": 1.0
+    },
+    "holdout": {
+      "tasks": 3,
+      "candidates": 9,
+      "complete_rate": 1.0,
+      "chain_p1_greedy": 0.6666666666666666,
+      "chain_p1_sampled": 0.8333333333333334,
+      "chain_pass_at_k": 1.0,
+      "chain_pass_at_k_ci": [
+        0.43849391955098227,
+        1.0
+      ],
+      "step_acc": [
+        1.0,
+        1.0,
+        0.8333333333333334
+      ],
+      "cond_step_acc": [
+        1.0,
+        1.0,
+        0.8333333333333334
+      ],
+      "first_error_dist": {
+        "0": 0,
+        "1": 0,
+        "2": 1,
+        "none": 5,
+        "incomplete": 0
+      },
+      "first_error_none_frac": 0.8333333333333334,
+      "first_error_incomplete_frac": 0.0,
+      "localize_eligible": 0,
+      "localize_chance": 0.3333333333333333,
+      "localize_always_first": 0.0,
+      "localize_argmin_logprob": 0.0,
+      "localize_at_or_after": 0.0
+    }
+  },
+  "config": {
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float32",
+    "device": "cuda",
+    "steps": 3,
+    "k": 2,
+    "n_train": 6,
+    "n_holdout": 3,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 5,
+    "save_every": 3,
+    "out": "results/_smoke_as3.pt",
+    "summary": "results/_smoke_as3.json",
+    "show": 2,
+    "resume": false
+  }
+}

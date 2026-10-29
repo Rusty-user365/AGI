@@ -1,0 +1,45 @@
+{
+  "config": {
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float32",
+    "device": "cuda",
+    "horizon": 3,
+    "k": 3,
+    "n_train": 6,
+    "n_holdout": 3,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 12,
+    "save_every": 3,
+    "out": "results/_smoke_st3.pt",
+    "summary": "results/_smoke_st3.json",
+    "show": 3,
+    "resume": false
+  },
+  "horizon": 3,
+  "splits": {
+    "train": {
+      "tasks": 6,
+      "candidates": 24,
+      "clean_rate": 0.0,
+      "p1_greedy": 0.0,
+      "p1_sampled": null,
+      "pass_at_k": 0.0,
+      "wrong_clean": 0,
+      "logprob_auc": null,
+      "logprob_pairs": 0
+    },
+    "holdout": {
+      "tasks": 3,
+      "candidates": 12,
+      "clean_rate": 0.08333333333333333,
+      "p1_greedy": 0.0,
+      "p1_sampled": 0.0,
+      "pass_at_k": 0.0,
+      "wrong_clean": 1,
+      "logprob_auc": null,
+      "logprob_pairs": 0
+    }
+  }
+}

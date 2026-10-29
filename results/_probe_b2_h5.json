@@ -1,0 +1,48 @@
+{
+  "config": {
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float32",
+    "device": "cuda",
+    "horizon": 5,
+    "boxes": 2,
+    "max_move": 1,
+    "k": 3,
+    "n_train": 8,
+    "n_holdout": 4,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 10,
+    "save_every": 4,
+    "out": "results/_probe_b2_h5.pt",
+    "summary": "results/_probe_b2_h5.json",
+    "show": 3,
+    "resume": false
+  },
+  "horizon": 5,
+  "boxes": 2,
+  "splits": {
+    "train": {
+      "tasks": 8,
+      "candidates": 32,
+      "clean_rate": 1.0,
+      "p1_greedy": 0.0,
+      "p1_sampled": 0.041666666666666664,
+      "pass_at_k": 0.125,
+      "wrong_clean": 23,
+      "logprob_auc": 0.3333333333333333,
+      "logprob_pairs": 3
+    },
+    "holdout": {
+      "tasks": 4,
+      "candidates": 16,
+      "clean_rate": 1.0,
+      "p1_greedy": 0.25,
+      "p1_sampled": 0.0,
+      "pass_at_k": 0.0,
+      "wrong_clean": 12,
+      "logprob_auc": 1.0,
+      "logprob_pairs": 3
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "config": {
+    "data": "results/_smoke_as3.pt",
+    "arch": "transformer",
+    "width": 64,
+    "heads": 4,
+    "dropout": 0.1,
+    "epochs": 5,
+    "batch": 32,
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "use_logprob": false,
+    "seeds": 1,
+    "device": "cuda",
+    "out": "results/_smoke_localizer.json"
+  },
+  "data": "results\\_smoke_as3.pt",
+  "steps": 3,
+  "train_candidates": 3,
+  "holdout_candidates": 2,
+  "label_dist_train": [
+    0,
+    2,
+    1
+  ],
+  "label_dist_holdout": [
+    0,
+    0,
+    2
+  ],
+  "baselines": {
+    "n": 2,
+    "chance": 0.3333333333333333,
+    "prior_index": 1,
+    "prior_acc": 0.0,
+    "always_first_acc": 0.0,
+    "argmin_logprob_acc": 1.0,
+    "argmin_logprob_ci": [
+      0.34237195288961925,
+      1.0
+    ]
+  },
+  "runs": [
+    {
+      "seed": 0,
+      "train_acc": 1.0,
+      "top1": 0.5,
+      "top2": 1.0,
+      "mae": 0.5
+    }
+  ],
+  "mean_top1": 0.5,
+  "mean_top1_ci": [
+    0.09452865480086614,
+    0.9054713451991339
+  ],
+  "vs_logprob": {
+    "wins": 0,
+    "losses": 1,
+    "p": 1.0,
+    "seed": 0
+  }
+}

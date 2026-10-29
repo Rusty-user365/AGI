@@ -1,0 +1,154 @@
+{
+  "config": {
+    "data": "results/arith_steps_h5_vault.pt",
+    "train_data": "results/arith_steps_h5.pt",
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "device": "cuda",
+    "seeds": 5,
+    "max_new": 5,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "limit": 2,
+    "rows_out": "results/_smoke_interp_vault_rows.jsonl",
+    "out": "results/_smoke_interp_vault.json",
+    "resume": false
+  },
+  "n": 2,
+  "anchor_enforced": false,
+  "train_candidates": 279,
+  "anchors": {},
+  "localizer": {
+    "two_tier_top1": 0.6253776550292969,
+    "two_tier_bal": 0.6016491428017616,
+    "t_exact": 0.0
+  },
+  "arms": {
+    "k0_rank2": {
+      "ok": 0,
+      "n": 2,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.6576280471103807
+      ],
+      "calls": 1.0
+    },
+    "k1_loc": {
+      "ok": 0,
+      "n": 2,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.6576280471103807
+      ],
+      "calls": 1.0
+    },
+    "k2_loc": {
+      "ok": 2,
+      "n": 2,
+      "rate": 1.0,
+      "ci": [
+        0.34237195288961925,
+        1.0
+      ],
+      "calls": 2.0
+    },
+    "k3_loc": {
+      "ok": 2,
+      "n": 2,
+      "rate": 1.0,
+      "ci": [
+        0.34237195288961925,
+        1.0
+      ],
+      "calls": 3.0
+    },
+    "k1_rand": {
+      "ok": 0,
+      "n": 2,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.6576280471103807
+      ],
+      "calls": 1.0
+    },
+    "k2_rand": {
+      "ok": 0,
+      "n": 2,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.6576280471103807
+      ],
+      "calls": 2.0
+    },
+    "k3_rand": {
+      "ok": 1,
+      "n": 2,
+      "rate": 0.5,
+      "ci": [
+        0.09452865480086614,
+        0.9054713451991339
+      ],
+      "calls": 3.0
+    },
+    "k1_oracleloc": {
+      "ok": 0,
+      "n": 2,
+      "rate": 0.0,
+      "ci": [
+        0.0,
+        0.6576280471103807
+      ],
+      "calls": 1.0
+    },
+    "k5_all": {
+      "ok": 2,
+      "n": 2,
+      "rate": 1.0,
+      "ci": [
+        0.34237195288961925,
+        1.0
+      ],
+      "calls": 5.0
+    }
+  },
+  "paired": {
+    "k1_loc_vs_rand": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    },
+    "k2_loc_vs_rand": {
+      "wins": 2,
+      "losses": 0,
+      "p": 0.5
+    },
+    "k3_loc_vs_rand": {
+      "wins": 1,
+      "losses": 0,
+      "p": 1.0
+    },
+    "k1_loc_vs_k0": {
+      "wins": 0,
+      "losses": 0,
+      "p": 1.0
+    }
+  },
+  "curve": {
+    "1": {
+      "loc": 0,
+      "rand": 0
+    },
+    "2": {
+      "loc": 2,
+      "rand": 0
+    },
+    "3": {
+      "loc": 2,
+      "rand": 1
+    }
+  },
+  "vram_peak_mb": 2333.30126953125
+}

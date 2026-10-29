@@ -1,0 +1,18 @@
+
+==================================================================
+Experiment 1 — design invariants
+==================================================================
+[common] loaded checkpoints\smoke_s1\stage_b.pt
+  invariant          result  n   note                            
+  -----------------  ------  --  --------------------------------
+  null property      True    40  M=empty, alpha=0.5              
+  null (repeat)      True    40  deterministic                   
+  negative control   True    40  non-empty store MUST move output
+  rollback           True    40  insert 20, remove 20            
+  memory has effect  True    40  populated != empty              
+  gradient masking   True    50  50/50 unchanged                 
+  masking has power  True    1   verified-right DOES move it     
+  isolation          True    1   0 vocab projections in reasoner 
+
+  all invariants passed: True
+

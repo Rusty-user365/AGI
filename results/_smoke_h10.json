@@ -1,0 +1,138 @@
+{
+  "steps": 10,
+  "splits": {
+    "train": {
+      "tasks": 2,
+      "candidates": 8,
+      "complete_rate": 1.0,
+      "chain_p1_greedy": 0.0,
+      "chain_p1_sampled": 0.0,
+      "chain_pass_at_k": 0.0,
+      "chain_pass_at_k_ci": [
+        0.0,
+        0.6576280471103807
+      ],
+      "step_acc": [
+        1.0,
+        0.3333333333333333,
+        0.16666666666666666,
+        0.5,
+        0.5,
+        0.0,
+        0.3333333333333333,
+        0.0,
+        1.0,
+        0.5
+      ],
+      "cond_step_acc": [
+        1.0,
+        0.3333333333333333,
+        0.5,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "first_error_dist": {
+        "0": 0,
+        "1": 4,
+        "2": 1,
+        "3": 1,
+        "4": 0,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 0,
+        "9": 0,
+        "none": 0,
+        "incomplete": 0
+      },
+      "first_error_none_frac": 0.0,
+      "first_error_incomplete_frac": 0.0,
+      "localize_eligible": 6,
+      "localize_chance": 0.1,
+      "localize_always_first": 0.0,
+      "localize_argmin_logprob": 0.0,
+      "localize_at_or_after": 1.0
+    },
+    "holdout": {
+      "tasks": 2,
+      "candidates": 8,
+      "complete_rate": 1.0,
+      "chain_p1_greedy": 0.0,
+      "chain_p1_sampled": 0.0,
+      "chain_pass_at_k": 0.0,
+      "chain_pass_at_k_ci": [
+        0.0,
+        0.6576280471103807
+      ],
+      "step_acc": [
+        1.0,
+        0.6666666666666666,
+        0.8333333333333334,
+        0.6666666666666666,
+        0.3333333333333333,
+        1.0,
+        1.0,
+        0.5,
+        0.5,
+        0.16666666666666666
+      ],
+      "cond_step_acc": [
+        1.0,
+        0.6666666666666666,
+        1.0,
+        0.75,
+        0.6666666666666666,
+        1.0,
+        1.0,
+        1.0,
+        0.5,
+        0.0
+      ],
+      "first_error_dist": {
+        "0": 0,
+        "1": 2,
+        "2": 0,
+        "3": 1,
+        "4": 1,
+        "5": 0,
+        "6": 0,
+        "7": 0,
+        "8": 1,
+        "9": 1,
+        "none": 0,
+        "incomplete": 0
+      },
+      "first_error_none_frac": 0.0,
+      "first_error_incomplete_frac": 0.0,
+      "localize_eligible": 6,
+      "localize_chance": 0.1,
+      "localize_always_first": 0.0,
+      "localize_argmin_logprob": 0.16666666666666666,
+      "localize_at_or_after": 1.0
+    }
+  },
+  "config": {
+    "model": "checkpoints/hf/qwen3-0.6b-base",
+    "arch": "auto",
+    "dtype": "float16",
+    "device": "cuda",
+    "steps": 10,
+    "k": 3,
+    "n_train": 2,
+    "n_holdout": 2,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "max_new": 5,
+    "save_every": 10,
+    "seed_offset": 0,
+    "out": "results/_smoke_h10.pt",
+    "summary": "results/_smoke_h10.json",
+    "show": 2,
+    "resume": false
+  }
+}
