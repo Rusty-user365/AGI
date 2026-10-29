@@ -224,6 +224,8 @@ def main() -> int:
     ap.add_argument("--data", default="data/humaneval.jsonl.gz")
     ap.add_argument("--model", default="checkpoints/hf/qwen3-0.6b-base")
     ap.add_argument("--device", default="cuda")
+    ap.add_argument("--dtype", default="fp32", choices=["fp32", "fp16", "bf16"],
+                    help="fp16 is required for a 1.5B model on a 4 GB card")
     ap.add_argument("--limit", type=int, default=0)
     ap.add_argument("--max-new", type=int, default=192)
     ap.add_argument("--temperature", type=float, default=0.8)
@@ -259,7 +261,10 @@ def main() -> int:
     model_path = Path(args.model)
     if not model_path.is_absolute():
         model_path = root / model_path
-    model, tok = load_model(model_path, torch.float32, args.device, "auto")
+    model, tok = load_model(model_path, {"fp32": torch.float32,
+                                         "fp16": torch.float16,
+                                         "bf16": torch.bfloat16}[args.dtype],
+                            args.device, "auto")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
     torch.cuda.reset_peak_memory_stats()
