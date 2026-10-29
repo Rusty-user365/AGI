@@ -1,0 +1,239 @@
+{
+  "refit_of": "verify_vault_h5.json",
+  "why_separate": "The re-fit does not reproduce the stored Top-1 for ensemble, two_tier (drift {\"ensemble\": -0.0272, \"two_tier\": -0.0272}). The 2026-10-28 fit ran on a different torch build and device; the hard tau_trf=0.35 routing in the two-tier arm sits on a probability boundary, so last-bit differences move rows across it. Mixing the two fits in one file would misattribute the metric fix to a model change.",
+  "top1_drift": {
+    "ensemble": -0.0272,
+    "two_tier": -0.0272
+  },
+  "localizer_diagnostic": {
+    "linear_top1": 0.5951661467552185,
+    "linear_bal": 0.512160524725914,
+    "linear_rec": [
+      {
+        "step": 0,
+        "n": 0,
+        "recall": null
+      },
+      {
+        "step": 1,
+        "n": 165,
+        "recall": 0.7212121486663818
+      },
+      {
+        "step": 2,
+        "n": 80,
+        "recall": 0.574999988079071
+      },
+      {
+        "step": 3,
+        "n": 53,
+        "recall": 0.35849055647850037
+      },
+      {
+        "step": 4,
+        "n": 33,
+        "recall": 0.39393940567970276
+      }
+    ],
+    "linear_prec": [
+      {
+        "step": 0,
+        "n_pred": 0,
+        "precision": null
+      },
+      {
+        "step": 1,
+        "n_pred": 175,
+        "precision": 0.6800000071525574
+      },
+      {
+        "step": 2,
+        "n_pred": 72,
+        "precision": 0.6388888955116272
+      },
+      {
+        "step": 3,
+        "n_pred": 46,
+        "precision": 0.41304346919059753
+      },
+      {
+        "step": 4,
+        "n_pred": 38,
+        "precision": 0.34210526943206787
+      }
+    ],
+    "transformer_top1": 0.6827794313430786,
+    "transformer_bal": 0.6232329159975052,
+    "transformer_rec": [
+      {
+        "step": 0,
+        "n": 0,
+        "recall": null
+      },
+      {
+        "step": 1,
+        "n": 165,
+        "recall": 0.7939394116401672
+      },
+      {
+        "step": 2,
+        "n": 80,
+        "recall": 0.5874999761581421
+      },
+      {
+        "step": 3,
+        "n": 53,
+        "recall": 0.5660377144813538
+      },
+      {
+        "step": 4,
+        "n": 33,
+        "recall": 0.5454545617103577
+      }
+    ],
+    "transformer_prec": [
+      {
+        "step": 0,
+        "n_pred": 0,
+        "precision": null
+      },
+      {
+        "step": 1,
+        "n_pred": 178,
+        "precision": 0.7359550595283508
+      },
+      {
+        "step": 2,
+        "n_pred": 65,
+        "precision": 0.7230769395828247
+      },
+      {
+        "step": 3,
+        "n_pred": 43,
+        "precision": 0.6976743936538696
+      },
+      {
+        "step": 4,
+        "n_pred": 45,
+        "precision": 0.4000000059604645
+      }
+    ],
+    "ensemble_top1": 0.652567982673645,
+    "ensemble_bal": 0.5703276917338371,
+    "ensemble_rec": [
+      {
+        "step": 0,
+        "n": 0,
+        "recall": null
+      },
+      {
+        "step": 1,
+        "n": 165,
+        "recall": 0.800000011920929
+      },
+      {
+        "step": 2,
+        "n": 80,
+        "recall": 0.5625
+      },
+      {
+        "step": 3,
+        "n": 53,
+        "recall": 0.43396225571632385
+      },
+      {
+        "step": 4,
+        "n": 33,
+        "recall": 0.4848484992980957
+      }
+    ],
+    "ensemble_prec": [
+      {
+        "step": 0,
+        "n_pred": 0,
+        "precision": null
+      },
+      {
+        "step": 1,
+        "n_pred": 192,
+        "precision": 0.6875
+      },
+      {
+        "step": 2,
+        "n_pred": 64,
+        "precision": 0.703125
+      },
+      {
+        "step": 3,
+        "n_pred": 41,
+        "precision": 0.5609756112098694
+      },
+      {
+        "step": 4,
+        "n_pred": 34,
+        "precision": 0.47058823704719543
+      }
+    ],
+    "two_tier_top1": 0.5981873273849487,
+    "two_tier_bal": 0.5666112825274467,
+    "two_tier_rec": [
+      {
+        "step": 0,
+        "n": 0,
+        "recall": null
+      },
+      {
+        "step": 1,
+        "n": 165,
+        "recall": 0.678787887096405
+      },
+      {
+        "step": 2,
+        "n": 80,
+        "recall": 0.5625
+      },
+      {
+        "step": 3,
+        "n": 53,
+        "recall": 0.35849055647850037
+      },
+      {
+        "step": 4,
+        "n": 33,
+        "recall": 0.6666666865348816
+      }
+    ],
+    "two_tier_prec": [
+      {
+        "step": 0,
+        "n_pred": 0,
+        "precision": null
+      },
+      {
+        "step": 1,
+        "n_pred": 161,
+        "precision": 0.695652186870575
+      },
+      {
+        "step": 2,
+        "n_pred": 62,
+        "precision": 0.725806474685669
+      },
+      {
+        "step": 3,
+        "n_pred": 40,
+        "precision": 0.4749999940395355
+      },
+      {
+        "step": 4,
+        "n_pred": 68,
+        "precision": 0.3235294222831726
+      }
+    ],
+    "n": 331,
+    "device": "cpu",
+    "torch": "2.14.1+cpu",
+    "computed_utc": "2026-10-29T21:57:56",
+    "correction": "2026-10-29: recomputed after fixing a swapped (pred, lab) argument order. The 2026-10-28 block's 'rec' values were per-step precisions labelled as recall, and its 'bal' was a macro-precision. Step-4 recall and precision are now reported as separate arrays."
+  }
+}

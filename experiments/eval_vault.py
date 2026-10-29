@@ -13,13 +13,13 @@ import time
 import torch
 import torch.nn.functional as F
 
-root = Path("d:/kaggle research")
+root = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(root))
 
 from experiments.arith_pilot import load
 from experiments.arith_steps import build_prompt, parse_value, readout, wilson
 from experiments.localizer import load_candidates, Standardizer, svd_basis, run_seed, balanced_accuracy
-from experiments.localizer_pair import majority, per_step_recall
+from experiments.localizer_pair import majority, per_step_precision, per_step_recall
 from experiments.oracle_rewind import MaskBadFirstDigit, gen_step, finish_chain
 from experiments._device import resolve as _resolve_device
 
@@ -51,6 +51,10 @@ def main():
     parser.add_argument("--max-new", type=int, default=5)
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out", default="results/verify_vault_h5.json")
+    parser.add_argument("--diagnostics-only", action="store_true",
+                        help="recompute the localizer block only and splice it "
+                             "into --out, leaving the stochastic arm results "
+                             "untouched")
     args = parser.parse_args()
     args.device = str(_resolve_device(args.device))
 
@@ -134,25 +138,119 @@ def main():
     two_tier_preds = torch.tensor(two_tier_preds)
 
     # Compute Diagnostic Accuracies
+    #
+    # Argument order matters and is not cosmetic: `balanced_accuracy`,
+    # `per_step_recall` and `per_step_precision` all take (pred, lab). The
+    # 2026-10-28 run passed (lab, pred) here, so every "recall" written to
+    # results/verify_vault_h5.json was a precision, and every "bal" was a
+    # macro-precision. Corrected 2026-10-29.
     def acc(p): return float((p == v_lab).float().mean())
-    lin_top1, lin_bal = acc(pl_maj), balanced_accuracy(v_lab, pl_maj, steps)
-    trf_top1, trf_bal = acc(pt_maj), balanced_accuracy(v_lab, pt_maj, steps)
-    ens_top1, ens_bal = acc(p_ens), balanced_accuracy(v_lab, p_ens, steps)
-    tt_top1, tt_bal = acc(two_tier_preds), balanced_accuracy(v_lab, two_tier_preds, steps)
+    lin_top1, lin_bal = acc(pl_maj), balanced_accuracy(pl_maj, v_lab, steps)
+    trf_top1, trf_bal = acc(pt_maj), balanced_accuracy(pt_maj, v_lab, steps)
+    ens_top1, ens_bal = acc(p_ens), balanced_accuracy(p_ens, v_lab, steps)
+    tt_top1, tt_bal = acc(two_tier_preds), balanced_accuracy(two_tier_preds, v_lab, steps)
 
-    rec_lin = per_step_recall(v_lab, pl_maj, steps)
-    rec_trf = per_step_recall(v_lab, pt_maj, steps)
-    rec_ens = per_step_recall(v_lab, p_ens, steps)
-    rec_tt = per_step_recall(v_lab, two_tier_preds, steps)
+    rec_lin = per_step_recall(pl_maj, v_lab, steps)
+    rec_trf = per_step_recall(pt_maj, v_lab, steps)
+    rec_ens = per_step_recall(p_ens, v_lab, steps)
+    rec_tt = per_step_recall(two_tier_preds, v_lab, steps)
+
+    prec_lin = per_step_precision(pl_maj, v_lab, steps)
+    prec_trf = per_step_precision(pt_maj, v_lab, steps)
+    prec_ens = per_step_precision(p_ens, v_lab, steps)
+    prec_tt = per_step_precision(two_tier_preds, v_lab, steps)
 
     print("-" * 75)
     print(f"VAULT LOCALIZER DIAGNOSTIC (N={len(rows_vault)} Unseen Candidates)")
     print("-" * 75)
-    print(f"Linear Majority:     Top-1 = {lin_top1:.3f}, Bal = {lin_bal:.3f}, Step-4 Rec = {rec_lin[4]['recall']:.3f}")
-    print(f"Transformer Majority:Top-1 = {trf_top1:.3f}, Bal = {trf_bal:.3f}, Step-4 Rec = {rec_trf[4]['recall']:.3f}")
-    print(f"Ensemble Average:    Top-1 = {ens_top1:.3f}, Bal = {ens_bal:.3f}, Step-4 Rec = {rec_ens[4]['recall']:.3f}")
-    print(f"Two-Tier (Frozen):   Top-1 = {tt_top1:.3f}, Bal = {tt_bal:.3f}, Step-4 Rec = {rec_tt[4]['recall']:.3f}")
+    print(f"Linear Majority:     Top-1 = {lin_top1:.3f}, Bal = {lin_bal:.3f}, "
+          f"Step-4 Rec = {rec_lin[4]['recall']:.3f}, Prec = {prec_lin[4]['precision']:.3f}")
+    print(f"Transformer Majority:Top-1 = {trf_top1:.3f}, Bal = {trf_bal:.3f}, "
+          f"Step-4 Rec = {rec_trf[4]['recall']:.3f}, Prec = {prec_trf[4]['precision']:.3f}")
+    print(f"Ensemble Average:    Top-1 = {ens_top1:.3f}, Bal = {ens_bal:.3f}, "
+          f"Step-4 Rec = {rec_ens[4]['recall']:.3f}, Prec = {prec_ens[4]['precision']:.3f}")
+    print(f"Two-Tier (Frozen):   Top-1 = {tt_top1:.3f}, Bal = {tt_bal:.3f}, "
+          f"Step-4 Rec = {rec_tt[4]['recall']:.3f}, Prec = {prec_tt[4]['precision']:.3f}")
     print("-" * 75)
+    print(f"Step-4 base rate: {int((v_lab == 4).sum())} of {len(v_lab)} rows. "
+          f"Two-tier predicts step 4 on {prec_tt[4]['n_pred']} rows "
+          f"(transformer on {prec_trf[4]['n_pred']}).")
+    print("-" * 75)
+
+    if args.diagnostics_only:
+        # Everything below this point needs the 0.6B backbone and hours of
+        # sampling. Recomputing the localizer block must never disturb those
+        # results, so the arms are left exactly as they are.
+        out_path = Path(args.out)
+        out_dict = json.loads(out_path.read_text(encoding="utf-8"))
+        old = out_dict.get("localizer_diagnostic", {})
+
+        # A re-fit that does not reproduce the stored Top-1 is a *different
+        # model*, not a corrected metric. Splicing its numbers over the old ones
+        # would silently mix two fits under one filename, so a drifted fit is
+        # written to its own artifact and the original is left alone.
+        drift = {k: round(v - old[f"{k}_top1"], 4) for k, v in
+                 (("linear", lin_top1), ("transformer", trf_top1),
+                  ("ensemble", ens_top1), ("two_tier", tt_top1))
+                 if old.get(f"{k}_top1") is not None
+                 and abs(old[f"{k}_top1"] - v) > 0.02}
+
+        block = {
+            "linear_top1": lin_top1, "linear_bal": lin_bal,
+            "linear_rec": rec_lin, "linear_prec": prec_lin,
+            "transformer_top1": trf_top1, "transformer_bal": trf_bal,
+            "transformer_rec": rec_trf, "transformer_prec": prec_trf,
+            "ensemble_top1": ens_top1, "ensemble_bal": ens_bal,
+            "ensemble_rec": rec_ens, "ensemble_prec": prec_ens,
+            "two_tier_top1": tt_top1, "two_tier_bal": tt_bal,
+            "two_tier_rec": rec_tt, "two_tier_prec": prec_tt,
+            "n": len(rows_vault), "device": args.device,
+            "torch": torch.__version__,
+            "computed_utc": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "correction": (
+                "2026-10-29: recomputed after fixing a swapped (pred, lab) "
+                "argument order. The 2026-10-28 block's 'rec' values were "
+                "per-step precisions labelled as recall, and its 'bal' was a "
+                "macro-precision. Step-4 recall and precision are now reported "
+                "as separate arrays."),
+        }
+
+        if drift:
+            target = out_path.with_name(out_path.stem + "_localizer_refit.json")
+            payload = {
+                "refit_of": out_path.name,
+                "why_separate": (
+                    "The re-fit does not reproduce the stored Top-1 for "
+                    + ", ".join(sorted(drift)) + " (drift " + json.dumps(drift)
+                    + "). The 2026-10-28 fit ran on a different torch build and "
+                    "device; the hard tau_trf=0.35 routing in the two-tier arm "
+                    "sits on a probability boundary, so last-bit differences "
+                    "move rows across it. Mixing the two fits in one file would "
+                    "misattribute the metric fix to a model change."),
+                "top1_drift": drift,
+                "localizer_diagnostic": block,
+            }
+            target.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+            # Point the original artifact at the correction without touching
+            # any number in it.
+            out_dict.setdefault("localizer_diagnostic", {})["recall_errata"] = {
+                "date": "2026-10-29",
+                "what": ("the 'rec' arrays in this file are per-step precisions, "
+                         "not recalls: eval_vault.py called "
+                         "per_step_recall(lab, pred) instead of (pred, lab)"),
+                "corrected_artifact": target.name,
+            }
+            out_path.write_text(json.dumps(out_dict, indent=2), encoding="utf-8")
+            print(f"\nStored Top-1 is not reproducible here (drift {drift}).\n"
+                  f"Wrote the corrected block to {target} and annotated "
+                  f"{out_path} without changing its numbers.", flush=True)
+        else:
+            out_dict["localizer_diagnostic"] = block
+            out_path.write_text(json.dumps(out_dict, indent=2), encoding="utf-8")
+            print(f"\nSpliced corrected diagnostics into {out_path} "
+                  f"(arms preserved, not re-run)", flush=True)
+        return
 
     # 4. End-to-End Evaluation of Arms
     print(f"\nLoading model {args.model} for end-to-end evaluation...", flush=True)
@@ -338,6 +436,8 @@ def main():
             "transformer_top1": trf_top1, "transformer_bal": trf_bal, "transformer_rec": rec_trf,
             "ensemble_top1": ens_top1, "ensemble_bal": ens_bal, "ensemble_rec": rec_ens,
             "two_tier_top1": tt_top1, "two_tier_bal": tt_bal, "two_tier_rec": rec_tt,
+            "linear_prec": prec_lin, "transformer_prec": prec_trf,
+            "ensemble_prec": prec_ens, "two_tier_prec": prec_tt,
         },
         "arms": {
             k: {

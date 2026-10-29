@@ -116,7 +116,12 @@
         "n": 61,
         "recall": 0.4098360538482666
       }
-    ]
+    ],
+    "recall_errata": {
+      "date": "2026-10-29",
+      "what": "the 'rec' arrays in this file are per-step precisions, not recalls: eval_vault.py called per_step_recall(lab, pred) instead of (pred, lab)",
+      "corrected_artifact": "verify_vault_h5_localizer_refit.json"
+    }
   },
   "arms": {
     "full_rewrite": {

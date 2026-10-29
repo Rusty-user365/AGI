@@ -16,7 +16,7 @@ import time
 import torch
 import torch.nn.functional as F
 
-root = Path("d:/kaggle research")
+root = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(root))
 
 from experiments.arith_pilot import load
@@ -107,13 +107,14 @@ def main():
         else:
             two_tier_preds.append(int(pl_maj[i]))
 
-    # Diagnostic accuracies on H=10 holdout
+    # Diagnostic accuracies on H=10 holdout. (pred, lab) is the signature;
+    # the 2026-10-28 vault run had this backwards, so check before editing.
     h_lab = torch.tensor([c["label"] for c in hold])
     tt_p = torch.tensor(two_tier_preds)
     tt_top1 = float((tt_p == h_lab).float().mean())
-    tt_bal = balanced_accuracy(h_lab, tt_p, steps)
+    tt_bal = balanced_accuracy(tt_p, h_lab, steps)
     lin_top1 = float((pl_maj == h_lab).float().mean())
-    lin_bal = balanced_accuracy(h_lab, pl_maj, steps)
+    lin_bal = balanced_accuracy(pl_maj, h_lab, steps)
 
     print("-" * 75)
     print(f"H=10 LOCALIZER DIAGNOSTIC (N={len(hold)} candidates)")

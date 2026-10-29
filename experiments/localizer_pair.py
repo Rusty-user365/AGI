@@ -61,11 +61,32 @@ def bootstrap_diff(a: torch.Tensor, b: torch.Tensor, n_boot: int = 10000,
 
 
 def per_step_recall(pred: torch.Tensor, lab: torch.Tensor, steps: int) -> list:
+    """Per-step recall: of the rows whose true first error is step c, how many
+    did we predict as c. `pred` first — this order is load-bearing. A call with
+    the arguments reversed still returns plausible numbers (they are precisions)
+    and silently mislabels every column, which is exactly what happened in
+    eval_vault.py before 2026-10-29."""
     out = []
     for c in range(steps):
         m = lab == c
         out.append({"step": c, "n": int(m.sum()),
                     "recall": float((pred[m] == lab[m]).float().mean())
+                    if int(m.sum()) else None})
+    return out
+
+
+def per_step_precision(pred: torch.Tensor, lab: torch.Tensor, steps: int) -> list:
+    """Per-step precision: of the rows we called step c, how many were c.
+
+    Kept beside `per_step_recall` because the two are transposes of one
+    confusion matrix and a harness that can return one without the other
+    invites the swap that produced the 2026-10 vault errata.
+    """
+    out = []
+    for c in range(steps):
+        m = pred == c
+        out.append({"step": c, "n_pred": int(m.sum()),
+                    "precision": float((pred[m] == lab[m]).float().mean())
                     if int(m.sum()) else None})
     return out
 
