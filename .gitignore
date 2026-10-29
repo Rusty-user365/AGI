@@ -17,6 +17,7 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+.venv-tf457/
 
 # editor / OS
 .vscode/

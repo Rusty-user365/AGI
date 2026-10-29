@@ -1,0 +1,104 @@
+{
+  "config": {
+    "data": "data/humaneval.jsonl.gz",
+    "model": "checkpoints/hf/qwen2.5-coder-0.5b-instruct",
+    "device": "cuda",
+    "dtype": "fp32",
+    "limit": 24,
+    "max_new": 192,
+    "temperature": 0.8,
+    "top_p": 0.95,
+    "timeout": 5.0,
+    "best_k": 4,
+    "max_repairs": 8,
+    "seed": 1234,
+    "rows_out": "results\\ar05b\\rows.jsonl",
+    "out": "results\\ar05b\\summary.json",
+    "resume": false
+  },
+  "n": 24,
+  "arms": {
+    "greedy": {
+      "ok": 19,
+      "n": 24,
+      "rate": 0.7916666666666666,
+      "ci": [
+        0.5952915551476452,
+        0.9075531089521192
+      ],
+      "tokens": 6574,
+      "tokens_per_solve": 346.0,
+      "tests": 24,
+      "tests_per_solve": 1.263157894736842
+    },
+    "best_of": {
+      "ok": 21,
+      "n": 24,
+      "rate": 0.875,
+      "ci": [
+        0.6899571185214243,
+        0.9565574496068442
+      ],
+      "tokens": 27556,
+      "tokens_per_solve": 1312.1904761904761,
+      "tests": 47,
+      "tests_per_solve": 2.238095238095238
+    },
+    "cgr": {
+      "ok": 22,
+      "n": 24,
+      "rate": 0.9166666666666666,
+      "ci": [
+        0.741507847985494,
+        0.9768416721570266
+      ],
+      "tokens": 9258,
+      "tokens_per_solve": 420.8181818181818,
+      "tests": 33,
+      "tests_per_solve": 1.5
+    }
+  },
+  "paired": {
+    "cgr_vs_best": {
+      "wins": 3,
+      "losses": 2,
+      "p": 1.0
+    },
+    "best_vs_greedy": {
+      "wins": 3,
+      "losses": 1,
+      "p": 0.625
+    },
+    "cgr_vs_greedy": {
+      "wins": 3,
+      "losses": 0,
+      "p": 0.25
+    }
+  },
+  "by_greedy_failure_kind": {
+    "assert": {
+      "n": 2,
+      "greedy": 0,
+      "best_of": 1,
+      "cgr": 2
+    },
+    "exception": {
+      "n": 3,
+      "greedy": 0,
+      "best_of": 2,
+      "cgr": 1
+    },
+    "None": {
+      "n": 19,
+      "greedy": 19,
+      "best_of": 18,
+      "cgr": 19
+    }
+  },
+  "localization": {
+    "repaired": 5,
+    "first_repair_ok": 3,
+    "mean_repairs": 0.375
+  },
+  "vram_peak_mb": 1964.7744140625
+}
