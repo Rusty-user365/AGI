@@ -80,7 +80,11 @@ def generate(model, tok, prompt, args, sample: bool, n: int = 1,
     # length, so that length is the compute actually paid.
     gen_len = int(out.shape[1]) - L
     tokens = n * L + n * gen_len
-    return texts, tokens
+    # gen_len is returned because a forward pass is the unit a diffusion arm can
+    # be matched against: L KV-cached decoding steps for L tokens, S denoising
+    # steps for S passes. Without the per-attempt length the match would have to
+    # be approximated from the arm total, which is not per-problem.
+    return texts, tokens, gen_len
 
 
 def top_level_start(lines: list[str], idx: int) -> int:
@@ -158,16 +162,16 @@ def feedback_of(res: dict) -> str:
 
 
 def arm_greedy(model, tok, r, args):
-    texts, tokens = generate(model, tok, r["prompt"], args, False)
+    texts, tokens, gen_len = generate(model, tok, r["prompt"], args, False)
     res = run_tests(r["prompt"] + texts[0], r["test"], r["entry_point"],
                     args.timeout)
-    return {"ok": res["ok"], "tokens": tokens, "tests": 1,
+    return {"ok": res["ok"], "tokens": tokens, "tests": 1, "gen_len": gen_len,
             "kind": None if res["ok"] else failure_kind(res["stderr"]),
             "body": texts[0]}
 
 
 def arm_best_of(model, tok, r, args, k: int):
-    texts, tokens = generate(model, tok, r["prompt"], args, True, k)
+    texts, tokens, gen_len = generate(model, tok, r["prompt"], args, True, k)
     tests = 0
     kind = None
     for t in texts:
@@ -176,15 +180,16 @@ def arm_best_of(model, tok, r, args, k: int):
                         args.timeout)
         if res["ok"]:
             return {"ok": True, "tokens": tokens, "tests": tests,
-                    "kind": None, "bodies": texts}
+                    "gen_len": gen_len, "kind": None, "bodies": texts}
         kind = failure_kind(res["stderr"])
-    return {"ok": False, "tokens": tokens, "tests": tests, "kind": kind,
-            "bodies": texts}
+    return {"ok": False, "tokens": tokens, "tests": tests,
+            "gen_len": gen_len, "kind": kind, "bodies": texts}
 
 
 def arm_cgr(model, tok, r, args, budget: int):
     prompt_lines = len(r["prompt"].splitlines())
-    texts, tokens = generate(model, tok, r["prompt"], args, False)
+    texts, tokens, gen_len = generate(model, tok, r["prompt"], args, False)
+    gen_lens = [gen_len]
     body = texts[0]
     res = run_tests(r["prompt"] + body, r["test"], r["entry_point"],
                     args.timeout)
@@ -202,9 +207,10 @@ def arm_cgr(model, tok, r, args, budget: int):
         remaining = budget - tokens - rp_len
         if remaining < 8:
             break                       # no budget left for a real repair
-        texts2, tok2 = generate(model, tok, rp, args, True, 1,
-                                max_new=min(args.max_new, remaining))
+        texts2, tok2, gen2 = generate(model, tok, rp, args, True, 1,
+                                       max_new=min(args.max_new, remaining))
         tokens += tok2
+        gen_lens.append(gen2)
         body = "\n".join(body_lines[:cut]) + ("\n" if cut else "") + texts2[0]
         res = run_tests(r["prompt"] + body, r["test"], r["entry_point"],
                         args.timeout)
@@ -216,7 +222,8 @@ def arm_cgr(model, tok, r, args, budget: int):
     return {"ok": res["ok"], "tokens": tokens, "tests": tests,
             "kind": initial_kind, "repairs": repairs,
             "first_repair_ok": first_repair_ok, "cuts": cuts,
-            "budget": budget, "body0": texts[0], "body_final": body}
+            "gen_lens": gen_lens, "budget": budget, "body0": texts[0],
+            "body_final": body}
 
 
 def main() -> int:

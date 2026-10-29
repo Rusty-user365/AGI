@@ -29,16 +29,24 @@ about the actuator, not about directionality.
 Not information. The failing test can be put in the prompt for both models. The
 differences are:
 
-1. **Revision.** An AR model commits each token; a masked-diffusion model
-   rewrites the whole span at every denoising step and can change its mind.
-2. **Two-sided constraint.** The span is generated between fixed left context
+1. **Two-sided constraint.** The span is generated between fixed left context
    (the prompt) and fixed right context (the rest of the body and the failing
    test). An AR continuation only ever sees what is to its left.
+2. **Order of commitment.** A masked span is filled in confidence order, not
+   left to right, so a token can be chosen once its neighbours are decided.
 
-So the hypothesis under test is: **given the same broken program and the same
-failing test, does a model that must produce a span consistent with both sides,
-and can revise it, repair more often per forward pass than one that continues
-left-to-right?**
+**Correction made before any result, from reading the model card's sampler:** I
+had also listed *revision* (changing tokens already written) as a diffusion
+advantage. The shipped sampler does not do that. Its `remasking` option only
+chooses the confidence score used to pick *which still-masked* token to commit
+next (`low_confidence` vs `random`); once a token is committed it is frozen, the
+same as in the AR arm. True revision is a re-masking variant that is not the
+model's intended decoding, so the primary arm does **not** use it. If the
+primary arm fails, a re-masking variant is a documented follow-up, not a rescue.
+
+So the hypothesis under test is narrower than first written: **given the same
+broken program and the same failing test, does filling a span between two fixed
+sides beat continuing left-to-right, per forward pass?**
 
 If yes, that is the first evidence for the infilling branch. If no, the branch
 closes on the one domain where the record said it should open.
@@ -56,12 +64,19 @@ objective and the mask direction. A 1.5B AR coder is available as a capability
 ceiling but is not part of the main comparison.
 
 D's custom `modeling_qwen2.py` is loaded with `trust_remote_code=True` in a
-**separate venv** (`transformers==4.57.0`, reusing the system torch). The
-checkpoint's own code is not patched. Rationale: the file imports
-`TransformersKwargs` from `transformers.utils`, which does not exist in the
-system 4.51.3, and `create_causal_mask` from `transformers.masking_utils`.
-Patching custom model code to fit an older transformers is exactly the kind of
-silent behaviour change this project has been burned by before.
+**separate venv** (`transformers==4.57.0`, reusing the system torch). Rationale:
+the file imports `TransformersKwargs` from `transformers.utils`, which does not
+exist in the system 4.51.3.
+
+One edit to the checkpoint file, recorded here because it is a deviation from
+"load it unmodified": the dead `if __name__ == "__main__":` demo block was
+deleted. It imports `dllm`, and transformers' `check_imports` refuses to load a
+dynamic module whose imports cannot be satisfied even when the import sits in a
+block that never executes. Installing `dllm` would pull its own torch and
+transformers pins into the venv, which is a larger and less auditable change.
+The unified diff is 26 lines, all inside that block; no attention, mask, or
+forward code was touched, and the original file is kept at
+`results/_modeling_qwen2_orig.py`.
 
 **Verified from source, before any run:** the active mask path in
 `modeling_qwen2.py` (lines 85–106) builds a padding-only
@@ -125,6 +140,16 @@ makes the two arms equal in forward passes per attempt, per problem, exactly.
 Reported alongside: wall clock, peak VRAM, verifier calls, and *S* itself, so
 the reader can see what was traded.
 
+**The asymmetry this match does not remove.** A forward pass is not a fixed
+amount of work. An AR step with a KV cache processes one new token; a diffusion
+step processes the entire sequence, masked or not. For a body of *L* tokens with
+a prompt of *P*, matched NFE therefore gives the diffusion arm roughly
+`L * (P + L)` token-passes against the AR arm's `L * (P + L/2)`, i.e. it pays
+more FLOPs for the same pass count. The match is deliberately conservative
+against diffusion: a win at matched NFE is a win despite paying more compute, and
+a loss is a loss on NFE and on FLOPs. No compute-parity claim will be made
+beyond NFE, and wall clock is reported for every arm.
+
 ## Primary comparison
 
 Paired exact McNemar, on the repair set:
@@ -176,5 +201,26 @@ any arithmetic result.
 
 ## Cost
 
-To be filled from a single-problem smoke (load time, seconds per denoising step,
-peak VRAM) before the stage-1 launch.
+Measured by `--check` on the 1050, fp32, before any arm was run:
+
+- weights resident: **1,885 MB** at load, **2,198 MB** peak. Fits with room.
+- load time: **1,036 s** measured while another Python process was running; this
+  is contention, not a property of the checkpoint, and is re-measured cleanly.
+- full generation: **253 ms/step**, so a 192-step body is ~48 s.
+- infill: **189 ms/step**, so a 32-step span is ~6 s.
+
+Two observations from the check that are not results but shape the run:
+
+1. **The checkpoint is bidirectional.** Perturbing the last token changes the
+   first token's hidden state by 3.85 (mean |delta|). The 470M Dual-LM was causal
+   under the same test, so this is the check that would have voided the run.
+2. **Infill reconstructs a masked statement exactly.** Masking the inner loop of
+   `HumanEval/0`'s canonical body and denoising 32 steps recovered the original
+   text, and the result passes the test. The splice and the two-sided
+   conditioning both work.
+3. **Greedy full-body generation collapses.** At temperature 0 the model emits
+   repeated `"""` for 96 steps. This is a known failure of confidence-ordered
+   parallel decoding with no revision, and the arms use temperature 0.8 to match
+   the AR arm, so it is not the arm's configuration. It is recorded because
+   prediction 1 below says `mdlm_full` will be the weak arm, and this is what
+   that looks like.
