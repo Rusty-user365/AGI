@@ -1,0 +1,9 @@
+{
+  "experiment": "webpage_design_v1",
+  "prompt": "Create a complete, attractive, responsive landing page for FocusFlow, a student study planner. Return only one self-contained HTML document, starting with <!DOCTYPE html> and ending with </html>. Include all CSS in a style tag and any JavaScript inline. Use no external images, fonts, libraries, CDNs, or network requests. Design requirements: a dark navy background with purple accents; a navigation bar with the FocusFlow brand and Features and Get Started links; a hero with a large headline, short description, and a prominent Start Planning button; a visual study-schedule preview made with HTML and CSS; three feature cards; a simple email signup form with an associated label; and a footer. The Start Planning button should scroll to the signup form. Submitting a nonempty valid email should show a friendly on-page confirmation without sending data anywhere. Make it readable on phones and desktop, with visible keyboard focus. Keep the implementation concise and finish the complete document. Do not include explanations or Markdown fences.",
+  "base_model_id": "Qwen/Qwen3-0.6B",
+  "base_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "settings": {"max_new_tokens": 3072, "seed": 42, "do_sample": false, "temperature": 0.7, "top_p": 0.9},
+  "chat_format": "single user message; add_generation_prompt=true; enable_thinking=false",
+  "comparison_policy": "Run original chat model with all adapters disabled first. Later use the exact same prompt, template, seed and cap with the UI adapter. Preserve raw output and do not repair either generated page before scoring."
+}

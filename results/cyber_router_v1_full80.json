@@ -1,0 +1,855 @@
+{
+  "complete": true,
+  "started_at": "2026-10-30T09:14:57.474987+00:00",
+  "source_router_sha256": "72b485f59a0d4eb07c8ccddd73263778fb02278fa3377e54aeaf6e82a7ef6919",
+  "source_heads_sha256": "379f47ece949b0e1d5c2cc2dd5320b1e9fc0e75a42dfff5a2c304bbf37bb9cce",
+  "split": "original 40 train / 40 test, unchanged; full-80 total includes in-sample training rows",
+  "threshold": 0.5,
+  "limitations": "Training answers are in-sample; full total is not held-out accuracy. Original benchmark was previously examined. No DAG or bridge timing measured.",
+  "cases": [
+    {
+      "index": 1,
+      "split": "test",
+      "router_score": 0.7859255075454712,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 2,
+      "split": "train",
+      "router_score": 0.8154876232147217,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": false,
+      "router_correct": true
+    },
+    {
+      "index": 3,
+      "split": "train",
+      "router_score": 0.7805349826812744,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 4,
+      "split": "test",
+      "router_score": 0.7644191980361938,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 5,
+      "split": "test",
+      "router_score": 0.8061090111732483,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 6,
+      "split": "train",
+      "router_score": 0.7706451416015625,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": false,
+      "router_correct": true
+    },
+    {
+      "index": 7,
+      "split": "test",
+      "router_score": 0.8288821578025818,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 8,
+      "split": "train",
+      "router_score": 0.7497496008872986,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 9,
+      "split": "train",
+      "router_score": 0.32375651597976685,
+      "switched": true,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true,
+      "fresh_cyber_output": {
+        "text": "ANSWER: C",
+        "latency_seconds": 1.3790401999940514,
+        "generated_tokens": 5,
+        "tokens_per_second": 3.6257101134699106,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 10,
+      "split": "test",
+      "router_score": 0.8288108110427856,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 11,
+      "split": "test",
+      "router_score": 0.7777307033538818,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 12,
+      "split": "test",
+      "router_score": 0.8074897527694702,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 13,
+      "split": "test",
+      "router_score": 0.7601994872093201,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 14,
+      "split": "test",
+      "router_score": 0.7838518619537354,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 15,
+      "split": "test",
+      "router_score": 0.8124385476112366,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 16,
+      "split": "train",
+      "router_score": 0.7779591679573059,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 17,
+      "split": "train",
+      "router_score": 0.7615357637405396,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 18,
+      "split": "test",
+      "router_score": 0.8015755414962769,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 19,
+      "split": "train",
+      "router_score": 0.8159647583961487,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 20,
+      "split": "train",
+      "router_score": 0.7954093217849731,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 21,
+      "split": "train",
+      "router_score": 0.7683371901512146,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": false,
+      "router_correct": true
+    },
+    {
+      "index": 22,
+      "split": "test",
+      "router_score": 0.8410914540290833,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": false,
+      "router_correct": true
+    },
+    {
+      "index": 23,
+      "split": "train",
+      "router_score": 0.8216493129730225,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 24,
+      "split": "train",
+      "router_score": 0.07623760402202606,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false,
+      "fresh_cyber_output": {
+        "text": "ANSWER: B",
+        "latency_seconds": 1.2805478000009316,
+        "generated_tokens": 5,
+        "tokens_per_second": 3.904578962219421,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 25,
+      "split": "train",
+      "router_score": 0.7838265895843506,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 26,
+      "split": "train",
+      "router_score": 0.8087084293365479,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": false,
+      "router_correct": true
+    },
+    {
+      "index": 27,
+      "split": "test",
+      "router_score": 0.8005329370498657,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 28,
+      "split": "test",
+      "router_score": 0.31864142417907715,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false,
+      "fresh_cyber_output": {
+        "text": "ANSWER: C",
+        "latency_seconds": 1.2207649999982095,
+        "generated_tokens": 5,
+        "tokens_per_second": 4.095792392481218,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 29,
+      "split": "test",
+      "router_score": 0.8160661458969116,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 30,
+      "split": "test",
+      "router_score": 0.7940670847892761,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": true,
+      "router_correct": false
+    },
+    {
+      "index": 31,
+      "split": "train",
+      "router_score": 0.10546709597110748,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false,
+      "fresh_cyber_output": {
+        "text": "ANSWER: B) 32 bit",
+        "latency_seconds": 1.906996400000935,
+        "generated_tokens": 10,
+        "tokens_per_second": 5.24384838901379,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 32,
+      "split": "test",
+      "router_score": 0.7961219549179077,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 33,
+      "split": "train",
+      "router_score": 0.8005182147026062,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 34,
+      "split": "train",
+      "router_score": 0.7712342739105225,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": true,
+      "router_correct": false
+    },
+    {
+      "index": 35,
+      "split": "test",
+      "router_score": 0.7914804816246033,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 36,
+      "split": "test",
+      "router_score": 0.7874209880828857,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 37,
+      "split": "train",
+      "router_score": 0.817873477935791,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 38,
+      "split": "test",
+      "router_score": 0.7511173486709595,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 39,
+      "split": "train",
+      "router_score": 0.7689946889877319,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 40,
+      "split": "train",
+      "router_score": 0.8229405879974365,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 41,
+      "split": "train",
+      "router_score": 0.48649123311042786,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false,
+      "fresh_cyber_output": {
+        "text": "ANSWER: B) Randomly choose two primes p and",
+        "latency_seconds": 2.4174778000015067,
+        "generated_tokens": 12,
+        "tokens_per_second": 4.963851167523656,
+        "peak_vram_gb": null,
+        "finish_reason": "max_tokens_or_other_stop"
+      }
+    },
+    {
+      "index": 42,
+      "split": "test",
+      "router_score": 0.760570228099823,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 43,
+      "split": "train",
+      "router_score": 0.10177727788686752,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false,
+      "fresh_cyber_output": {
+        "text": "ANSWER: B) Constant reseeding requirement",
+        "latency_seconds": 2.035287899998366,
+        "generated_tokens": 11,
+        "tokens_per_second": 5.404640788169984,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 44,
+      "split": "train",
+      "router_score": 0.7515901327133179,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 45,
+      "split": "test",
+      "router_score": 0.7829368710517883,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 46,
+      "split": "test",
+      "router_score": 0.8247944116592407,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 47,
+      "split": "train",
+      "router_score": 0.7813173532485962,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 48,
+      "split": "train",
+      "router_score": 0.15767109394073486,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false,
+      "fresh_cyber_output": {
+        "text": "ANSWER: B",
+        "latency_seconds": 1.6386706000048434,
+        "generated_tokens": 5,
+        "tokens_per_second": 3.051253863946312,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 49,
+      "split": "test",
+      "router_score": 0.7735248804092407,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": true,
+      "router_correct": false
+    },
+    {
+      "index": 50,
+      "split": "train",
+      "router_score": 0.8138402700424194,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 51,
+      "split": "train",
+      "router_score": 0.23647215962409973,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": true,
+      "router_correct": true,
+      "fresh_cyber_output": {
+        "text": "ANSWER: C",
+        "latency_seconds": 1.161917799996445,
+        "generated_tokens": 5,
+        "tokens_per_second": 4.30323040064908,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 52,
+      "split": "test",
+      "router_score": 0.7820949554443359,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 53,
+      "split": "test",
+      "router_score": 0.49450355768203735,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": true,
+      "router_correct": true,
+      "fresh_cyber_output": {
+        "text": "ANSWER: B\\\\n\\\\nThe common share name",
+        "latency_seconds": 2.1396960000056424,
+        "generated_tokens": 12,
+        "tokens_per_second": 5.608273324793969,
+        "peak_vram_gb": null,
+        "finish_reason": "max_tokens_or_other_stop"
+      }
+    },
+    {
+      "index": 54,
+      "split": "train",
+      "router_score": 0.6120222806930542,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": false,
+      "router_correct": true
+    },
+    {
+      "index": 55,
+      "split": "test",
+      "router_score": 0.8029434680938721,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 56,
+      "split": "train",
+      "router_score": 0.8013285398483276,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 57,
+      "split": "train",
+      "router_score": 0.7652116417884827,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 58,
+      "split": "train",
+      "router_score": 0.84055495262146,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 59,
+      "split": "test",
+      "router_score": 0.805091142654419,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": true,
+      "router_correct": false
+    },
+    {
+      "index": 60,
+      "split": "train",
+      "router_score": 0.34378984570503235,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false,
+      "fresh_cyber_output": {
+        "text": "ANSWER: C",
+        "latency_seconds": 1.0698622999989311,
+        "generated_tokens": 5,
+        "tokens_per_second": 4.673498636231032,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 61,
+      "split": "test",
+      "router_score": 0.7912275791168213,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 62,
+      "split": "train",
+      "router_score": 0.8009602427482605,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": true,
+      "router_correct": false
+    },
+    {
+      "index": 63,
+      "split": "train",
+      "router_score": 0.8456240892410278,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 64,
+      "split": "train",
+      "router_score": 0.7886332273483276,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 65,
+      "split": "test",
+      "router_score": 0.7867456674575806,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 66,
+      "split": "train",
+      "router_score": 0.7521284818649292,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 67,
+      "split": "test",
+      "router_score": 0.7824863195419312,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 68,
+      "split": "train",
+      "router_score": 0.7954350113868713,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 69,
+      "split": "test",
+      "router_score": 0.8005679249763489,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 70,
+      "split": "test",
+      "router_score": 0.8129565715789795,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    },
+    {
+      "index": 71,
+      "split": "train",
+      "router_score": 0.8038949966430664,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 72,
+      "split": "test",
+      "router_score": 0.8221279978752136,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": false,
+      "router_correct": true
+    },
+    {
+      "index": 73,
+      "split": "train",
+      "router_score": 0.17499291896820068,
+      "switched": true,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false,
+      "fresh_cyber_output": {
+        "text": "ANSWER: A",
+        "latency_seconds": 1.2347775000016554,
+        "generated_tokens": 5,
+        "tokens_per_second": 4.049312527960136,
+        "peak_vram_gb": null,
+        "finish_reason": "eos"
+      }
+    },
+    {
+      "index": 74,
+      "split": "test",
+      "router_score": 0.815215528011322,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 75,
+      "split": "test",
+      "router_score": 0.8250001668930054,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 76,
+      "split": "test",
+      "router_score": 0.7610002756118774,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 77,
+      "split": "train",
+      "router_score": 0.7908490896224976,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 78,
+      "split": "test",
+      "router_score": 0.8134024143218994,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 79,
+      "split": "test",
+      "router_score": 0.8174006342887878,
+      "switched": false,
+      "base_correct": true,
+      "cyber_correct": true,
+      "router_correct": true
+    },
+    {
+      "index": 80,
+      "split": "test",
+      "router_score": 0.7940667271614075,
+      "switched": false,
+      "base_correct": false,
+      "cyber_correct": false,
+      "router_correct": false
+    }
+  ],
+  "metrics": {
+    "train": {
+      "n": 40,
+      "base_correct": 26,
+      "cyber_correct": 24,
+      "router_correct": 27,
+      "oracle_correct": 29,
+      "switches": 9,
+      "useful_switches": 1,
+      "harmful_switches": 0,
+      "probe_correct": 33
+    },
+    "test": {
+      "n": 40,
+      "base_correct": 28,
+      "cyber_correct": 30,
+      "router_correct": 29,
+      "oracle_correct": 32,
+      "switches": 2,
+      "useful_switches": 1,
+      "harmful_switches": 0,
+      "probe_correct": 30
+    },
+    "all": {
+      "n": 80,
+      "base_correct": 54,
+      "cyber_correct": 54,
+      "router_correct": 56,
+      "oracle_correct": 61,
+      "switches": 11,
+      "useful_switches": 2,
+      "harmful_switches": 0,
+      "probe_correct": 63
+    }
+  },
+  "finished_at": "2026-10-30T09:15:15.283800+00:00"
+}

@@ -1,0 +1,60 @@
+{
+  "run_date": "2026-10-30",
+  "run_type": "local adapter and Bridge smoke check",
+  "adapter_folder": "notebooks/coder_qwen3_0.6b_q_mlp_r16_v1___Coder Adapter/checkpoint-1000",
+  "adapter_training_complete": false,
+  "training_progress": {
+    "global_step": 1000,
+    "max_steps": 2280,
+    "epoch": 0.438620538406711,
+    "best_eval_loss": 0.766331493854523,
+    "best_checkpoint": "checkpoint-1000"
+  },
+  "base_model_id": "Qwen/Qwen3-0.6B",
+  "base_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "runtime": {
+    "device": "CPU",
+    "cuda_available": false,
+    "torch": "2.14.1+cpu",
+    "transformers": "4.57.6",
+    "peft": "0.21.2"
+  },
+  "adapter_integrity": {
+    "safetensors_tensor_count": 224,
+    "safetensors_file_bytes": 27554528,
+    "all_adapter_tensors_finite": true,
+    "target_modules": ["down_proj", "gate_proj", "q_proj", "up_proj"],
+    "rank": 16,
+    "alpha": 32,
+    "load_succeeded": true,
+    "active_adapter": "default"
+  },
+  "generation_smoke": {
+    "finite_base_and_adapter_logits": true,
+    "max_abs_adapter_vs_base_logit_delta": 11.155273,
+    "mean_abs_adapter_vs_base_logit_delta": 1.847237,
+    "next_token_argmax_same": true,
+    "generated_function": "def add(a, b): return a + b"
+  },
+  "bridge_smoke": {
+    "chat_template_prompt": true,
+    "verified_prefix_tokens": 34,
+    "assistant_header_tokens": 7,
+    "crop_retained_prefix_kv_bit_identical": true,
+    "adapter_patch_tokens": 10,
+    "base_bridge_logits_finite": true,
+    "max_abs_bridge_vs_full_base_logit_delta": 0.0,
+    "next_token_argmax_matches_full_base": true,
+    "base_continuation_ended_with_eos": true,
+    "latency_ms_cpu": {
+      "corrupt_context_prefill": 2791.4,
+      "adapter_patch": 1956.5,
+      "base_bridge_prefill_including_assistant_header": 1215.8
+    }
+  },
+  "limitations": [
+    "This tests checkpoint-1000 only; training has not reached max_steps and no final_adapter or completed training summary exists.",
+    "This is a one-prompt smoke check, not a held-out coder quality evaluation.",
+    "Latency is from CPU disk and local loading conditions; it is not a T4 or deployment benchmark."
+  ]
+}

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CGR task switching lab</title>
+<style>
+:root{color-scheme:dark;--bg:#090e19;--panel:#111b2b;--line:#28374f;--text:#e5edf9;--muted:#96a8c2;--green:#65dfaf;--amber:#f7c878;--red:#ff8d9d;--blue:#9ca7ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top left,#242451,transparent 55%),var(--bg);color:var(--text);font:14px/1.55 system-ui,sans-serif}a{color:#b2baff}header{padding:24px 4vw;border-bottom:1px solid var(--line);display:flex;gap:18px;align-items:center;justify-content:space-between}h1{font-size:25px;margin:3px 0}p{margin:6px 0;color:var(--muted)}.eyebrow{color:var(--blue);font-size:11px;letter-spacing:.15em;text-transform:uppercase}main{max-width:1500px;margin:auto;padding:24px 4vw 60px}.layout{display:grid;grid-template-columns:310px minmax(0,1fr);gap:20px}.panel{background:#111a2be8;border:1px solid var(--line);border-radius:16px;padding:20px}.controls{align-self:start;position:sticky;top:16px}h2{font-size:16px;margin:0 0 14px}label{display:block;font-size:12px;color:var(--muted);margin:15px 0 6px}select,input,button{font:inherit}select,input{width:100%;padding:10px;background:#0b1321;border:1px solid #354661;border-radius:9px;color:var(--text)}button{padding:11px 15px;border-radius:10px;border:1px solid #5567a6;color:white;background:#5966d2;cursor:pointer}button:disabled{opacity:.5;cursor:wait}.run{width:100%;margin-top:20px;font-weight:700}.secondary{background:#162237;font-size:12px}.note{font-size:12px;color:var(--muted);margin-top:16px}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 9px;font-size:11px;color:var(--muted)}.pass{color:var(--green)}.fail{color:var(--red)}.warn{color:var(--amber)}.status{margin:0 0 16px;padding:12px 16px;background:#0c1421;border:1px solid var(--line);border-radius:10px;overflow-wrap:anywhere}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}.metric{background:var(--panel);padding:16px;border:1px solid var(--line);border-radius:12px}.metric strong{display:block;font-size:23px}.metric span{font-size:11px;color:var(--muted)}.node{border:1px solid var(--line);border-radius:14px;background:#101a2a;margin:15px 0;overflow:hidden}.node-head{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--line);gap:12px}.node h3{font-size:15px;margin:0}.meta{color:var(--muted);font-size:12px;margin-top:5px}.node-body{padding:16px 18px}.outputs{display:grid;grid-template-columns:1fr 1fr;gap:14px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 Consolas,monospace;background:#0a1220;padding:14px;border-radius:9px;margin:8px 0;max-height:370px;overflow:auto}.caption{font-size:11px;color:var(--muted)}.checks{display:flex;flex-wrap:wrap;gap:8px;margin:15px 0 0}.check{font-size:11px;background:#0b1422;border-radius:7px;padding:6px 9px;border:1px solid var(--line)}details{margin-top:12px;color:var(--muted);font-size:12px}summary{cursor:pointer}.trace{font:11px/1.7 Consolas,monospace;color:var(--muted);padding:13px;border:1px solid var(--line);border-radius:9px;max-height:250px;overflow:auto}.title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.empty{text-align:center;padding:60px 20px;color:var(--muted)}.flow{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}.flow span{font-size:11px;padding:6px 10px;border-radius:7px;background:#18253b;border:1px solid #354661}.hidden{display:none}@media(max-width:1000px){.layout{grid-template-columns:1fr}.controls{position:static}.outputs{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}header{align-items:flex-start}.node-head{align-items:flex-start}}@media(max-width:550px){header{display:block}.title-row{align-items:flex-start}main{padding:18px 12px}.panel{padding:16px}}
+</style>
+</head>
+<body>
+<header><div><div class="eyebrow">CGR · real model integration</div><h1>Task switching lab</h1><p>Verify a node. Switch the specialist. Commit through a base-model Bridge.</p></div><a href="/">Open base vs adapter comparison ↗</a></header>
+<main><div class="layout">
+<section class="panel controls"><h2>Run a task sequence</h2><span class="pill">Qwen3-0.6B + coder checkpoint-1000</span>
+<label for="task">Task</label><select id="task"></select>
+<label for="mode">Routing policy</label><select id="mode"><option value="planned">Planned coder nodes</option><option value="repair">Base first; coder on verifier failure</option></select>
+<label for="cap">Max new tokens per attempt</label><input id="cap" type="number" min="16" max="256" value="160">
+<label for="seed">Seed · greedy generation</label><input id="seed" type="number" min="0" max="2147483647" value="42">
+<button id="run" class="run">Run CGR switching test</button>
+<label for="history">Saved runs</label><select id="history"><option value="">No saved runs</option></select>
+<p class="note">Each task has a declared skill and a deterministic verifier. The coder adapter is enabled for specialist attempts; accepted text is re-encoded under base weights before continuing.</p>
+<p class="note"><b>Available:</b> base + coder. Cyber, full-stack, UI, and a trained latent router are not loaded.</p>
+<p class="note">These disclosed tasks test integration. The injected failure task explicitly supplies bad code to check rejection and rollback. It is not a generated base failure or a quality benchmark.</p>
+<p class="note" id="device">Connecting to local runner…</p>
+</section>
+<section><div id="status" class="status" role="status" aria-live="polite">Connecting…</div>
+<div class="flow"><span>Base prefix</span><span>Task skill → policy</span><span>Generate → verify</span><span>Reject → rollback</span><span>Accept → base Bridge</span><span>Next node</span></div>
+<div class="title-row"><h2 id="resultTitle">Run results</h2><button id="export" class="secondary" disabled>Export full JSON</button></div>
+<div id="metrics" class="metrics hidden"></div><div id="nodes"><div class="panel empty">Run the switching sequence to see actual outputs, verifier results, and cache checks.</div></div>
+<details id="traceSection" class="hidden"><summary>Adapter state transitions and checkpoint graph</summary><pre id="trace" class="trace"></pre></details>
+<p class="note" id="limits">Generation is sequential on one resident model. Diagnostic cache comparisons add work; elapsed time is not a deployment speedup measurement.</p>
+</section></div></main>
+<script>
+const $ = id => document.getElementById(id);
+let latest = null;
+function element(tag, text, className='') { const e=document.createElement(tag); e.textContent=text; if(className)e.className=className; return e; }
+function state(text, kind='') { $('status').textContent=text; $('status').className=`status ${kind}`; }
+async function history(selected) {
+  const response=await fetch('/api/switching/history'); if(!response.ok)return;
+  const data=await response.json(); $('history').replaceChildren();
+  for(const run of data.runs){ const option=element('option',`${run.selection} · ${run.mode} · ${new Date(run.created_at).toLocaleTimeString()}`);option.value=run.run_id;option.selected=run.run_id===selected;$('history').append(option); }
+}
+function render(result) {
+  $('task').value=result.selection; $('mode').value=result.mode;
+  $('cap').value=result.max_new_tokens; $('seed').value=result.seed;
+  latest=result; $('export').disabled=false; $('resultTitle').textContent=`${result.mode === 'planned' ? 'Planned routing' : 'Verifier-triggered routing'} · ${new Date(result.created_at).toLocaleString()}`;
+  const s=result.summary; $('metrics').replaceChildren(); $('metrics').classList.remove('hidden');
+  for(const [value,label] of [[`${s.accepted_nodes}/${s.attempted_nodes}`,'Nodes committed'],[s.specialist_calls,'Coder calls'],[s.verified_adapter_transitions,'Verified policy transitions'],[`${s.elapsed_seconds.toFixed(1)} s`,'Measured sequence time']]) {
+    const m=element('div','','metric'); m.append(element('strong',String(value)),element('span',label)); $('metrics').append(m);
+  }
+  $('nodes').replaceChildren();
+  for(const row of result.nodes) {
+    const card=element('article','','node'), head=element('div','','node-head'), title=element('div');
+    title.append(element('h3',row.title),element('div',row.route_reason,'meta')); head.append(title,element('span',row.status,row.accepted?'pill pass':row.status==='abstained'?'pill warn':'pill fail')); card.append(head);
+    const body=element('div','','node-body');
+    if(row.base_attempt) {
+      body.append(element('div',`Declared skill: ${row.required_skill} · selected: ${row.selected_policy} · base prefix boundary: ${row.prefix_boundary_tokens} tokens`,'caption'));
+      const outputs=element('div','','outputs');
+      for(const [name,attempt] of [[row.base_attempt.source==='injected_negative_control'?'Injected failure control':'Base attempt',row.base_attempt],['Coder attempt',row.specialist_attempt]]) {
+        const panel=element('div'); panel.append(element('b',name));
+        if(attempt) {
+          panel.append(element('pre',attempt.text),element('div',`${attempt.source} · ${attempt.tokens} tokens · ${(attempt.generation_ms/1000).toFixed(2)} s`,'caption'),element('div',attempt.verifier.reason,attempt.verifier.passed?'pass':'fail'));
+          if(attempt.verifier.tests.length) { const details=element('details'); details.append(element('summary',`${attempt.verifier.tests.filter(t=>t.passed).length}/${attempt.verifier.tests.length} function cases passed`),element('pre',JSON.stringify(attempt.verifier.tests,null,2))); panel.append(details); }
+        } else panel.append(element('p','No specialist call needed for this node.'));
+        outputs.append(panel);
+      }
+      body.append(outputs);
+      const checks=element('div','','checks');
+      for(const [label,passed] of [['Rollback prefix K/V exact',row.rollback_prefix_kv_exact],['Preserved base cache exact',row.preserved_base_cache_exact],['Task verified',row.task_verified]])checks.append(element('span',`${passed?'✓':'✕'} ${label}`,`check ${passed?'pass':'fail'}`));
+      if(row.bridge) {
+        checks.append(element('span',`${row.bridge.passed?'✓':'✕'} Base Bridge`,`check ${row.bridge.passed?'pass':'fail'}`));
+        checks.append(element('span',`Δlogit ${row.bridge.max_abs_logit_delta.toExponential(2)} ≤ ${row.bridge.absolute_tolerance}`,'check'));
+        checks.append(element('span',`${row.bridge.continuation_matches?'✓':'✕'} Base continuation agrees`,`check ${row.bridge.continuation_matches?'pass':'fail'}`));
+      }
+      body.append(checks,element('p',`Controller: ${row.controller_action} · ${row.controller_reason}`,'meta'));
+      const details=element('details'); details.append(element('summary','Exact prompt and node record'),element('pre',JSON.stringify(row,null,2))); body.append(details);
+    }
+    card.append(body); $('nodes').append(card);
+  }
+  $('traceSection').classList.remove('hidden'); $('trace').textContent=JSON.stringify({events:result.events,dag:result.dag},null,2);
+  $('limits').textContent=result.limits.join(' ');
+}
+async function initialize() {
+  try {
+    const [statusResponse,tasksResponse]=await Promise.all([fetch('/api/status'),fetch('/api/switching/tasks')]);
+    if(!statusResponse.ok||!tasksResponse.ok)throw Error('Restart Adapter Lab to load the switching runtime.');
+    const status=await statusResponse.json(), data=await tasksResponse.json();
+    for(const task of data.tasks){const option=element('option',task.title);option.value=task.id;$('task').append(option);}
+    $('device').textContent=`Device: ${status.device} · coder adapter: candidate under integration test`;
+    state(status.stage==='ready'?'Runner connected. Select a task sequence.':status.stage);
+    const requestedRun=new URLSearchParams(location.search).get('run_id');
+    const response=await fetch(requestedRun?`/api/switching/result?run_id=${encodeURIComponent(requestedRun)}`:'/api/switching/latest'); const saved=await response.json();
+    if(saved.run){ render(saved.run); state('Showing the latest saved real switching run.'); }
+    await history(saved.run?.run_id);
+  } catch(error){state(error.message,'fail');$('run').disabled=true;}
+}
+$('run').addEventListener('click',async()=>{
+  $('run').disabled=true; $('run').textContent='Running task sequence…'; const started=Date.now();
+  state('Starting the real CGR switching sequence…','warn');
+  const timer=setInterval(async()=>{try{const r=await fetch('/api/status');const s=await r.json();state(`${s.stage} · ${Math.round((Date.now()-started)/1000)} s elapsed`,'warn');}catch{}},2000);
+  try {
+    const response=await fetch('/api/switching/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:$('task').value,mode:$('mode').value,max_new_tokens:Number($('cap').value),seed:Number($('seed').value)})});
+    const result=await response.json(); if(!response.ok)throw Error(result.error||'Run failed'); render(result); await history(result.run_id);
+    state(`Completed: ${result.summary.accepted_nodes}/${result.summary.attempted_nodes} nodes committed. All attempts and rejected outputs are recorded.`,result.summary.all_bridges_passed&&result.summary.accepted_nodes===result.summary.attempted_nodes?'pass':'warn');
+  } catch(error){state(error.message,'fail');}
+  finally{clearInterval(timer);$('run').disabled=false;$('run').textContent='Run CGR switching test';}
+});
+$('export').addEventListener('click',()=>{if(!latest)return;const url=URL.createObjectURL(new Blob([JSON.stringify(latest,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`cgr-switching-${latest.run_id}.json`;a.click();URL.revokeObjectURL(url);});
+$('history').addEventListener('change',async()=>{try{const response=await fetch(`/api/switching/result?run_id=${encodeURIComponent($('history').value)}`);const data=await response.json();if(!response.ok)throw Error(data.error);render(data.run);state('Showing a saved real run.');}catch(error){state(error.message,'fail');}});
+initialize();
+</script></body></html>

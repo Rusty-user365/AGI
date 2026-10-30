@@ -1,0 +1,254 @@
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FocusFlow - Student Study Planner</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1a1a1a;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+
+    header {
+      background-color: #1a1a1a;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      font-size: 2em;
+      text-shadow: 0 0 10px #000000;
+    }
+
+    nav {
+      background-color: #1a1a1a;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+    }
+
+    nav a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+    }
+
+    .hero {
+      background-color: #1a1a1a;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 2em;
+      text-shadow: 0 0 10px #000000;
+    }
+
+    .hero h1 {
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      margin-bottom: 30px;
+    }
+
+    .hero button {
+      background-color: #1a1a1a;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      color: #ffffff;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .hero button:hover {
+      background-color: #000000;
+    }
+
+    .feature-card {
+      background-color: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+    }
+
+    .feature-card h2 {
+      margin-bottom: 10px;
+    }
+
+    .feature-card p {
+      margin-bottom: 20px;
+    }
+
+    .feature-card button {
+      background-color: #1a1a1a;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      color: #ffffff;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .feature-card button:hover {
+      background-color: #000000;
+    }
+
+    .email-form {
+      background-color: #1a1a1a;
+      padding: 20px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+    }
+
+    .email-form h2 {
+      margin-bottom: 20px;
+    }
+
+    .email-form input {
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      color: #ffffff;
+      text-shadow: 0 0 10px #000000;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .email-form input:focus {
+      background-color: #000000;
+    }
+
+    .email-form label {
+      margin-bottom: 10px;
+    }
+
+    .email-form button {
+      background-color: #1a1a1a;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      color: #ffffff;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .email-form button:hover {
+      background-color: #000000;
+    }
+
+    footer {
+      background-color: #1a1a1a;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+    }
+
+    footer a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 1em;
+      text-shadow: 0 0 10px #000000;
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        padding: 20px;
+      }
+
+      .feature-card {
+        padding: 10px;
+      }
+
+      .email-form {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FocusFlow</h1>
+    <nav>
+      <a href="#">Features</a>
+      <a href="#">Get Started</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>FocusFlow - Your Study Planner</h1>
+    <p>Plan your study sessions with ease. FocusFlow helps you organize your study time effectively.</p>
+    <button>Start Planning</button>
+  </section>
+
+  <div class="feature-card">
+    <h2>1. Smart Study Schedules</h2>
+    <p>Get personalized study schedules tailored to your learning style and goals.</p>
+    <button>Get Started</button>
+  </div>
+
+  <div class="feature-card">
+    <h2>2. Time Blocking</h2>
+    <p>Block your study time with specific hours and subjects to maximize productivity.</p>
+    <button>Get Started</button>
+  </div>
+
+  <div class="feature-card">
+    <h2>3. Study Tips</h2>
+    <p>Get expert study tips and strategies to improve your study habits and performance.</p>
+    <button>Get Started</button>
+  </div>
+
+  <div class="email-form">
+    <h2>Sign Up for FocusFlow</h2>
+    <p>Get started with a free trial. Your email will be shown here without sending any data.</p>
+    <input type="email" placeholder="Enter your email">
+    <button>Get Started</button>
+  </div>
+
+  <footer>
+    <p>© 2023 FocusFlow. All rights reserved.</p>
+  </footer>
+
+</body></html>

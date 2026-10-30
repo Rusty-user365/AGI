@@ -249,7 +249,7 @@ To eliminate post-hoc threshold overfitting concerns on small holdout splits, we
 3. **Replicating Out-of-Sample Systems Savings (Rule 2, qualified):**  
    CGR significantly outperforms full-chain rewrites ($22.1\%$ vs $13.9\%$, $43\text{W}/16\text{L}, p = 5.84 \times 10^{-4}$) while slashing forward tokens from $580.6$ to $120.1$ ($-79.3\%$) and per-chain latency from $3,281.9\text{ ms}$ to $120.7\text{ ms}$—a **$27.2\times$ generation-slice speedup**, with the end-to-end loop at $1,934.7\text{ ms}$ vs $3,281.9\text{ ms}$ per chain ($1.70\times$).
 4. **Bit-Identical Slicing Verification (Rule 4 PASS):**  
-   To ensure cache slicing does not introduce numerical artifacts or cross-attention corruption, we benchmarked `DynamicCache.crop` against un-cached recomputations across 20 validation sequences. The maximum absolute logit divergence was bounded by $\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$ (well below single-precision epsilon), with $100\%$ bit-identical argmax token sequences.
+   To check cache slicing for numerical drift or token divergence, we benchmarked `DynamicCache.crop` against un-cached recomputations across 20 validation sequences. The observed maximum absolute logit difference was $\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$, below the $10^{-4}$ comparison tolerance, with $100\%$ identical argmax token sequences. This is not a claim that the logit difference is below fp32 machine epsilon.
 
 ### 4.4 Long-Horizon Scaling ($H=10$) & The Generative Horizon Boundary ($H^*$)
 
@@ -286,12 +286,11 @@ While Path A substantially resolves the localization bottleneck and establishes 
 
 ## 6. Dynamic Adapter Routing and the Bridge Protocol
 
-> **Status: design proposal, not a measurement.** Nothing in this section has
-> been executed. It specifies a mechanism and the artefacts that would
-> falsify it. It appears here because the systems constraint it addresses —
-> specialised intervention under a $\le 4\text{ GB}$ budget — is real, not
-> because the proposal has been validated. No number in this section may be
-> quoted as a result.
+> **Status: preliminary one-adapter integration; multi-domain efficacy pending.**
+> The 2026-10-30 CPU prototype measures coder switching and base Bridge
+> coherence on disclosed integration tasks (§6.3). It does not establish
+> multi-domain recovery, learned routing, a deployment speedup, or a 4 GB
+> memory bound. The comparative evaluation remains prospective.
 
 Full-checkpoint escalation was measured and closed. On the $N=110$ ladder no
 deployable actuator beat `rank2` (`findings/2026-10-28-level2-actuator-ladder.md`),
@@ -302,8 +301,10 @@ The alternative is to swap low-rank adapter weights ($\sim$10–50 MB) instead o
 a parameter backbone. The CGR line already produces adapters in that band — the
 matched LoRA control trains $22.3\text{M}$ parameters
 (`findings/2026-10-25-steering-capacity-control.md`), $\approx 45\text{ MB}$ at
-fp16 — but none of them is a code-repair specialist, which is the specialist
-this section assumes.
+fp16. A separate coder LoRA checkpoint is now available on the chat-capable
+`Qwen/Qwen3-0.6B`, rather than the arithmetic experiments' `Qwen3-0.6B-Base`.
+Its preliminary integration is reported in §6.3; specialist quality is a
+separate question from its size or successful loading.
 
 ### 6.1 KV-Cache Coherence Under Adapter Intervention
 
@@ -320,10 +321,13 @@ projections ($\Delta W_q, \Delta W_{\text{MLP}}$), keeping the key-value
 projection weights ($W_k, W_v$) strictly frozen. When an error is localized at
 index $\hat{t}_{\min}$, the controller crops the cache via
 `DynamicCache.crop` to $\hat{t}_{\min}-1$. Because $W_k$ and $W_v$ are
-invariant, adapter-generated queries at $\hat{t}_{\min}$ attend directly to
-cached prefix states without projection distortion. When the specialised task
-spans the remainder of the sequence, the adapter stays active to the termination
-boundary, which avoids cross-distribution attention artifacts.
+invariant, this design leaves their projection matrices unchanged. It does
+**not** imply cache equivalence: Q/MLP changes can alter the hidden states from
+which subsequent layers compute keys and values. Attending to a base-produced
+prefix under specialist weights is therefore a mixed-policy computation that
+must be compared with full-prefix specialist prefill. Keeping the adapter active
+to termination avoids another switch but does not itself prove coherence or
+equivalent generation quality.
 
 The crop operation itself is measured, not assumed: on 20 validation sequences
 `DynamicCache.crop` reproduced un-cached recomputation to
@@ -340,17 +344,23 @@ to general causal generation, retaining adapter overhead across the remaining
 sequence is wasteful. The **Bridge Protocol** treats adapter generation as an
 isolated, temporary patch:
 
-1. **Surgical truncation.** The cache is cropped to $\hat{t}-1$, preserving
-   verified prefix representations.
+1. **Surgical truncation.** The cache is cropped to the recorded absolute token
+   boundary before step $\hat{t}$, preserving verified prefix representations.
+   A clean base-prefix copy is retained separately from the specialist's cache.
 2. **Specialist execution.** The task-specific adapter is engaged to generate the
    localized patch tokens $S_{\text{patch}} = \{x_{\hat{t}}, \dots, x_{\hat{t}+k}\}$.
 3. **Distribution re-alignment (the bridge).** The adapter is disengaged. Rather
    than flushing the context window or retaining adapted latent vectors, the raw
-   text tokens of $S_{\text{patch}}$ pass through a single non-generative forward
-   prefill under the frozen base weights. This re-encodes the patch's keys and
-   values directly into the base distribution.
+   token IDs of $S_{\text{patch}}$ pass through a non-generative forward prefill
+   under the frozen base weights, starting from the preserved base-prefix copy.
+   The specialist's working cache is discarded. This rebuilds patch keys and
+   values under the base policy.
 4. **Resumption.** Autoregressive decoding resumes under the base policy at step
-   $\hat{t}+k+1$.
+   $\hat{t}+k+1$ from the bridge's output logits, without feeding the final
+   patch token twice. Dependent artifacts downstream of a repaired node must
+   be revalidated or regenerated. Independent artifacts may be preserved,
+   but their later cached states must be replayed if their prior attention
+   context included the changed prefix.
 
 The economic argument is that prefill over a short window is parallel, so
 re-encoding $k$ tokens costs one forward pass rather than $k$ sequential decode
@@ -372,13 +382,47 @@ query-restricted persistence (Path 1) on the same rows, it satisfies all three:
    into the base distribution, so the failure mode to watch is a specialist edit
    that the base model then treats as out-of-distribution and talks itself out of.
 3. **Coherence:** $\max|\Delta\text{logit}|$ between bridged and fully-base
-   decoding over the same token sequence stays within the $4.86 \times 10^{-5}$
-   envelope already established for crop.
+   decoding over the same token sequence satisfies a predeclared,
+   dtype-specific tolerance, with finite logits and matching continuation.
+   The original $4.86 \times 10^{-5}$ is an observed base-only maximum, not a
+   universal adapter tolerance. The CPU fp32 integration below uses $10^{-4}$.
 
 If (1) fails, the protocol collapses to Path 1 with extra machinery. If (2)
 fails, the adapter was load-bearing for more than the patch and targeted
 re-encoding is the wrong abstraction. Either outcome is a result; neither is
 currently known.
+
+### 6.3 Preliminary Coder Integration and Validation Readiness
+
+A CPU fp32 prototype connects the existing commitment controller to one
+coder LoRA (`checkpoint-1000`, parent revision
+`c1899de289a04d12100db370d81485cdf75e47ca`). Task skills and deterministic
+verifiers are supplied explicitly; no learned code localizer or router is used.
+In a five-node base/coder/base/coder/base sequence, four policy transitions
+were verified across 112 LoRA layers and four nodes were committed. The coder
+failed the clamp task (2/5 function cases), which the controller rejected;
+the even-sum task passed (4/4 cases) and was bridged back to the base. The base
+diagnostic passed both coding tasks. These observations establish neither a
+specialist quality gain nor the cause of the clamp regression.
+
+All accepted-node Bridges in that sequence had exact retained-prefix K/V,
+finite logits, matching next-token argmax, correct cache length, and matching
+four-token greedy continuations against fresh base prefill. The largest
+absolute logit delta was $5.20\times10^{-5}$ against the predeclared fp32
+tolerance $10^{-4}$. An explicitly injected bad addition function was also
+rejected, repaired by the actual coder, and bridged successfully. That control
+tests the mechanism; it is not natural base-failure recovery. Source records:
+`results/cgr_adapter_switching/20261029T213116Z_df30837b.json` and
+`results/cgr_adapter_switching/20261029T213212Z_4e3f62d0.json`.
+
+While cyber and UI adapters train, a separate dependency/validator package
+exercises delayed failure, descendant invalidation, preserved-artifact replay planning,
+parameterized SQL behavior, and static HTML contracts on 20 public parameter
+variations of one sanitized-card task family. Its passing fixture checks use
+zero model generations and supply no multi-domain efficacy evidence. Real
+frontend behavior, multi-adapter cache tests, independent task evaluation and
+the full-prefix-versus-switched-specialist ablation remain pending. The
+prospective protocol is `ADAPTER_VALIDATION_PROTOCOL.md`.
 
 ---
 

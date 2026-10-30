@@ -1,0 +1,343 @@
+{
+  "run_id": "20261029T213415Z_62762ea9",
+  "created_at": "2026-10-29T21:34:15.686157+00:00",
+  "experiment": "CGR verifier-driven adapter switching integration",
+  "selection": "clamp",
+  "mode": "repair",
+  "max_new_tokens": 160,
+  "seed": 42,
+  "base_model_id": "Qwen/Qwen3-0.6B",
+  "base_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "adapter_path": "D:\\Research Paper\\notebooks\\coder_qwen3_0.6b_q_mlp_r16_v1___Coder Adapter\\checkpoint-1000",
+  "adapter_weights_sha256": "cd84e5474cd4bb9667d47de85d0706fceefeec3feb2a506d1e95d3f4da629ba5",
+  "adapter_config_sha256": "ba1d47206bdf9dea88f1cc802237e750b0f5f376322aed918c2eb7199696d4f3",
+  "tokenizer_chat_template_sha256": "a55ee1b1660128b7098723e0abcd92caa0788061051c62d51cbe87d9cf1974d8",
+  "runtime": {
+    "torch": "2.14.1",
+    "transformers": "4.57.6",
+    "peft": "0.21.2",
+    "accelerate": "1.12.0"
+  },
+  "device": "cpu",
+  "dtype": "float32",
+  "cache_type": "DynamicCache",
+  "peak_vram_gb": null,
+  "nodes": [
+    {
+      "node_id": "ready",
+      "title": "Base conversation: READY",
+      "required_skill": "base",
+      "route_source": "declared_node_metadata",
+      "verifier_kind": "exact_text",
+      "prompt": "Reply with exactly READY and nothing else.",
+      "prefix_boundary_tokens": 40,
+      "rollback_prefix_kv_exact": true,
+      "base_attempt": {
+        "text": "READY",
+        "token_ids": [
+          45578,
+          151645
+        ],
+        "tokens": 2,
+        "truncated": false,
+        "generation_ms": 481.9398999970872,
+        "policy": "base",
+        "source": "model_generation",
+        "verifier": {
+          "passed": true,
+          "tests": [],
+          "reason": "Exact reply matched"
+        }
+      },
+      "route_reason": "Base task",
+      "repair_calls": 0,
+      "selected_policy": "base",
+      "task_verified": true,
+      "preserved_base_cache_exact": true,
+      "bridge": {
+        "passed": true,
+        "finite_logits": true,
+        "max_abs_logit_delta": 4.3392181396484375e-05,
+        "absolute_tolerance": 0.0001,
+        "argmax_matches": true,
+        "continuation_matches": true,
+        "continuation_token_ids": [
+          198,
+          151643,
+          2,
+          13027
+        ],
+        "reference_token_ids": [
+          198,
+          151643,
+          2,
+          13027
+        ],
+        "cache_length_matches": true,
+        "patch_prefill_ms": 240.7493999999133,
+        "fresh_reference_ms": 516.699100000551,
+        "resume_source": "bridge output logits; final patch token is not fed twice"
+      },
+      "controller_action": "ANS",
+      "controller_reason": "candidate verified and checkpointed",
+      "checkpoint_id": 1,
+      "accepted": true,
+      "status": "committed",
+      "committed_tokens_after": 42
+    },
+    {
+      "node_id": "clamp",
+      "title": "Clamp a number",
+      "required_skill": "coder",
+      "route_source": "declared_node_metadata",
+      "verifier_kind": "pure_function_cases",
+      "prompt": "Write only Python code for clamp(value, lower, upper). Return value limited to the inclusive range [lower, upper]. Assume lower <= upper. No imports or examples.",
+      "prefix_boundary_tokens": 88,
+      "rollback_prefix_kv_exact": true,
+      "base_attempt": {
+        "text": "```python\ndef clamp(value, lower, upper):\n    return max(lower, min(upper, value))\n```",
+        "token_ids": [
+          73594,
+          12669,
+          198,
+          750,
+          41904,
+          3679,
+          11,
+          4722,
+          11,
+          8416,
+          982,
+          262,
+          470,
+          1932,
+          71064,
+          11,
+          1308,
+          7,
+          13574,
+          11,
+          897,
+          1171,
+          73594,
+          151645
+        ],
+        "tokens": 24,
+        "truncated": false,
+        "generation_ms": 8351.207100000465,
+        "policy": "base",
+        "source": "model_generation",
+        "verifier": {
+          "passed": true,
+          "tests": [
+            {
+              "args": [
+                5,
+                0,
+                10
+              ],
+              "expected": 5,
+              "actual": 5,
+              "passed": true
+            },
+            {
+              "args": [
+                -3,
+                0,
+                10
+              ],
+              "expected": 0,
+              "actual": 0,
+              "passed": true
+            },
+            {
+              "args": [
+                20,
+                0,
+                10
+              ],
+              "expected": 10,
+              "actual": 10,
+              "passed": true
+            },
+            {
+              "args": [
+                2,
+                2,
+                2
+              ],
+              "expected": 2,
+              "actual": 2,
+              "passed": true
+            },
+            {
+              "args": [
+                -4,
+                -3,
+                -1
+              ],
+              "expected": -3,
+              "actual": -3,
+              "passed": true
+            }
+          ],
+          "reason": "All function tests passed"
+        }
+      },
+      "route_reason": "Base already passed; specialist not needed",
+      "repair_calls": 0,
+      "selected_policy": "base",
+      "task_verified": true,
+      "preserved_base_cache_exact": true,
+      "bridge": {
+        "passed": true,
+        "finite_logits": true,
+        "max_abs_logit_delta": 5.120038986206055e-05,
+        "absolute_tolerance": 0.0001,
+        "argmax_matches": true,
+        "continuation_matches": true,
+        "continuation_token_ids": [
+          198,
+          151643,
+          33975,
+          25
+        ],
+        "reference_token_ids": [
+          198,
+          151643,
+          33975,
+          25
+        ],
+        "cache_length_matches": true,
+        "patch_prefill_ms": 487.90569999982836,
+        "fresh_reference_ms": 893.6568000026455,
+        "resume_source": "bridge output logits; final patch token is not fed twice"
+      },
+      "controller_action": "ANS",
+      "controller_reason": "candidate verified and checkpointed",
+      "checkpoint_id": 2,
+      "accepted": true,
+      "status": "committed",
+      "committed_tokens_after": 112
+    },
+    {
+      "node_id": "done",
+      "title": "Base conversation: DONE",
+      "required_skill": "base",
+      "route_source": "declared_node_metadata",
+      "verifier_kind": "exact_text",
+      "prompt": "Reply with exactly DONE and nothing else.",
+      "prefix_boundary_tokens": 132,
+      "rollback_prefix_kv_exact": true,
+      "base_attempt": {
+        "text": "DONE",
+        "token_ids": [
+          70396,
+          151645
+        ],
+        "tokens": 2,
+        "truncated": false,
+        "generation_ms": 538.7635000006412,
+        "policy": "base",
+        "source": "model_generation",
+        "verifier": {
+          "passed": true,
+          "tests": [],
+          "reason": "Exact reply matched"
+        }
+      },
+      "route_reason": "Base task",
+      "repair_calls": 0,
+      "selected_policy": "base",
+      "task_verified": true,
+      "preserved_base_cache_exact": true,
+      "bridge": {
+        "passed": true,
+        "finite_logits": true,
+        "max_abs_logit_delta": 4.1961669921875e-05,
+        "absolute_tolerance": 0.0001,
+        "argmax_matches": true,
+        "continuation_matches": true,
+        "continuation_token_ids": [
+          151643,
+          2,
+          9645,
+          1172
+        ],
+        "reference_token_ids": [
+          151643,
+          2,
+          9645,
+          1172
+        ],
+        "cache_length_matches": true,
+        "patch_prefill_ms": 272.2535000029893,
+        "fresh_reference_ms": 1210.9194000004209,
+        "resume_source": "bridge output logits; final patch token is not fed twice"
+      },
+      "controller_action": "ANS",
+      "controller_reason": "candidate verified and checkpointed",
+      "checkpoint_id": 3,
+      "accepted": true,
+      "status": "committed",
+      "committed_tokens_after": 134
+    }
+  ],
+  "events": [
+    {
+      "event": "adapter_state",
+      "active": "base",
+      "inspected_lora_layers": 112,
+      "selection_and_assertion_ms": 35.01409999807947
+    }
+  ],
+  "dag": [
+    {
+      "node_id": 0,
+      "parent_id": null,
+      "verified": true,
+      "tokens": 20,
+      "reason": "initial"
+    },
+    {
+      "node_id": 1,
+      "parent_id": 0,
+      "verified": true,
+      "tokens": 42,
+      "reason": "verified candidate"
+    },
+    {
+      "node_id": 2,
+      "parent_id": 1,
+      "verified": true,
+      "tokens": 112,
+      "reason": "verified candidate"
+    },
+    {
+      "node_id": 3,
+      "parent_id": 2,
+      "verified": true,
+      "tokens": 134,
+      "reason": "verified candidate"
+    }
+  ],
+  "summary": {
+    "accepted_nodes": 3,
+    "attempted_nodes": 3,
+    "specialist_calls": 0,
+    "verified_adapter_transitions": 0,
+    "all_rollbacks_exact": true,
+    "all_bridges_passed": true,
+    "base_task_passes": 0,
+    "specialist_task_passes": 0,
+    "elapsed_seconds": 20.686302500002057
+  },
+  "limits": [
+    "Disclosed integration tasks; no held-out quality or learned-router claim.",
+    "Only local coder checkpoint-1000 is available; other domains abstain.",
+    "Routing/localization uses explicit task nodes and verifier failures, not a trained latent probe.",
+    "Base-only diagnostics share the exact prefix; they are not an independent full-trajectory benchmark.",
+    "Injected failure control is labelled and excluded from quality claims.",
+    "Diagnostic fresh-base prefill/continuation checks add overhead; no production speedup claim."
+  ]
+}

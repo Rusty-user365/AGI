@@ -1,0 +1,2006 @@
+{
+  "suite": "D:\\Research Paper\\data\\validation\\cgr_multidomain_v1.json",
+  "suite_sha256": "d57a2038b2deebffbf07efc9403cb56275d8ef147a6ee06d82ccd9f4252bb597",
+  "pending": [
+    "cyber and UI trained artifacts",
+    "multi-adapter model trials",
+    "independent task evaluation"
+  ],
+  "self_test": {
+    "measurement_type": "validator_and_graph_fixture_self_test",
+    "model_generations": 0,
+    "scenarios": [
+      {
+        "scenario": "card_00",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_01",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_02",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_03",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_04",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_05",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_06",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_07",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_08",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_09",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_10",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_11",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_12",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_13",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_14",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_15",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_16",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_17",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_18",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      },
+      {
+        "scenario": "card_19",
+        "observed_failure_node": "20",
+        "fault_candidates": [
+          "6"
+        ],
+        "bad_patch_rejected_atomically": true,
+        "affected_descendants": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "fixture_descendants_recomputed": [
+          "7",
+          "9",
+          "10",
+          "11",
+          "13",
+          "14",
+          "15",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "all_artifacts_current_after_recompute": true,
+        "independent_artifacts_preserved": true,
+        "cache_replay_plan": {
+          "crop_absolute_tokens": 60,
+          "discard_kv_nodes": [
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "regenerate_artifacts": [
+            "6",
+            "7",
+            "9",
+            "10",
+            "11",
+            "13",
+            "14",
+            "15",
+            "17",
+            "18",
+            "19",
+            "20"
+          ],
+          "replay_preserved_artifacts": [
+            "8",
+            "12",
+            "16"
+          ]
+        },
+        "cyber_positive_pass": true,
+        "cyber_negative_rejected": true,
+        "ui_positive_pass": true,
+        "ui_negative_rejected": true,
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "note": "Known fixtures validate the harness. Recompute uses fixture artifacts and cache boundaries are synthetic: only the replay plan is checked. No multi-adapter inference, React behavior, or learned localization is measured."
+  },
+  "candidate_results": {
+    "measurement_type": "supplied_candidate_validation",
+    "rows": [
+      {
+        "scenario": "card_00",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_00",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_00",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_01",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_01",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_01",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_02",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_02",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_02",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_03",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_03",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_03",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_04",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_04",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_04",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_05",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_05",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_05",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_06",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_06",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_06",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_07",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_07",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_07",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_08",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_08",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_08",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_09",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_09",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_09",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_10",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_10",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_10",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_11",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_11",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_11",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_12",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_12",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_12",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_13",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_13",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_13",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_14",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_14",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_14",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_15",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_15",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_15",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_16",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_16",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_16",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_17",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_17",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_17",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_18",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_18",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_18",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_19",
+        "skill": "coder",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_19",
+        "skill": "cyber_defensive",
+        "status": "not_run",
+        "verdict": null
+      },
+      {
+        "scenario": "card_19",
+        "skill": "ui",
+        "status": "not_run",
+        "verdict": null
+      }
+    ],
+    "note": "Generation provenance and token-budget accounting must be supplied by the inference harness; this command only grades artifacts."
+  },
+  "adapter_metadata": [
+    {
+      "skill": "coder",
+      "path": "D:\\Research Paper\\notebooks\\coder_qwen3_0.6b_q_mlp_r16_v1___Coder Adapter\\checkpoint-1000",
+      "checks": {
+        "base_id": true,
+        "base_revision": true,
+        "lora": true,
+        "rank": true,
+        "alpha": true,
+        "targets": true,
+        "weights_present": true
+      },
+      "metadata_pass": true,
+      "weights_sha256": "cd84e5474cd4bb9667d47de85d0706fceefeec3feb2a506d1e95d3f4da629ba5",
+      "remaining": [
+        "tokenizer/template compatibility",
+        "tensor integrity and load/switch test",
+        "task quality",
+        "Bridge tests"
+      ]
+    }
+  ]
+}

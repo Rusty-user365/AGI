@@ -1,0 +1,41 @@
+{
+  "arm": "ui",
+  "source_html_sha256": "ac336991991fd86dbb5c079e8043c44d1e6e722ab603c3323b978e3e4bfeaf68",
+  "source_file_sha256": "51337a475d4b00b140c705e1c980a8367ad7c88f6527ccf696d4c11507a314a9",
+  "source_edited": false,
+  "desktop": {
+    "title": "FocusFlow - Student Study Planner",
+    "width": 1440,
+    "scrollWidth": 1425,
+    "horizontalOverflow": false,
+    "headings": [
+      "FocusFlow",
+      "FocusFlow - Your Study Planner",
+      "1. Smart Study Schedules",
+      "2. Time Blocking",
+      "3. Study Tips",
+      "Sign Up for FocusFlow"
+    ],
+    "navigation": true,
+    "footer": true,
+    "emailInputs": 1,
+    "externalAssets": []
+  },
+  "mobile": {
+    "width": 492,
+    "scrollWidth": 492,
+    "horizontalOverflow": false,
+    "viewportMeta": "width=device-width, initial-scale=1.0"
+  },
+  "interaction": {
+    "startPlanningFound": true,
+    "startPlanningHref": null,
+    "scrollChanged": false,
+    "emailInputPresent": true,
+    "associatedLabel": false,
+    "formPresent": false
+  },
+  "scriptExceptions": [],
+  "dialogs": [],
+  "limitation": "One browser observation of one generated page; network and external submissions blocked by preview policy."
+}

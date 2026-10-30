@@ -1,0 +1,409 @@
+{
+  "version": 1,
+  "purpose": "public_integration_fixtures_not_independent_holdout_tasks",
+  "independent_task_families": 1,
+  "scenarios": [
+    {
+      "id": "card_00",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": -10,
+      "upper": -9,
+      "value": -11,
+      "expected": -10,
+      "display_name": "Alice",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"-10\", max=\"-9\", value=\"-10\", an output role=\"status\" containing \"-10\", and a span data-field=\"name\" displaying this exact untrusted name as text: Alice. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_01",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 0,
+      "upper": 1,
+      "value": -2,
+      "expected": 0,
+      "display_name": "O'Reilly",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"0\", max=\"1\", value=\"0\", an output role=\"status\" containing \"0\", and a span data-field=\"name\" displaying this exact untrusted name as text: O'Reilly. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_02",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 10,
+      "upper": 11,
+      "value": 7,
+      "expected": 10,
+      "display_name": "<img src=x onerror=\"alert(1)\">",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"10\", max=\"11\", value=\"10\", an output role=\"status\" containing \"10\", and a span data-field=\"name\" displaying this exact untrusted name as text: <img src=x onerror=\"alert(1)\">. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_03",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 100,
+      "upper": 101,
+      "value": 96,
+      "expected": 100,
+      "display_name": "किरण & team",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"100\", max=\"101\", value=\"100\", an output role=\"status\" containing \"100\", and a span data-field=\"name\" displaying this exact untrusted name as text: किरण & team. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_04",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": -10,
+      "upper": -5,
+      "value": -15,
+      "expected": -10,
+      "display_name": "Alice",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"-10\", max=\"-5\", value=\"-10\", an output role=\"status\" containing \"-10\", and a span data-field=\"name\" displaying this exact untrusted name as text: Alice. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_05",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 0,
+      "upper": 5,
+      "value": -6,
+      "expected": 0,
+      "display_name": "O'Reilly",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"0\", max=\"5\", value=\"0\", an output role=\"status\" containing \"0\", and a span data-field=\"name\" displaying this exact untrusted name as text: O'Reilly. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_06",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 10,
+      "upper": 15,
+      "value": 3,
+      "expected": 10,
+      "display_name": "<img src=x onerror=\"alert(1)\">",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"10\", max=\"15\", value=\"10\", an output role=\"status\" containing \"10\", and a span data-field=\"name\" displaying this exact untrusted name as text: <img src=x onerror=\"alert(1)\">. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_07",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 100,
+      "upper": 105,
+      "value": 92,
+      "expected": 100,
+      "display_name": "किरण & team",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"100\", max=\"105\", value=\"100\", an output role=\"status\" containing \"100\", and a span data-field=\"name\" displaying this exact untrusted name as text: किरण & team. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_08",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": -10,
+      "upper": 0,
+      "value": -19,
+      "expected": -10,
+      "display_name": "Alice",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"-10\", max=\"0\", value=\"-10\", an output role=\"status\" containing \"-10\", and a span data-field=\"name\" displaying this exact untrusted name as text: Alice. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_09",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 0,
+      "upper": 10,
+      "value": -10,
+      "expected": 0,
+      "display_name": "O'Reilly",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"0\", max=\"10\", value=\"0\", an output role=\"status\" containing \"0\", and a span data-field=\"name\" displaying this exact untrusted name as text: O'Reilly. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_10",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 10,
+      "upper": 20,
+      "value": -1,
+      "expected": 10,
+      "display_name": "<img src=x onerror=\"alert(1)\">",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"10\", max=\"20\", value=\"10\", an output role=\"status\" containing \"10\", and a span data-field=\"name\" displaying this exact untrusted name as text: <img src=x onerror=\"alert(1)\">. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_11",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 100,
+      "upper": 110,
+      "value": 88,
+      "expected": 100,
+      "display_name": "किरण & team",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"100\", max=\"110\", value=\"100\", an output role=\"status\" containing \"100\", and a span data-field=\"name\" displaying this exact untrusted name as text: किरण & team. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_12",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": -10,
+      "upper": 90,
+      "value": -23,
+      "expected": -10,
+      "display_name": "Alice",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"-10\", max=\"90\", value=\"-10\", an output role=\"status\" containing \"-10\", and a span data-field=\"name\" displaying this exact untrusted name as text: Alice. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_13",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 0,
+      "upper": 100,
+      "value": -14,
+      "expected": 0,
+      "display_name": "O'Reilly",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"0\", max=\"100\", value=\"0\", an output role=\"status\" containing \"0\", and a span data-field=\"name\" displaying this exact untrusted name as text: O'Reilly. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_14",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 10,
+      "upper": 110,
+      "value": -5,
+      "expected": 10,
+      "display_name": "<img src=x onerror=\"alert(1)\">",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"10\", max=\"110\", value=\"10\", an output role=\"status\" containing \"10\", and a span data-field=\"name\" displaying this exact untrusted name as text: <img src=x onerror=\"alert(1)\">. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_15",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 100,
+      "upper": 200,
+      "value": 84,
+      "expected": 100,
+      "display_name": "किरण & team",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"100\", max=\"200\", value=\"100\", an output role=\"status\" containing \"100\", and a span data-field=\"name\" displaying this exact untrusted name as text: किरण & team. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_16",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": -10,
+      "upper": 990,
+      "value": -27,
+      "expected": -10,
+      "display_name": "Alice",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"-10\", max=\"990\", value=\"-10\", an output role=\"status\" containing \"-10\", and a span data-field=\"name\" displaying this exact untrusted name as text: Alice. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_17",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 0,
+      "upper": 1000,
+      "value": -18,
+      "expected": 0,
+      "display_name": "O'Reilly",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"0\", max=\"1000\", value=\"0\", an output role=\"status\" containing \"0\", and a span data-field=\"name\" displaying this exact untrusted name as text: O'Reilly. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_18",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 10,
+      "upper": 1010,
+      "value": -9,
+      "expected": 10,
+      "display_name": "<img src=x onerror=\"alert(1)\">",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"10\", max=\"1010\", value=\"10\", an output role=\"status\" containing \"10\", and a span data-field=\"name\" displaying this exact untrusted name as text: <img src=x onerror=\"alert(1)\">. No scripts, styles, or event handlers."
+    },
+    {
+      "id": "card_19",
+      "family": "sanitized_numeric_card",
+      "purpose": "public_integration_fixture",
+      "lower": 100,
+      "upper": 1100,
+      "value": 80,
+      "expected": 100,
+      "display_name": "किरण & team",
+      "coder_prompt": "Return only Python code defining clamp(value, lower, upper). Limit value to the inclusive range. No imports.",
+      "cyber_prompt": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "ui_prompt": "Return only an HTML article containing a label for input id=\"amount\", a numeric input with min=\"100\", max=\"1100\", value=\"100\", an output role=\"status\" containing \"100\", and a span data-field=\"name\" displaying this exact untrusted name as text: किरण & team. No scripts, styles, or event handlers."
+    }
+  ],
+  "graph": [
+    {
+      "id": "1",
+      "parents": [],
+      "skill": "base"
+    },
+    {
+      "id": "2",
+      "parents": [
+        "1"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "3",
+      "parents": [
+        "2"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "4",
+      "parents": [
+        "3"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "5",
+      "parents": [
+        "4"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "6",
+      "parents": [
+        "5"
+      ],
+      "skill": "coder"
+    },
+    {
+      "id": "7",
+      "parents": [
+        "6"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "8",
+      "parents": [
+        "2"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "9",
+      "parents": [
+        "7"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "10",
+      "parents": [
+        "9"
+      ],
+      "skill": "cyber_defensive"
+    },
+    {
+      "id": "11",
+      "parents": [
+        "10"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "12",
+      "parents": [
+        "8"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "13",
+      "parents": [
+        "11"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "14",
+      "parents": [
+        "12",
+        "13"
+      ],
+      "skill": "ui"
+    },
+    {
+      "id": "15",
+      "parents": [
+        "14"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "16",
+      "parents": [
+        "2"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "17",
+      "parents": [
+        "15"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "18",
+      "parents": [
+        "17"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "19",
+      "parents": [
+        "18"
+      ],
+      "skill": "base"
+    },
+    {
+      "id": "20",
+      "parents": [
+        "19",
+        "16"
+      ],
+      "skill": "base"
+    }
+  ]
+}

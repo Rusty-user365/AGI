@@ -1,0 +1,41 @@
+{
+  "source_html_sha256": "fd50ed8fbabbfc1c6c98c1c4411233fd93caf554da22eb7a49ea7ef6e1169e95",
+  "source_edited": false,
+  "desktop": {
+    "title": "FocusFlow - Student Study Planner",
+    "width": 1440,
+    "scrollWidth": 1425,
+    "horizontalOverflow": false,
+    "headings": [
+      "FocusFlow",
+      "Plan Your Study Hours",
+      "Smart Study Schedules",
+      "Real-Time Updates",
+      "Customizable",
+      "Sign Up for Free"
+    ],
+    "navigation": true,
+    "footer": true,
+    "emailInputs": 1,
+    "externalAssets": []
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390,
+    "horizontalOverflow": false,
+    "viewportMeta": "width=device-width, initial-scale=1.0"
+  },
+  "interaction": {
+    "startPlanningFound": true,
+    "startPlanningHref": null,
+    "scrollChanged": false,
+    "emailInputPresent": true,
+    "associatedLabel": true,
+    "formPresent": false
+  },
+  "scriptExceptions": [],
+  "dialogs": [],
+  "limitation": "One browser observation of one generated page; network and external submissions blocked by preview policy.",
+  "source_file_sha256": "fbb49779941b661aef973076d7a0f5790d762fdef866234eea0fa6169d83ed70",
+  "source_html_hash_encoding": "html_sha256 hashes decoded text as UTF-8 with LF newlines"
+}

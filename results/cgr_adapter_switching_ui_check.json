@@ -1,0 +1,10 @@
+{
+  "savedSequence": {
+    "nodes": 5,
+    "hasRejectedClamp": true,
+    "exportsEnabled": true
+  },
+  "runButtonAndUnknownAbstention": true,
+  "savedRunSelection": true,
+  "screenshot": "results/cgr_adapter_switching_ui.png"
+}

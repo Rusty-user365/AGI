@@ -1,0 +1,7 @@
+# Compatible local inference stack used for the coder checkpoint comparison.
+# Install a CUDA-enabled PyTorch build separately if this computer has an NVIDIA GPU.
+torch>=2.1
+transformers==4.57.6
+peft==0.21.2
+accelerate>=1.2
+safetensors>=0.4

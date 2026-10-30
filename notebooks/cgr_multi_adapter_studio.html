@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <title>CGR Adapter Lab | Base vs Coder</title>
+  <style>
+    :root{color-scheme:dark;--bg:#090d18;--panel:#111827;--panel2:#0d1422;--line:#263247;--muted:#8e9bb0;--text:#e8eef8;--white:#f8fbff;--violet:#a78bfa;--green:#56d6a0;--cyan:#69d8e6;--red:#ff8290;--amber:#f5c26b;--shadow:0 18px 50px #0004}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 18% -10%,#25214d 0,transparent 35%),radial-gradient(ellipse at 92% 5%,#103442 0,transparent 28%),var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+    button,textarea,input{font:inherit}button{cursor:pointer}button:disabled{cursor:wait;opacity:.58}code,.mono,textarea,.output{font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace}
+    .wrap{width:min(1440px,100% - 40px);margin:auto}.top{padding:22px 0 20px;border-bottom:1px solid #ffffff12;background:#080b13aa;backdrop-filter:blur(16px)}.toprow{display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:13px}.mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#7458e6,#39c6d3);box-shadow:0 8px 26px #7b61e640;color:white;font-size:20px;font-weight:800}.eyebrow{color:#b8aaff;font-size:10px;font-weight:800;letter-spacing:.17em;text-transform:uppercase}.title{margin:1px 0 0;color:var(--white);font-size:20px;line-height:1.25;letter-spacing:-.03em}.subtitle{margin:5px 0 0;color:var(--muted);font-size:12px}.status{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--line);border-radius:999px;background:#101828;color:#bdc8d8;font-size:11px;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:#8290a5;box-shadow:0 0 0 4px #8290a518}.dot.ready{background:var(--green);box-shadow:0 0 0 4px #56d6a018}.dot.loading{background:var(--amber);animation:pulse 1s infinite}.dot.error{background:var(--red)}@keyframes pulse{50%{opacity:.35}}
+    main{padding:26px 0 48px}.layout{display:grid;grid-template-columns:minmax(280px,350px) minmax(0,1fr);gap:18px;align-items:start}.card{background:linear-gradient(145deg,#131b2b,#0e1522);border:1px solid #ffffff12;border-radius:18px;box-shadow:var(--shadow)}.controls{padding:20px;position:sticky;top:18px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px}.section-head h2,.compare-head h2{margin:0;font-size:13px;letter-spacing:.01em;color:var(--white)}.tag{padding:4px 8px;border-radius:7px;background:#56d6a014;border:1px solid #56d6a02a;color:var(--green);font-size:10px;font-weight:700}.field-label{display:block;margin:16px 0 7px;color:#aeb9c9;font-size:11px;font-weight:700;letter-spacing:.04em}.prompt{display:block;width:100%;min-height:190px;resize:vertical;padding:13px 14px;border:1px solid #304058;border-radius:12px;background:#090f1a;color:#f2f6fc;outline:none;line-height:1.65;font-size:12px}.prompt:focus,input:focus{border-color:#957af2;box-shadow:0 0 0 3px #957af220}.presets{display:flex;flex-wrap:wrap;gap:7px}.chip{border:1px solid #2a374c;border-radius:999px;background:#101827;color:#bcc7d6;padding:6px 9px;font-size:10px;transition:.16s}.chip:hover{border-color:#8370df;color:white;background:#221d3b}.settings{display:grid;grid-template-columns:1fr 1fr;gap:10px}.setting{min-width:0}.setting input{width:100%;padding:9px 10px;border:1px solid #2a374c;border-radius:9px;background:#0b1220;color:var(--text);outline:none;font-size:12px}.checkrow{display:flex;align-items:center;gap:8px;margin-top:12px;color:#b5c0cf;font-size:11px}.checkrow input{accent-color:#8c78ed}.sample-setting{margin-top:11px;display:none}.sample-setting.show{display:grid}.primary{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:18px;padding:12px 15px;border:0;border-radius:11px;background:linear-gradient(100deg,#745ce1,#5b72e9);box-shadow:0 8px 22px #6559dc38;color:white;font-size:12px;font-weight:800;transition:.16s}.primary:hover{filter:brightness(1.12);transform:translateY(-1px)}.primary .icon{font-size:16px}.subnote{margin:12px 0 0;color:#7f8ca1;font-size:10px;line-height:1.55}.alert{display:none;margin-top:14px;padding:10px 11px;border:1px solid #f5c26b3b;border-radius:10px;background:#f5c26b0c;color:#d8c18d;font-size:10px}.alert.show{display:block}.info{margin-top:14px;padding:12px;border-radius:11px;background:#0c1421;border:1px solid #263247}.info-title{font-size:10px;color:#8998ae;font-weight:700;text-transform:uppercase;letter-spacing:.1em}.info-row{display:flex;justify-content:space-between;gap:12px;margin-top:8px;font-size:10px}.info-row span:first-child{color:#8491a6}.info-row span:last-child{color:#cbd5e3;text-align:right;overflow-wrap:anywhere}.codepath{font-size:9px!important;color:#9eacc0!important}
+    .right{min-width:0}.compare{overflow:hidden}.compare-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:17px 19px;border-bottom:1px solid #ffffff12}.compare-head p{margin:4px 0 0;color:var(--muted);font-size:11px}.compare-actions{display:flex;gap:8px}.smallbtn{padding:7px 10px;border:1px solid #2a374c;border-radius:8px;background:#111a29;color:#bbc7d7;font-size:10px;font-weight:700}.smallbtn:hover{border-color:#7586a2;color:white}.columns{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#273247}.column{min-width:0;background:#0c1320}.colhead{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 15px;border-bottom:1px solid #ffffff10;background:#101827}.modelname{display:flex;align-items:center;gap:9px;font-weight:750;font-size:12px;color:#f1f5fa}.modeldot{width:9px;height:9px;border-radius:50%;background:#99a7bb}.column.adapted .modeldot{background:var(--green);box-shadow:0 0 14px #56d6a080}.modelmeta{font-size:9px;color:#8492a8;margin-top:2px}.modelstate{font-size:9px;color:#8593a7}.output{min-height:290px;max-height:560px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;padding:16px;color:#d7e0ed;font-size:11px;line-height:1.7}.output.empty{color:#65738a;font-style:italic}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:11px 13px;border-top:1px solid #ffffff10;background:#0f1725}.metric{min-width:0}.metric label{display:block;color:#738199;text-transform:uppercase;letter-spacing:.08em;font-size:8px}.metric strong{display:block;margin-top:3px;color:#cbd6e5;font-size:10px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.runlog{display:flex;align-items:center;gap:9px;padding:12px 15px;border-top:1px solid #ffffff10;color:#96a4b8;font-size:10px;background:#0a101b}.runlog .led{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#7e8ba0}.runlog.running .led{background:var(--amber);animation:pulse .8s infinite}.runlog.ok .led{background:var(--green)}.runlog.error .led{background:var(--red)}.footnote{display:flex;align-items:flex-start;gap:8px;margin-top:12px;color:#8290a5;font-size:10px;line-height:1.55}.footnote b{color:#b4c0d1}.hidden{display:none!important}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}.controls{position:static}.prompt{min-height:130px}.right{grid-row:1}.columns{grid-template-columns:1fr}.output{min-height:220px}.compare-head{align-items:flex-start}.metrics{grid-template-columns:repeat(4,1fr)}}@media(max-width:560px){.wrap{width:min(100% - 24px,1440px)}.top{padding:15px 0}.toprow{align-items:flex-start}.status{padding:7px 9px;font-size:9px}.title{font-size:17px}.subtitle{max-width:230px;font-size:10px}.mark{width:37px;height:37px}.compare-head{display:block}.compare-actions{margin-top:12px}.metrics{grid-template-columns:repeat(2,1fr)}main{padding-top:16px}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap toprow">
+      <div class="brand"><div class="mark">C</div><div><div class="eyebrow">CGR · local experiment</div><h1 class="title">Adapter A/B Lab</h1><p class="subtitle">Run one prompt through the frozen base and the coder LoRA with matching settings.</p></div></div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><a href="/webpage-test" style="color:#b8aaff;font-size:12px">Webpage design test ↗</a><a href="/switching" style="color:#b8aaff;font-size:12px">CGR task switching ↗</a><div class="status"><span id="statusDot" class="dot"></span><span id="statusText">Checking local runner…</span></div></div>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="layout">
+      <section class="card controls">
+        <div class="section-head"><h2>Comparison input</h2><span class="tag">Same prompt · same seed</span></div>
+        <label class="field-label" for="prompt">Quick prompts</label>
+        <div class="presets">
+          <button class="chip" data-prompt="Write a Python function that returns a topological ordering of a directed graph. Detect cycles and return None when one exists. Include a short example.">Topological sort</button>
+          <button class="chip" data-prompt="Write a Python function merge_intervals(intervals) that merges overlapping intervals. State the time complexity and include two tests.">Merge intervals</button>
+          <button class="chip" data-prompt="Write a Python function that validates whether a string contains properly nested (), [] and {} brackets. Return a boolean and include edge-case tests.">Bracket validator</button>
+        </div>
+        <label class="field-label" for="prompt">Prompt</label>
+        <textarea id="prompt" class="prompt" spellcheck="false" placeholder="Describe a coding task to compare…"></textarea>
+        <div class="field-label">Generation settings</div>
+        <div class="settings">
+          <div class="setting"><label class="field-label" for="maxTokens">Max new tokens</label><input id="maxTokens" type="number" min="8" max="512" value="160"></div>
+          <div class="setting"><label class="field-label" for="seed">Seed</label><input id="seed" type="number" min="0" max="2147483647" value="42"></div>
+        </div>
+        <label class="checkrow"><input id="sample" type="checkbox"> Sample instead of greedy decoding</label>
+        <div id="samplingSettings" class="settings sample-setting">
+          <div class="setting"><label class="field-label" for="temperature">Temperature</label><input id="temperature" type="number" min="0.1" max="2" step="0.1" value="0.7"></div>
+          <div class="setting"><label class="field-label" for="topP">Top-p</label><input id="topP" type="number" min="0.1" max="1" step="0.05" value="0.9"></div>
+        </div>
+        <button id="runButton" class="primary"><span class="icon">▶</span><span>Run base vs adapter</span></button>
+        <p class="subnote">Both runs use the same chat-formatted prompt and generation settings. Runs are sequential to keep one model resident in memory. Results are actual local model generations; output quality is not automatically scored.</p>
+        <div id="serverAlert" class="alert">Double-click <code>Start Adapter Lab.cmd</code> in the project folder, then open <code>http://127.0.0.1:8765</code>.</div>
+        <div class="info">
+          <div class="info-title">Loaded experiment</div>
+          <div class="info-row"><span>Backbone</span><span id="baseInfo">Qwen/Qwen3-0.6B</span></div>
+          <div class="info-row"><span>Revision</span><span id="revisionInfo" class="mono">c1899de2…</span></div>
+          <div class="info-row"><span>Adapter</span><span id="adapterInfo">Coder · checkpoint-1000</span></div>
+          <div class="info-row"><span>Device</span><span id="deviceInfo">Waiting for runner</span></div>
+          <div class="info-row"><span>Adapter path</span><span id="pathInfo" class="mono codepath">Configured by local runner</span></div>
+        </div>
+      </section>
+
+      <section class="right">
+        <div class="card compare">
+          <div class="compare-head">
+            <div><h2>Generation comparison</h2><p id="compareSubtitle">Outputs will appear here after a real local inference run.</p></div>
+            <div class="compare-actions"><button id="copyButton" class="smallbtn" disabled>Copy both</button><button id="exportButton" class="smallbtn" disabled>Export JSON</button></div>
+          </div>
+          <div class="columns">
+            <article class="column">
+              <div class="colhead"><div><div class="modelname"><span class="modeldot"></span>Base model</div><div class="modelmeta">Qwen3-0.6B · adapter disabled</div></div><span class="modelstate" id="baseState">Awaiting run</span></div>
+              <div id="baseOutput" class="output empty">Base output will be shown here.</div>
+              <div class="metrics"><div class="metric"><label>Latency</label><strong id="baseLatency">—</strong></div><div class="metric"><label>New tokens</label><strong id="baseTokens">—</strong></div><div class="metric"><label>Tokens/sec</label><strong id="baseSpeed">—</strong></div><div class="metric"><label>Peak VRAM</label><strong id="baseVram">—</strong></div></div>
+            </article>
+            <article class="column adapted">
+              <div class="colhead"><div><div class="modelname"><span class="modeldot"></span><span id="adapterTitle">Coder adapter</span></div><div class="modelmeta" id="adapterMeta">LoRA checkpoint-1000</div></div><span class="modelstate" id="adapterState">Awaiting run</span></div>
+              <div id="adapterOutput" class="output empty">Adapter output will be shown here.</div>
+              <div class="metrics"><div class="metric"><label>Latency</label><strong id="adapterLatency">—</strong></div><div class="metric"><label>New tokens</label><strong id="adapterTokens">—</strong></div><div class="metric"><label>Tokens/sec</label><strong id="adapterSpeed">—</strong></div><div class="metric"><label>Peak VRAM</label><strong id="adapterVram">—</strong></div></div>
+            </article>
+          </div>
+          <div id="runLog" class="runlog"><span class="led"></span><span id="runLogText">Connect to the local runner to begin.</span></div>
+        </div>
+        <p class="footnote"><span>ⓘ</span><span><b>How to read this:</b> latency and throughput depend on your hardware and prompt. Greedy decoding is the most repeatable first comparison. Matching seeds make sampling reproducible, but outputs may still differ because the model distributions differ.</span></p>
+      </section>
+    </div>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    let lastComparison = null;
+    $('prompt').value = 'Write only Python code for merge_intervals(intervals). Merge overlapping intervals, return a sorted list, and handle an empty list.';
+    document.querySelectorAll('.chip').forEach(button => button.addEventListener('click', () => { $('prompt').value = button.dataset.prompt; $('prompt').focus(); }));
+    $('sample').addEventListener('change', () => $('samplingSettings').classList.toggle('show', $('sample').checked));
+    function setStatus(kind, text) { $('statusDot').className = `dot ${kind}`; $('statusText').textContent = text; }
+    function setRunLog(kind, text) { $('runLog').className = `runlog ${kind || ''}`; $('runLogText').textContent = text; }
+    async function refreshStatus() {
+      try {
+        const response = await fetch('/api/status');
+        if (!response.ok) throw new Error(`Runner returned HTTP ${response.status}`);
+        const data = await response.json();
+        $('serverAlert').classList.remove('show');
+        $('baseInfo').textContent = data.base_model_id;
+        $('revisionInfo').textContent = data.base_revision;
+        $('adapterInfo').textContent = `${data.adapter_name} · ${data.adapter_checkpoint}`;
+        $('adapterTitle').textContent = `${data.adapter_name} adapter`;
+        $('adapterMeta').textContent = `LoRA ${data.adapter_checkpoint} · rank ${data.rank}`;
+        $('deviceInfo').textContent = data.device;
+        $('pathInfo').textContent = data.adapter_path;
+        if (!data.adapter_available) { setStatus('error', 'Adapter files not found'); $('runButton').disabled = true; setRunLog('error', 'The configured adapter checkpoint is missing.'); return; }
+        if (data.model_loaded) { setStatus('ready', 'Model loaded · ready'); setRunLog('', 'Model is resident and ready for a comparison.'); }
+        else { setStatus('ready', 'Local runner ready'); setRunLog('', 'The exact base and adapter load on the first run.'); }
+      } catch (error) {
+        setStatus('error', 'Local runner not connected'); $('serverAlert').classList.add('show'); $('runButton').disabled = true;
+        setRunLog('error', 'Could not reach /api/status. Start the local runner and use its http://127.0.0.1:8765 page.');
+      }
+    }
+    function showResult(prefix, result) {
+      const output = $(`${prefix}Output`); output.textContent = result.text || '(No visible text generated.)'; output.classList.remove('empty');
+      $(`${prefix}Latency`).textContent = `${result.latency_seconds.toFixed(2)} s`;
+      $(`${prefix}Tokens`).textContent = String(result.generated_tokens);
+      $(`${prefix}Speed`).textContent = `${result.tokens_per_second.toFixed(2)}`;
+      $(`${prefix}Vram`).textContent = result.peak_vram_gb == null ? 'CPU' : `${result.peak_vram_gb.toFixed(2)} GB`;
+      $(`${prefix}State`).textContent = result.finish_reason === 'eos' ? 'Finished' : 'Token limit';
+    }
+    function displayComparison(result) {
+      lastComparison = result;
+      showResult('base', result.base); showResult('adapter', result.adapter);
+      $('compareSubtitle').textContent = `Completed ${new Date(result.created_at).toLocaleString()} · ${result.device} · same ${result.prompt_tokens}-token prompt`;
+      $('copyButton').disabled = false; $('exportButton').disabled = false;
+    }
+    async function loadLatest() {
+      try {
+        const response = await fetch('/api/latest');
+        if (!response.ok) return;
+        const {comparison} = await response.json();
+        if (!comparison) return;
+        displayComparison(comparison);
+        $('prompt').value = comparison.prompt;
+        $('maxTokens').value = comparison.settings.max_new_tokens;
+        $('seed').value = comparison.settings.seed;
+        $('sample').checked = comparison.settings.do_sample;
+        if (comparison.settings.temperature != null) $('temperature').value = comparison.settings.temperature;
+        if (comparison.settings.top_p != null) $('topP').value = comparison.settings.top_p;
+        $('samplingSettings').classList.toggle('show', $('sample').checked);
+        setRunLog('ok', 'Showing the latest saved real comparison. Enter a prompt to run another.');
+      } catch (_) { /* Status already explains a disconnected runner. */ }
+    }
+    async function runComparison() {
+      if (!$('prompt').value.trim()) { $('prompt').focus(); setRunLog('error', 'Enter a prompt before running the comparison.'); return; }
+      const body = {
+        prompt: $('prompt').value,
+        max_new_tokens: Number($('maxTokens').value),
+        seed: Number($('seed').value),
+        do_sample: $('sample').checked,
+        temperature: Number($('temperature').value),
+        top_p: Number($('topP').value)
+      };
+      const button = $('runButton'); button.disabled = true; button.querySelector('span:last-child').textContent = 'Running both models…';
+      $('baseState').textContent = 'Running…'; $('adapterState').textContent = 'Queued…';
+      setStatus('loading', 'Generating comparison'); setRunLog('running', 'Running base first, then the adapter with the same prompt and settings. First run may load model weights.');
+      const started = Date.now();
+      const progress = setInterval(async () => {
+        try {
+          const response = await fetch('/api/status');
+          const data = await response.json();
+          setRunLog('running', `${data.stage} · ${Math.round((Date.now() - started) / 1000)} s elapsed · ${data.device}`);
+          if (data.stage === 'generating adapter') $('baseState').textContent = 'Base complete';
+          $('adapterState').textContent = data.stage === 'generating adapter' ? 'Running…' : 'Queued…';
+        } catch (_) { /* The comparison request reports connection errors. */ }
+      }, 2000);
+      try {
+        const response = await fetch('/api/compare', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || `Runner returned HTTP ${response.status}`);
+        displayComparison(result);
+        const delta = result.adapter.latency_seconds - result.base.latency_seconds;
+        $('compareSubtitle').textContent = `Completed ${new Date(result.created_at).toLocaleString()} · ${result.device} · same ${result.prompt_tokens}-token prompt`;
+        $('copyButton').disabled = false; $('exportButton').disabled = false;
+        setStatus('ready', 'Model loaded · ready');
+        setRunLog('ok', `Comparison complete. Adapter generation took ${delta >= 0 ? '+' : ''}${delta.toFixed(2)} s versus base on this run.`);
+      } catch (error) {
+        $('baseState').textContent = 'Run failed'; $('adapterState').textContent = 'Run failed';
+        setStatus('error', 'Comparison failed'); setRunLog('error', error.message);
+      } finally {
+        clearInterval(progress);
+        button.disabled = false; button.querySelector('span:last-child').textContent = 'Run base vs adapter';
+      }
+    }
+    $('runButton').addEventListener('click', runComparison);
+    $('copyButton').addEventListener('click', async () => {
+      if (!lastComparison) return;
+      const text = `PROMPT\n${lastComparison.prompt}\n\nBASE MODEL\n${lastComparison.base.text}\n\n${lastComparison.adapter_name.toUpperCase()} ADAPTER\n${lastComparison.adapter.text}`;
+      await navigator.clipboard.writeText(text); setRunLog('ok', 'Prompt and both outputs copied to clipboard.');
+    });
+    $('exportButton').addEventListener('click', () => {
+      if (!lastComparison) return;
+      const blob = new Blob([JSON.stringify(lastComparison, null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `cgr-base-vs-${lastComparison.adapter_name.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${Date.now()}.json`; a.click(); URL.revokeObjectURL(url);
+    });
+    refreshStatus().then(loadLatest);
+  </script>
+</body>
+</html>

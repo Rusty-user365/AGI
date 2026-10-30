@@ -1,0 +1,2 @@
+# Optional dependency for the Hugging Face DepDoctor streaming importer.
+datasets>=3.0
