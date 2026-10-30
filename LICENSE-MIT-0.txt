@@ -1,0 +1,32 @@
+MIT No Attribution (MIT-0)
+
+Copyright 2026 Abhishek Pant
+
+Scope: this licence applies to the ARC Prize 2026 submission artifacts in this
+repository -- `notebooks/ARC_PRIZE_2026_CGR_KAGGLE.ipynb`,
+`ARC_PRIZE_2026_KAGGLE_PLAN.md` and `results/arc_kaggle_scaffold_smoke/` --
+including any code, text and recorded results in those paths. The remainder of
+the repository is licensed under the MIT licence in `LICENSE`, which is
+unaffected by this file.
+
+ARC Prize 2026 requires authored competition code to be released under "a
+permissive public domain license (eg. CC0 or MIT-0)". MIT-0 removes the
+attribution condition that plain MIT retains, which is why it is used here
+rather than the repository's MIT licence.
+
+--------------------------------------------------------------------------------
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

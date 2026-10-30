@@ -9,6 +9,8 @@ scratch/
 
 # transient run logs (the JSON results and paper_tables.md are the source of truth)
 *.log
+# except the ARC scaffold transcript, which the plan cites as evidence
+!results/arc_kaggle_scaffold_smoke/notebook_run.log
 
 # python
 __pycache__/
