@@ -1,0 +1,48 @@
+{
+  "run_id": "ui_qwen3_0.6b_q_mlp_r16_v1",
+  "specialist": "frontend_ui_generation",
+  "base_model_id": "Qwen/Qwen3-0.6B",
+  "base_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "dataset_id": "iamdyeus/ui-instruct-4k",
+  "dataset_revision": "c13c126c196c4221da9680980c7be9a59c4f7cf2",
+  "initial_logged_train_loss": 1.3341,
+  "final_logged_train_loss": 0.8501,
+  "initial_eval_loss": 1.7324117422103882,
+  "initial_eval_perplexity": 5.654274129182288,
+  "final_eval_loss": 0.8895623683929443,
+  "final_eval_perplexity": 2.434064194742927,
+  "best_logged_eval_loss": 0.8895623683929443,
+  "global_step": 464,
+  "learning_rate_last_logged": 6.091729809042379e-09,
+  "parameters": {
+    "trainable_parameters": 6881280,
+    "total_parameters": 602931200,
+    "trainable_percent": 1.141304347826087,
+    "target_modules_requested": [
+      "q_proj",
+      "gate_proj",
+      "up_proj",
+      "down_proj"
+    ],
+    "target_modules_observed": [
+      "down_proj",
+      "gate_proj",
+      "q_proj",
+      "up_proj"
+    ],
+    "k_proj_or_v_proj_adapted": false
+  },
+  "hardware_compute": {
+    "device_name": "Tesla T4",
+    "peak_vram_gb": 6.967313289642334,
+    "training_session_wall_clock_seconds": 5168.345851833999,
+    "cumulative_logged_training_seconds": 5670.058892692,
+    "train_samples_per_second": 0.72,
+    "train_tokens_per_second": 903.573
+  },
+  "latest_complete_checkpoint_path": "/content/drive/MyDrive/cgr_adapter_checkpoints/ui_qwen3_0.6b_q_mlp_r16_v1/checkpoint-464",
+  "latest_complete_checkpoint_size_mb": 79.01358890533447,
+  "final_adapter_path": "/content/drive/MyDrive/cgr_adapter_checkpoints/ui_qwen3_0.6b_q_mlp_r16_v1/final_adapter",
+  "final_adapter_size_mb": 41.430423736572266,
+  "saved_utc": "2026-10-29T22:09:37.880434+00:00"
+}

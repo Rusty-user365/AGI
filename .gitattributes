@@ -1,0 +1,6 @@
+# Preserve exact bytes for artifacts referenced by SHA-256 in experiment records.
+/results/cybermetric80_checkpoint2500.json -text
+/results/cyber_router_crossdataset_v1.json -text
+/results/webpage_design_v1/base.html -text
+/results/webpage_design_v1/ui.html -text
+/data/validation/webpage_design_v1.json -text

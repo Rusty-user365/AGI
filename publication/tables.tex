@@ -1,0 +1,96 @@
+% Requires \usepackage{booktabs}. Values are taken from PAPER.md and the
+% recorded result artifacts; the arithmetic and adapter studies use different models.
+\begin{table}[ht]
+\centering
+\caption{Five-node coder integration: mechanism evidence, not an end-to-end multi-domain benchmark.}
+\label{tab:dag-integration}
+\begin{tabular}{lr}
+\toprule
+Measure & Result \\
+\midrule
+Nodes committed & 4/5 \\
+Policy transitions verified & 4 \\
+Coder clamp test cases passed (rejected) & 2/5 \\
+Coder even-sum cases passed & 4/4 \\
+Largest bridge logit difference & $5.20\times 10^{-5}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Blind arithmetic vault localizer metrics ($N=331$). Step-4 recall/precision are from the deterministic CPU refit, while top-1 is from the published fit.}
+\label{tab:localizer}
+\begin{tabular}{lrrr}
+\toprule
+Localizer & Top-1 & Step-4 recall & Step-4 precision \\
+\midrule
+Linear majority & 0.604 & 0.394 & 0.342 \\
+Transformer majority & 0.677 & 0.545 & 0.400 \\
+Softmax ensemble & 0.680 & 0.485 & 0.471 \\
+Two-tier ($\tau=0.35$) & 0.625 & 0.667 & 0.324 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Blind arithmetic vault recovery ($N=331$). Full-loop and generation-slice speeds are different quantities.}
+\label{tab:vault-recovery}
+\begin{tabular}{lrr}
+\toprule
+Method & Recovered & Rate \\
+\midrule
+Full rewrite & 46/331 & 13.9\% \\
+Random-step rank-2 & 23/331 & 6.9\% \\
+Two-tier gated rank-2 & 73/331 & 22.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Arithmetic KV-cache systems measurements. Generation-slice speedups exclude observer and gate overhead.}
+\label{tab:kv-systems}
+\begin{tabular}{llrr}
+\toprule
+Dataset & Measurement & Rewrite (ms) & Rewind (ms) \\
+\midrule
+$N=110$ & Generation slice & 4498.4 & 173.7 \\
+$N=110$ & Full loop & 4498.4 & 2244.0 \\
+Vault $N=331$ & Generation slice & 3281.9 & 120.7 \\
+Vault $N=331$ & Full loop & 3281.9 & 1934.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Live CyberMetric-80 routing. The oracle uses the answer key and is not a deployable policy.}
+\label{tab:live-routing}
+\begin{tabular}{lrr}
+\toprule
+Arm & Correct & Accuracy \\
+\midrule
+Base & 54/80 & 67.50\% \\
+Cyber adapter & 54/80 & 67.50\% \\
+SecEval-trained router & 57/80 & 71.25\% \\
+Oracle & 61/80 & 76.25\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Cross-dataset routing. SecEval and SecQA were public test items repurposed for this exploratory study; no pristine blind holdout is claimed.}
+\label{tab:cross-dataset}
+\begin{tabular}{lrrrrrr}
+\toprule
+Train $\rightarrow$ test & Base & Cyber & Router & Oracle & Useful & Harmful \\
+\midrule
+SecEval $\rightarrow$ CyberMetric (80) & 54 & 54 & 57 & 61 & 3 & 0 \\
+SecEval $\rightarrow$ SecEval (40) & 26 & 23 & 26 & 29 & 1 & 1 \\
+CyberMetric $\rightarrow$ SecQA (100) & 97 & 90 & 97 & 97 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}

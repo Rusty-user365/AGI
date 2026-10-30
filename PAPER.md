@@ -1,4 +1,4 @@
-# Surgical KV-Cache Rewind: Step-Level Error Localization and Token-Mask Repair for Small Language Models
+# Compositional Inference: Localized KV-Cache Repair and Specialist Routing
 
 **Authors:** Research Team  
 **Date:** October 2026  
@@ -9,7 +9,7 @@
 
 ## Abstract
 
-When multi-step autoregressive generation diverges, standard inference harnesses face an inefficient dilemma: either discard the entire trajectory and regenerate from scratch ("full rewrite"), or rely on text-prompted self-correction ("hindsight prompting"), which language models frequently ignore. In this paper, we establish that **un-pooled internal hidden states** enable precise, step-level error localization, and that pairing step localization with **physical logit-mask exclusion** and **KV-cache truncation** produces an autonomous, surgical repair loop that outperforms full regeneration while cutting *generation* latency by more than an order of magnitude. The end-to-end loop is cheaper than a rewrite by a smaller factor (1.7-2.0x), because observer inference dominates the remaining cost; we report both numbers throughout and never substitute the generation-slice figure for the loop figure.
+We study a compositional inference framework that combines frozen language-model backbones, learned error localization, bounded interventions, and task-specific low-rank adapters. The intended benefit is modular repair and specialist selection without updating the base weights at inference. This is a proposed alternative to retraining a monolithic system for every specialized behavior; we do not establish a solution to catastrophic forgetting or a replacement for jointly trained mixtures of experts. On five-step arithmetic with Qwen3-0.6B-Base, a frozen rewind-and-token-exclusion loop recovers 73/331 failed chains versus 46/331 for full rewrite, with a 1.70x measured end-to-end speedup. Separately, on the chat-capable Qwen3-0.6B, an exploratory correctness router trained on 200 SecEval questions achieves 57/80 on CyberMetric-80 versus 54/80 for both the base and a cyber adapter. A live implementation reproduces all 80 base answers and routing decisions and all nine fresh-cache specialist outputs; three switches help and none harm on this sample. These are separate experiments with different backbones and tasks, not a demonstrated end-to-end multi-domain DAG system. The public benchmark was previously examined, possible dataset contamination is unknown, and the routing gain is preliminary.
 
 Through systematic empirical dissection on multi-step reasoning chains ($H=5$, Qwen3-0.6B-Base), we show:
 1. **Falsification of Heuristic Baselines:** Sequence-level pooled observers fail to select correct trajectories better than the model's own raw token logprob ($\text{AUC} = 0.682$ yields only $+0.004$ selection accuracy over free `max-logprob`, $p=1.000$). Similarly, natural language hindsight constraints (`# constraint: x is not 7`) are statistically identical to neutral placebos ($27.3\%$ vs $27.3\%$, paired $p=1.000$).
@@ -17,6 +17,15 @@ Through systematic empirical dissection on multi-step reasoning chains ($H=5$, Q
 3. **Autonomous Loop Recovery:** Driving a rewind loop with localization and rank-2 first-digit exclusion reaches **$29.1\%$** on the $N=110$ tuning holdout. On the blind vault the frozen loop recovers **$22.1\%$** ($73/331$) against $13.9\%$ ($46/331$) for full rewrites ($43\text{W}/16\text{L}$, $p = 5.84 \times 10^{-4}$), a **$1.59\times$** multiplier. The $2.29\times$ figure sometimes quoted pairs the same loop against a lower-variance draw of the stochastic rewrite baseline and is not the headline.
 4. **Systems Efficiency (Two Numbers, Not One):** Physically truncating the attention key-value cache via `DynamicCache.crop(target_len)` cuts per-chain forward tokens from $581.1$ to $119.7$ (**$-79.4\%$**) and *generation-slice* latency from $4,498.4\text{ ms}$ to $173.7\text{ ms}$ (**$25.9\times$**). The **end-to-end loop** is $2,244\text{ ms}$ per chain against $4,498.4\text{ ms}$ — **$2.0\times$** — because ten probe forward passes and the gate readout cost more than the generation they save. $25.9\times$ is a generation-slice measurement and is never a loop claim.
 5. **Out-of-Sample Vault Replication & Generalization:** On an independent holdout vault ($N=331$ unseen broken chains, seed 20261028), frozen CGR achieves **$22.1\%$** recovery, significantly beating full rewrites ($13.9\%$, $p = 5.84 \times 10^{-4}$) and decisively outperforming a random-step permutation control ($6.9\%$, $p = 7.64 \times 10^{-11}$). Slicing is bit-identical ($\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$). Loop-level speedup on the vault is **$1.70\times$** ($1,934.7$ vs $3,281.9\text{ ms}$ per chain); the $27.2\times$ in the systems block is the generation slice alone.
+
+6. **Live specialist routing:** On a previously inspected 80-question public cybersecurity benchmark, the frozen SecEval-trained binary router scores 57/80 versus 54/80 for the base and the cyber adapter; a per-question oracle scores 61/80. The live loop regenerates all base answers, reproduces all nine selected cyber outputs after full-prompt prefill from an empty cache, and observes three useful and zero harmful switches in this sample. Neither the base nor adapter weights are updated during inference, although the router heads were supervised-trained. This validates a narrow implementation, not universal safety or general multi-step compositional recovery.
+
+## Introduction
+
+Autoregressive models can make a local error and then build further output on it. Replacing a full model or repeatedly regenerating an entire response may waste computation; specializing a model by fine-tuning also raises questions about what behavior is retained. Our compositional inference framework investigates a different arrangement: retain a shared backbone, inspect intermediate states, apply a bounded local repair where verification allows, and select a separately trained specialist when an intervention may help. We study this arrangement as a research framework rather than claiming a production mixture-of-experts system.
+
+The present paper brings together two distinct empirical strands. The arithmetic study evaluates step localization and cache-based repair on a frozen base model; its reported recovery and timing numbers are measured there. The cyber study evaluates a separately trained answer-correctness router and a frozen adapter on multiple-choice questions; its live full-prefill experiment checks output and cache behavior for individual questions. A small coder integration separately checks a bridge back to base execution. These pieces motivate a future multi-step, multi-specialist system, but have not yet been jointly demonstrated as one end-to-end architecture. We report negative controls, failures, data reuse and resource limits rather than assuming modularity guarantees safety, prevents forgetting, or reduces latency.
+
 
 ---
 
@@ -245,10 +254,10 @@ To eliminate post-hoc threshold overfitting concerns on small holdout splits, we
 2. **Defeating the Permutation Control (Rule 3 PASS):**  
    Slicing back to a uniformly random step with rank-2 exclusion (`random_t_rank2`) collapses to **$6.9\%$ recovery** ($23/331$)—performing at roughly half the recovery rate of doing a standard full rewrite ($13.9\%$). Arbitrary rewinds actively destroy sound prefixes. In contrast, Two-Tier CGR achieves **$22.1\%$** ($73/331$). The paired McNemar test demonstrates decisive statistical superiority:
    $$\mathbf{57\text{ Wins} \; / \; 7\text{ Losses}} \quad (p = 7.64 \times 10^{-11})$$
-   The paired odds ratio of $8.14 : 1$ confirms that recovery is causally driven by accurate hidden-state localization rather than stochastic perturbation.
+   The paired odds ratio of $8.14 : 1$ shows a recovery advantage over this particular random-step control; it does not isolate all causal mechanisms.
 3. **Replicating Out-of-Sample Systems Savings (Rule 2, qualified):**  
    CGR significantly outperforms full-chain rewrites ($22.1\%$ vs $13.9\%$, $43\text{W}/16\text{L}, p = 5.84 \times 10^{-4}$) while slashing forward tokens from $580.6$ to $120.1$ ($-79.3\%$) and per-chain latency from $3,281.9\text{ ms}$ to $120.7\text{ ms}$—a **$27.2\times$ generation-slice speedup**, with the end-to-end loop at $1,934.7\text{ ms}$ vs $3,281.9\text{ ms}$ per chain ($1.70\times$).
-4. **Bit-Identical Slicing Verification (Rule 4 PASS):**  
+4. **Argmax-Identical Slicing Verification (Rule 4 PASS):**  
    To check cache slicing for numerical drift or token divergence, we benchmarked `DynamicCache.crop` against un-cached recomputations across 20 validation sequences. The observed maximum absolute logit difference was $\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$, below the $10^{-4}$ comparison tolerance, with $100\%$ identical argmax token sequences. This is not a claim that the logit difference is below fp32 machine epsilon.
 
 ### 4.4 Long-Horizon Scaling ($H=10$) & The Generative Horizon Boundary ($H^*$)
@@ -286,11 +295,11 @@ While Path A substantially resolves the localization bottleneck and establishes 
 
 ## 6. Dynamic Adapter Routing and the Bridge Protocol
 
-> **Status: preliminary one-adapter integration; multi-domain efficacy pending.**
-> The 2026-10-30 CPU prototype measures coder switching and base Bridge
-> coherence on disclosed integration tasks (§6.3). It does not establish
-> multi-domain recovery, learned routing, a deployment speedup, or a 4 GB
-> memory bound. The comparative evaluation remains prospective.
+> **Status: preliminary coder integration and single-question cyber routing; multi-domain DAG efficacy pending.**
+> The CPU prototype measures coder switching and base Bridge coherence on
+> disclosed tasks (§6.3), and a learned cyber correctness router in a separate
+> single-question experiment (§6.4). It does not establish multi-domain DAG
+> recovery, deployment speedup, or a 4 GB memory bound.
 
 Full-checkpoint escalation was measured and closed. On the $N=110$ ladder no
 deployable actuator beat `rank2` (`findings/2026-10-28-level2-actuator-ladder.md`),
@@ -415,7 +424,7 @@ tests the mechanism; it is not natural base-failure recovery. Source records:
 `results/cgr_adapter_switching/20261029T213116Z_df30837b.json` and
 `results/cgr_adapter_switching/20261029T213212Z_4e3f62d0.json`.
 
-While cyber and UI adapters train, a separate dependency/validator package
+A separate dependency/validator package
 exercises delayed failure, descendant invalidation, preserved-artifact replay planning,
 parameterized SQL behavior, and static HTML contracts on 20 public parameter
 variations of one sanitized-card task family. Its passing fixture checks use
@@ -424,16 +433,45 @@ frontend behavior, multi-adapter cache tests, independent task evaluation and
 the full-prefix-versus-switched-specialist ablation remain pending. The
 prospective protocol is `ADAPTER_VALIDATION_PROTOCOL.md`.
 
+
+### 6.4 Cross-Dataset Cyber Routing and Live Full-Prefill Verification
+
+We trained binary correctness heads on a 200-item single-answer SecEval sample, where the base answered 124 correctly and 76 incorrectly. The inputs were the final four generated answer-token hidden states, with standardization and an eight-dimensional SVD fitted solely on the training set. A `LinearStep` and a `TransformerStep` were adapted to binary classification; the mean of their sigmoid scores below 0.50 selected the cyber adapter. The heads were trained, but the base and the step-2500 cyber LoRA were frozen during inference. The score is not established as a calibrated correctness probability.
+
+| CyberMetric-80 arm | Correct | Accuracy |
+|---|---:|---:|
+| Base (Qwen3-0.6B) | 54/80 | 67.50% |
+| Cyber adapter | 54/80 | 67.50% |
+| SecEval-trained router | **57/80** | **71.25%** |
+| Oracle, choose a correct arm if available | 61/80 | 76.25% |
+
+The router selected the adapter on nine questions, producing three useful switches and zero harmful switches. These are sample-level observations, not a proof of safety. On the disjoint 40-question SecEval sample, base/cyber/router/oracle scored 26/23/26/29; one switch helped and one harmed. In the reverse direction, heads trained on all 80 CyberMetric items evaluated on 100 SecQA items gave base/cyber/router/oracle scores of 97/90/97/97, with nine switches and neither useful nor harmful switches. Strict answer-format parsing counted 2 CyberMetric, 5 SecEval and 7 SecQA cyber responses as invalid; those must not silently be treated as correct.
+
+The live CyberMetric loop regenerated the base output, computed the frozen router score, and, when selected, discarded the previous generation cache and generated from the complete prompt with the cyber adapter. It reproduced all 80 saved base outputs and routing decisions and all nine selected standalone cyber outputs. A forward hook verified that each specialist's initial forward received the full prompt and a cache of length zero. This demonstrates the specified full-prefill behavior and outcome on these questions. It does not verify a multi-step DAG, classifier calibration, safe commit decision, or specialist-to-base bridge. The SecEval and CyberMetric material is public and CyberMetric had already been examined; exact and high character-similarity checks do not eliminate paraphrases or unknown pretraining/adapter contamination. The +3/80 gain is exploratory and does not establish generality or safety. Artifacts: `experiments/cyber_router_crossdataset.py`, `experiments/cyber_router_live.py`, `results/cyber_router_crossdataset_v1.json`, and `results/cyber_router_live_cybermetric80_v3.json`.
+
+### 6.5 Experience Memory and UI: Exploratory Results
+
+An in-memory Chroma store with MiniLM embeddings retrieved a short formatting rule for a 20-item CyberMetric sample. The cyber arm moved from 13/20 with two format failures to 16/20 with none; the base moved from 15/20 to 16/20. The rule was written after observing those failures, and the other questions had been examined, so this does not establish held-out generalization or an advantage of retrieval over directly including the same instruction. Scoped, expiring memory was tested as a component, not integrated into the live routing loop.
+
+A paired FocusFlow landing-page prompt produced complete HTML from both the base and the final UI adapter, with identical prompt tokens and decoding settings. Both omitted the requested functional signup, working hero action, schedule preview and color palette; the adapter output also lacked an associated email label and its mobile layout expanded beyond the target width. One example is not a UI benchmark. The UI data's React/Next.js component emphasis is a plausible mismatch with the self-contained HTML task, not a demonstrated cause.
+
 ---
 
 ## 7. Conclusion
 
-Autonomous reasoning repair does not require fine-tuning the base language model or relying on fickle text-based self-correction prompts. By reading un-pooled intermediate hidden states, enforcing physical logit exclusion, and surgically cropping the key-value cache, language models can detect and repair reasoning divergence at a fraction of the computational cost of regeneration: 1.59x the recovery rate of a full rewrite on a blind 331-chain vault, with the repair's generation step 26x faster than regenerating the chain.
+The measured arithmetic repair loop operates without fine-tuning the base language model at inference or relying on text-based self-correction prompts. By reading un-pooled intermediate hidden states, enforcing physical logit exclusion, and surgically cropping the key-value cache, language models can detect and repair reasoning divergence at a fraction of the computational cost of regeneration: 1.59x the recovery rate of a full rewrite on a blind 331-chain vault, with the repair's generation step 26x faster than regenerating the chain.
 
 Surgical KV-cache rewinds turn error recovery from a $4.5$-second full trajectory discard into a sub-$200$ millisecond in-memory cache crop for the generation step. The full loop, including observer inference, runs at $1.7$-$2.0\times$ the speed of a rewrite; making the observer cheaper is the clearest remaining systems headroom.
 
 ---
 
+### References and research artifacts
+
+- Tihanyi et al., [CyberMetric: A Benchmark Dataset Based on Retrieval-Augmented Generation for Evaluating LLMs in Cybersecurity Knowledge](https://arxiv.org/abs/2402.07688), IEEE CSR 2024; [dataset](https://github.com/cybermetric/CyberMetric).
+- XuanwuAI, [SecEval cybersecurity benchmark and dataset](https://github.com/XuanwuAI/SecEval).
+- Liu et al., [SecQA: A Concise Question-Answering Dataset for Evaluating Large Language Models in Computer Security](https://arxiv.org/abs/2312.15838); [dataset](https://huggingface.co/datasets/zefang-liu/secqa).
+- Qwen team, [Qwen3-0.6B chat model](https://huggingface.co/Qwen/Qwen3-0.6B) and [Qwen3-0.6B-Base](https://huggingface.co/Qwen/Qwen3-0.6B-Base).
+- Project source records and model/data revisions are indexed in `REPRODUCIBILITY.md` and in the linked findings and result files.
 ### Errata
 
 **2026-10-29 — the vault Step-4 column was a precision, not a recall.**

@@ -1,0 +1,29 @@
+{
+  "run_id": "cyber_qwen3_0.6b_q_mlp_r16_v1",
+  "specialist": "cybersecurity_defensive",
+  "base_model_id": "Qwen/Qwen3-0.6B",
+  "base_revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "dataset_id": "Trendyol/Trendyol-Cybersecurity-Instruction-Tuning-Dataset",
+  "dataset_revision": "357544e7576607d88eaeac9b0adb07e9fd8bb2bb",
+  "train_examples": 50538,
+  "eval_examples": 1024,
+  "train_tokens": 33038743,
+  "max_length": 768,
+  "max_train_samples": null,
+  "max_eval_samples": 1024,
+  "target_modules_requested": [
+    "q_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "lora_rank": 16,
+  "lora_alpha": 32,
+  "transformers_version": "4.57.6",
+  "torch_version": "2.11.0+cu130",
+  "device_name": "Tesla T4",
+  "run_started_utc": "2026-10-29T18:12:44.971747+00:00",
+  "save_steps": 100,
+  "eval_steps": 500,
+  "logging_steps": 10
+}

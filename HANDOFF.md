@@ -1,5 +1,27 @@
 # Handoff — snapshot `v1.1-cgr-path-a-vault-verified-and-level2-ready`
 
+## 2026-10-30: publication draft and reproducibility handoff
+
+The user requested a final LEGO LLM paper, the three used adapter checkpoints,
+a repository commit and the tag `v1.0-Publication-Ready`. `PAPER.md` is the
+research draft; `publication/tables.tex` contains publication-ready table
+source. This label is a requested repository tag, not independent peer review.
+Read `REPRODUCIBILITY.md` for external assets, software setup, hashes and the
+limits of exact reproduction. The arithmetic and adapter experiments use
+separate base checkpoints; do not conflate them.
+
+The SecEval-trained router achieved 57/80 on CyberMetric versus 54/80 for base
+and cyber, with 3 useful and 0 harmful switches in that sample. A live rerun
+reproduced 80 base outputs and decisions, and all 9 cyber outputs on full-prompt
+empty-cache prefill. This does not prove universal uncertainty detection,
+general safety, or a combined multi-step DAG/cache-bridge result. The 40-item
+SecEval test had one harmful switch; the reverse SecQA run matched the base.
+Read `findings/2026-10-30-cross-dataset-routing-generalization.md` for the
+complete limitations. No new model experiments were authorized in this phase.
+
+The user also recorded multi-adapter routing as future work, not an implemented
+result: `pending_experiments/MULTI_ADAPTER_ROUTING_FUTURE.md`.
+
 **Date:** 2026-10-29  
 **Branch:** `main` (tracked at `origin/main` commit `20448c2`)  
 **Active Working Context:**  
