@@ -1,3 +1,11 @@
+> **2026-10-30 evidence correction:** Historical 25.9x/27.2x cached-generation
+> and 2.0x/1.70x full-loop speedup interpretations are withdrawn. The cache
+> timer measured prefix prefill with no repaired-suffix decode; repair timers
+> excluded required controller work. Token/FLOP counts were estimates.
+> Recovery counts remain descriptive conditional-repair observations, with
+> candidate clustering unaccounted for. Use `PAPER.md` and
+> `findings/2026-10-30-paper-review.md` for the corrected interpretation.
+
 # Commitment-Gated Reasoning: Draft Sections 1–3
 
 _Working draft. Claims about capability remain provisional until the listed

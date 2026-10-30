@@ -1,3 +1,11 @@
+> **2026-10-30 evidence correction:** Historical 25.9x/27.2x cached-generation
+> and 2.0x/1.70x full-loop speedup interpretations are withdrawn. The cache
+> timer measured prefix prefill with no repaired-suffix decode; repair timers
+> excluded required controller work. Token/FLOP counts were estimates.
+> Recovery counts remain descriptive conditional-repair observations, with
+> candidate clustering unaccounted for. Use `PAPER.md` and
+> `findings/2026-10-30-paper-review.md` for the corrected interpretation.
+
 # Two-tier localization cures step-4 collapse in-sample; KV-cache slicing yields a 26x generation-slice cut (2026-10-28)
 
 Artifacts: `experiments/path_a_loop.py`, `results/path_a_loop_h5.json`

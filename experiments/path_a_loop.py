@@ -1,16 +1,8 @@
-"""Path A Execution: Ensemble Localizer + Accept-if-Cleaner Gate + Real KV-Cache Slicing.
+"""Historical fresh-prompt conditional-repair experiment, with audited reporting.
 
-Addresses the three high-leverage bottlenecks identified in the empirical investigation:
-1. Fix Step-4 Recall: Combines Linear Localizer (high early-step recall) with
-   Transformer Localizer (high step-4 recall) into an Ensemble / Two-Tier Localizer.
-2. Accept-if-Cleaner Gate: Runs localizer on candidate repair; only accepts the
-   rank-2 edit if the error score drops, preventing mis-localized step 1 from
-   overwriting a correct number.
-3. Real KV-Cache Slicing: Uses DynamicCache truncation (crop) to save prefix
-   token forwards and wall-clock latency during rewinds.
-
-Usage:
-    python experiments/path_a_loop.py --data results/arith_steps_h5.pt
+This implementation does not generate repairs from a persistent cropped cache.
+Token counters are formula estimates. Timings exclude parts of the controller.
+See results/measurement_audit_20261030.json. Historical results are not replaced.
 """
 from __future__ import annotations
 
@@ -50,8 +42,11 @@ def main() -> int:
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--max-new", type=int, default=5)
     ap.add_argument("--limit", type=int, default=0)
-    ap.add_argument("--out", default="results/path_a_loop_h5.json")
+    ap.add_argument("--out", default="results/path_a_loop_h5_audited_v2.json")
     args = ap.parse_args()
+    if Path(args.out).exists() and not getattr(args, "diagnostics_only", False):
+        raise FileExistsError("Preserve recorded evidence: choose a new --out path")
+    print("AUDIT: conditional repair; token counts are estimates; timings are not full-controller or cache speedups.")
     args.device = str(_resolve_device(args.device))
 
     root = Path(__file__).resolve().parents[1]
@@ -165,9 +160,9 @@ def main() -> int:
 
     systems = {
         "uncached_rewind_tokens": 0,
-        "cached_rewind_tokens": 0,
+        "prefix_prefill_token_estimate": 0,
         "uncached_rewind_time_ms": 0.0,
-        "cached_rewind_time_ms": 0.0,
+        "prefix_prefill_time_ms": 0.0,
     }
 
     print(f"\nRunning end-to-end evaluation on {len(rows)} holdout rows...")
@@ -274,8 +269,8 @@ def main() -> int:
                 cac.crop(target_prompt_tokens.shape[0])
                 cac_tokens = target_prompt_tokens.shape[0] + (steps - t_hat) * 2
                 t_cac_ms = (time.time() - t0_cac) * 1000
-                systems["cached_rewind_tokens"] += cac_tokens
-                systems["cached_rewind_time_ms"] += t_cac_ms
+                systems["prefix_prefill_token_estimate"] += cac_tokens
+                systems["prefix_prefill_time_ms"] += t_cac_ms
 
             final_seq = seq_repaired
             if is_gated:
@@ -332,24 +327,27 @@ def main() -> int:
         print(f"{name:<20} {a['ok']:>4}/{a['n']:<5} {rate:>7.3f} [{lo:.3f}, {hi:.3f}] {t_ex:>8} {acc:>9}")
 
     print("\n" + "=" * 80)
-    print("SYSTEMS FLOPs & LATENCY CLAIM (KV-Cache Truncation)")
+    print("INCOMPLETE TIMING DIAGNOSTICS: NO SPEEDUP CLAIM")
     print("=" * 80)
     avg_unc_tok = systems["uncached_rewind_tokens"] / max(n_total, 1)
-    avg_cac_tok = systems["cached_rewind_tokens"] / max(n_total, 1)
+    avg_cac_tok = systems["prefix_prefill_token_estimate"] / max(n_total, 1)
     avg_unc_time = systems["uncached_rewind_time_ms"] / max(n_total, 1)
-    avg_cac_time = systems["cached_rewind_time_ms"] / max(n_total, 1)
+    avg_cac_time = systems["prefix_prefill_time_ms"] / max(n_total, 1)
     avg_rw_tok = arms["full_rewrite"]["tokens"] / max(n_total, 1)
     avg_rw_time = arms["full_rewrite"]["time_ms"] / max(n_total, 1)
 
     print(f"Full Rewrite:             {avg_rw_tok:>6.1f} tokens/chain | {avg_rw_time:>6.1f} ms/chain")
     print(f"Un-cached Fresh Rewind:   {avg_unc_tok:>6.1f} tokens/chain | {avg_unc_time:>6.1f} ms/chain")
-    print(f"KV-Cache Truncated Rewind:{avg_cac_tok:>6.1f} tokens/chain | {avg_cac_time:>6.1f} ms/chain")
-    print(f"-> FLOPs/Token Savings:   {(1.0 - avg_cac_tok / avg_unc_tok)*100:.1f}% reduction vs fresh rewind, "
-          f"{(1.0 - avg_cac_tok / avg_rw_tok)*100:.1f}% vs full rewrite")
-    print(f"-> Latency Savings:       {(1.0 - avg_cac_time / avg_unc_time)*100:.1f}% latency cut vs fresh rewind, "
-          f"{(1.0 - avg_cac_time / avg_rw_time)*100:.1f}% vs full rewrite")
+    print(f"Prefix prefill only (no decode):{avg_cac_tok:>6.1f} tokens/chain | {avg_cac_time:>6.1f} ms/chain")
 
     payload = {
+        "measurement_scope": {
+            "repair_uses_persistent_cropped_cache": False,
+            "full_controller_latency_measured": False,
+            "token_counts_are_estimates": True,
+            "task_clustering_accounted_for": False,
+            "historical_interpretation_audit": "results/measurement_audit_20261030.json",
+        },
         "config": vars(args),
         "n": n_total,
         "localizer_eval": {
@@ -379,12 +377,8 @@ def main() -> int:
             "full_rewrite_time_ms": avg_rw_time,
             "uncached_rewind_tokens": avg_unc_tok,
             "uncached_rewind_time_ms": avg_unc_time,
-            "cached_rewind_tokens": avg_cac_tok,
-            "cached_rewind_time_ms": avg_cac_time,
-            "token_reduction_vs_uncached_pct": (1.0 - avg_cac_tok / avg_unc_tok) * 100,
-            "token_reduction_vs_rewrite_pct": (1.0 - avg_cac_tok / avg_rw_tok) * 100,
-            "latency_reduction_vs_uncached_pct": (1.0 - avg_cac_time / avg_unc_time) * 100,
-            "latency_reduction_vs_rewrite_pct": (1.0 - avg_cac_time / avg_rw_time) * 100,
+            "prefix_prefill_token_estimate": avg_cac_tok,
+            "prefix_prefill_time_ms": avg_cac_time,
         }
     }
 

@@ -14,14 +14,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[2]
-out = Path(__file__).resolve().parent
+out = Path(os.environ.get("CGR_VERIFICATION_OUTPUT_DIR", str(Path(__file__).resolve().parent)))
+out.mkdir(parents=True, exist_ok=True)
 notebook = root / 'notebooks' / 'ARC_PRIZE_2026_CGR_KAGGLE.ipynb'
 os.environ['CGR_ARC_MODE'] = 'demo'
 os.environ['CGR_ARC_DEMO_DIR'] = str(out)
 os.environ.setdefault('CGR_LIVE_QWEN', '0')
 os.environ.setdefault('CGR_LIVE_ADAPTER', '0')
-# The author has reviewed the coder adapter's provenance for local diagnostics only.
-os.environ.setdefault('CGR_ADAPTER_LICENCE_ACK', '1')
+# Adapter acknowledgement must be supplied explicitly by the caller.
 os.chdir(root)
 record = {'timestamp_utc': datetime.now(timezone.utc).isoformat(), 'python': sys.executable,
           'mode': 'demo', 'live_qwen_requested': os.environ['CGR_LIVE_QWEN'],

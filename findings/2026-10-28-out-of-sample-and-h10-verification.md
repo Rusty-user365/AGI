@@ -1,3 +1,11 @@
+> **2026-10-30 evidence correction:** Historical 25.9x/27.2x cached-generation
+> and 2.0x/1.70x full-loop speedup interpretations are withdrawn. The cache
+> timer measured prefix prefill with no repaired-suffix decode; repair timers
+> excluded required controller work. Token/FLOP counts were estimates.
+> Recovery counts remain descriptive conditional-repair observations, with
+> candidate clustering unaccounted for. Use `PAPER.md` and
+> `findings/2026-10-30-paper-review.md` for the corrected interpretation.
+
 # Out-of-Sample Stress & Generalization Audit: Bit-Identical KV-Cache, Vault Replication, and Long-Horizon Scaling (2026-10-28)
 
 **Artifacts:** `results/verify_vault_h5.json`, `results/arith_steps_h5_vault.pt`, `experiments/eval_vault.py`, `scratch/check_test1_bit_identical.py`

@@ -1,11 +1,13 @@
-"""Evaluation harness for Scenario 1: Blind Out-of-Sample Vault Replication.
+"""Historical fresh-prompt conditional-repair experiment, with audited reporting.
 
-Evaluates frozen Level-3 CGR against full_rewrite and random_t_rank2 controls
-on the brand-new unseen test split results/arith_steps_h5_vault.pt.
+This implementation does not generate repairs from a persistent cropped cache.
+Token counters are formula estimates. Timings exclude parts of the controller.
+See results/measurement_audit_20261030.json. Historical results are not replaced.
 """
 from pathlib import Path
 import argparse
 import json
+import hashlib
 import math
 import random
 import sys
@@ -50,12 +52,15 @@ def main():
     parser.add_argument("--seeds", type=int, default=5)
     parser.add_argument("--max-new", type=int, default=5)
     parser.add_argument("--limit", type=int, default=0)
-    parser.add_argument("--out", default="results/verify_vault_h5.json")
+    parser.add_argument("--out", default="results/verify_vault_h5_audited_v2.json")
     parser.add_argument("--diagnostics-only", action="store_true",
                         help="recompute the localizer block only and splice it "
                              "into --out, leaving the stochastic arm results "
                              "untouched")
     args = parser.parse_args()
+    if Path(args.out).exists() and not getattr(args, "diagnostics_only", False):
+        raise FileExistsError("Preserve recorded evidence: choose a new --out path")
+    print("AUDIT: conditional repair; token counts are estimates; timings are not full-controller or cache speedups.")
     args.device = str(_resolve_device(args.device))
 
     # 1. Load Training Data (Original 279 candidates)
@@ -218,6 +223,13 @@ def main():
         if drift:
             target = out_path.with_name(out_path.stem + "_localizer_refit.json")
             payload = {
+        "measurement_scope": {
+            "repair_uses_persistent_cropped_cache": False,
+            "full_controller_latency_measured": False,
+            "token_counts_are_estimates": True,
+            "task_clustering_accounted_for": False,
+            "historical_interpretation_audit": "results/measurement_audit_20261030.json",
+        },
                 "refit_of": out_path.name,
                 "why_separate": (
                     "The re-fit does not reproduce the stored Top-1 for "
@@ -267,7 +279,7 @@ def main():
     # KV-Cache Crop latency tracker
     systems = {
         "full_rewrite_tokens": 0, "full_rewrite_time_ms": 0.0,
-        "cached_rewind_tokens": 0, "cached_rewind_time_ms": 0.0,
+        "prefix_prefill_token_estimate": 0, "prefix_prefill_time_ms": 0.0,
     }
 
     print(f"\nRunning end-to-end evaluation on {len(rows_vault)} vault rows...", flush=True)
@@ -281,7 +293,7 @@ def main():
         t_tt = int(two_tier_preds[j])
 
         # Random step control: pick t_rand in {1, 2, 3, 4} uniformly
-        rng_rand = random.Random(hash((r["split"], r["idx"], r["cand"])))
+        rng_rand = random.Random(int.from_bytes(hashlib.sha256(json.dumps([r["split"], r["idx"], r["cand"]]).encode()).digest()[:8], "big"))
         t_rand = rng_rand.choice(list(range(1, steps)))
 
         # -------------------------------------------------------------
@@ -381,8 +393,8 @@ def main():
         cac.crop(enc_target.shape[1])
         cac_tokens = enc_target.shape[1] + (steps - t_tt) * 2
         t_cac_ms = (time.time() - t0_cac) * 1000
-        systems["cached_rewind_tokens"] += cac_tokens
-        systems["cached_rewind_time_ms"] += t_cac_ms
+        systems["prefix_prefill_token_estimate"] += cac_tokens
+        systems["prefix_prefill_time_ms"] += t_cac_ms
 
         if (j + 1) % 25 == 0 or (j + 1) == len(rows_vault):
             print(f"  {j + 1:>3}/{len(rows_vault)} | "
@@ -416,21 +428,21 @@ def main():
 
     # Systems Speedup Summary
     avg_rw_tok = systems["full_rewrite_tokens"] / max(n_tot, 1)
-    avg_cac_tok = systems["cached_rewind_tokens"] / max(n_tot, 1)
+    avg_cac_tok = systems["prefix_prefill_token_estimate"] / max(n_tot, 1)
     avg_rw_ms = systems["full_rewrite_time_ms"] / max(n_tot, 1)
-    avg_cac_ms = systems["cached_rewind_time_ms"] / max(n_tot, 1)
+    avg_cac_ms = systems["prefix_prefill_time_ms"] / max(n_tot, 1)
 
     print("\n" + "=" * 80)
-    print("SYSTEMS FLOPs & LATENCY BENCHMARK ON VAULT")
+    print("INCOMPLETE TIMING DIAGNOSTICS: NO SPEEDUP CLAIM")
     print("=" * 80)
     print(f"Full Rewrite:              {avg_rw_tok:.1f} tokens/chain | {avg_rw_ms:.1f} ms/chain")
-    print(f"KV-Cache Truncated Rewind: {avg_cac_tok:.1f} tokens/chain | {avg_cac_ms:.1f} ms/chain")
-    print(f"-> FLOPs Reduction:       {(1.0 - avg_cac_tok / avg_rw_tok) * 100:.1f}%")
-    print(f"-> Wall-Clock Speedup:     {avg_rw_ms / max(avg_cac_ms, 1e-6):.1f}x ({(1.0 - avg_cac_ms / avg_rw_ms) * 100:.1f}% latency cut)")
+    print(f"Prefix prefill only (no decode): {avg_cac_tok:.1f} tokens/chain | {avg_cac_ms:.1f} ms/chain")
 
     # Save to JSON
     out_dict = {
         "n": n_tot,
+        "row_ids": [[r["split"], r["idx"], r["cand"]] for r in rows_vault[:n_tot]],
+        "random_control_seed_scheme": "sha256 of JSON [split, idx, cand]; changed from process-dependent hash",
         "localizer_diagnostic": {
             "linear_top1": lin_top1, "linear_bal": lin_bal, "linear_rec": rec_lin,
             "transformer_top1": trf_top1, "transformer_bal": trf_bal, "transformer_rec": rec_trf,
@@ -441,6 +453,7 @@ def main():
         },
         "arms": {
             k: {
+                "recovered_list": v["recovered_list"],
                 "ok": v["ok"], "n": v["n"], "rate": v["ok"] / max(v["n"], 1),
                 "ci": list(wilson(v["ok"], v["n"])),
                 "tokens": v["tokens"], "time_ms": v["time_ms"],
@@ -454,9 +467,7 @@ def main():
         },
         "systems": {
             "full_rewrite_tokens": avg_rw_tok, "full_rewrite_time_ms": avg_rw_ms,
-            "cached_rewind_tokens": avg_cac_tok, "cached_rewind_time_ms": avg_cac_ms,
-            "flop_reduction_pct": (1.0 - avg_cac_tok / avg_rw_tok) * 100,
-            "speedup_ratio": avg_rw_ms / max(avg_cac_ms, 1e-6),
+            "prefix_prefill_token_estimate": avg_cac_tok, "prefix_prefill_time_ms": avg_cac_ms,
         }
     }
 

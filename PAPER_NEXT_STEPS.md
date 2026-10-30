@@ -1,3 +1,11 @@
+> **2026-10-30 evidence correction:** Historical 25.9x/27.2x cached-generation
+> and 2.0x/1.70x full-loop speedup interpretations are withdrawn. The cache
+> timer measured prefix prefill with no repaired-suffix decode; repair timers
+> excluded required controller work. Token/FLOP counts were estimates.
+> Recovery counts remain descriptive conditional-repair observations, with
+> candidate clustering unaccounted for. Use `PAPER.md` and
+> `findings/2026-10-30-paper-review.md` for the corrected interpretation.
+
 # Paper revision and evidence plan — 2026-10-30
 
 The current paper has a measured arithmetic contribution and a preliminary
@@ -7,9 +15,10 @@ locked arithmetic experiments use Qwen3-0.6B-Base.
 
 ## What can be written now
 
-- Retain the vault headline: 73/331 versus 46/331 recovery, with 1.70x full-loop
-  speedup on the reported hardware. Do not replace it with generation-slice
-  latency or interpret CPU prototype timing as the old GPU result.
+- Retain 73/331 versus 46/331 as conditional-repair counts. The historical
+  1.70x full-loop and 25.9x/27.2x cache interpretations are withdrawn.
+- Before making a systems claim, measure a real longer-cache crop plus suffix
+  generation and include localization, gating and verification in total cost.
 - Update §6 to report the local coder integration and its limits: four observed
   policy transitions, four accepted nodes out of five, failed clamp rejected,
   even-sum accepted, and successful base Bridge checks. The injected addition

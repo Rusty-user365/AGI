@@ -25,7 +25,7 @@ Largest bridge logit difference & $5.20\times 10^{-5}$ \\
 \toprule
 Localizer & Top-1 & Step-4 recall & Step-4 precision \\
 \midrule
-Linear majority & 0.604 & 0.394 & 0.342 \\
+Per-step MLP majority & 0.604 & 0.394 & 0.342 \\
 Transformer majority & 0.677 & 0.545 & 0.400 \\
 Softmax ensemble & 0.680 & 0.485 & 0.471 \\
 Two-tier ($\tau=0.35$) & 0.625 & 0.667 & 0.324 \\
@@ -35,7 +35,7 @@ Two-tier ($\tau=0.35$) & 0.625 & 0.667 & 0.324 \\
 
 \begin{table}[ht]
 \centering
-\caption{Blind arithmetic vault recovery ($N=331$). Full-loop and generation-slice speeds are different quantities.}
+\caption{Blind arithmetic vault recovery ($N=331$). Recovery is conditional on known failure; candidate-level uncertainty ignores task clustering.}
 \label{tab:vault-recovery}
 \begin{tabular}{lrr}
 \toprule
@@ -50,16 +50,15 @@ Two-tier gated rank-2 & 73/331 & 22.1\% \\
 
 \begin{table}[ht]
 \centering
-\caption{Arithmetic KV-cache systems measurements. Generation-slice speedups exclude observer and gate overhead.}
+\caption{Historical timing audit. Rows measure different work; no cache or end-to-end speedup is supported. Localization is excluded from all repair timings; the gate is also excluded at H=5.}
 \label{tab:kv-systems}
-\begin{tabular}{llrr}
+\begin{tabular}{lrr}
 \toprule
-Dataset & Measurement & Rewrite (ms) & Rewind (ms) \\
+Timed operation & Tuning (ms) & Vault (ms) \\
 \midrule
-$N=110$ & Generation slice & 4498.4 & 173.7 \\
-$N=110$ & Full loop & 4498.4 & 2244.0 \\
-Vault $N=331$ & Generation slice & 3281.9 & 120.7 \\
-Vault $N=331$ & Full loop & 3281.9 & 1934.7 \\
+Fresh-prompt rewrite & 4498.4 & 3281.9 \\
+Fresh-prompt two-tier repair & 2244.0 & 1934.7 \\
+Prefix prefill, no suffix decoding & 173.7 & 120.7 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -91,6 +90,57 @@ Train $\rightarrow$ test & Base & Cyber & Router & Oracle & Useful & Harmful \\
 SecEval $\rightarrow$ CyberMetric (80) & 54 & 54 & 57 & 61 & 3 & 0 \\
 SecEval $\rightarrow$ SecEval (40) & 26 & 23 & 26 & 29 & 1 & 1 \\
 CyberMetric $\rightarrow$ SecQA (100) & 97 & 90 & 97 & 97 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{table}[ht]
+\centering
+\caption{Exploratory four-node card graph with coder and cyber specialists on one pinned chat backbone. The coder retry received verifier feedback; the base passed the initial clamp.}
+\label{tab:coder-cyber-card}
+\begin{tabular}{lr}
+\toprule
+Measure & Result \\
+\midrule
+Committed graph nodes & 4/4 \\
+Base clamp / initial coder clamp & pass / fail \\
+Coder clamp after feedback & pass \\
+Cyber parameterized query & pass \\
+Coder bridge max logit difference & $5.245209\times 10^{-5}$ \\
+Cyber bridge max logit difference & $5.483627\times 10^{-5}$ \\
+CPU wall time, including diagnostics & 25.229 s \\
+Initial loading, reported separately & 10.209 s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Separate exploratory natural factorial repair, not the card-graph trial.}
+\label{tab:natural-factorial}
+\begin{tabular}{lr}
+\toprule
+Measure & Result \\
+\midrule
+Base function cases passed & 0/3 \\
+Coder function cases passed & 3/3 \\
+Base-bridge max logit difference & $4.434586\times 10^{-5}$ \\
+Wall time, including diagnostics & 13.090 s \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Exploratory cyber context and experience-memory controls. Six rows combine three code contexts with two SQL tasks; standalone prompts repeat. Bare JSON excludes fenced responses.}
+\label{tab:semantic-bridge}
+\begin{tabular}{lrrr}
+\toprule
+Condition & SQL contract & Bare JSON + contract & Repeated Python \\
+\midrule
+Cyber task alone & 6/6 & 0/6 & 0/6 \\
+After coder output & 2/6 & 2/6 & 4/6 \\
+After coder + direct rule & 6/6 & 6/6 & 0/6 \\
+After coder + retrieved rule & 6/6 & 6/6 & 0/6 \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -1,4 +1,73 @@
+> **2026-10-30 evidence correction:** Historical 25.9x/27.2x cached-generation
+> and 2.0x/1.70x full-loop speedup interpretations are withdrawn. The cache
+> timer measured prefix prefill with no repaired-suffix decode; repair timers
+> excluded required controller work. Token/FLOP counts were estimates.
+> Recovery counts remain descriptive conditional-repair observations, with
+> candidate clustering unaccounted for. Use `PAPER.md` and
+> `findings/2026-10-30-paper-review.md` for the corrected interpretation.
+
+## Current publication state
+
+Both routes use the corrected evidence standard. `PAPER.md` is the general
+research manuscript; the ARC plan/notebook are a separate symbolic baseline
+scaffold, with no ARC score or integrated learned repair demonstrated. Do not
+carry archived speedup claims into either route. Historical result JSON is
+preserved; new script outputs carry measurement-scope metadata. A complete
+cache-generation benchmark remains pending, not completed by these edits.
+
 # Handoff — snapshot `v1.1-cgr-path-a-vault-verified-and-level2-ready`
+
+## 2026-10-30: experience-memory similarity gate
+
+At the user's request `ExperienceMemory` now defaults to strict cosine
+similarity > 0.90 after scope and expiry filtering. The threshold is configurable,
+not a calibrated probability. The same-scope poem is rejected, but all three
+SQL development queries are also rejected at similarities 0.575, 0.568 and
+0.642. The exact stored description passes; all four other domain controls are
+also below 0.90. Earlier published memory comparisons explicitly use the ungated
+setting and must not be described as results of this gate. See
+`results/multirule_memory_gate_090_v1.json` and `tests/test_memory_similarity.py`.
+
+## 2026-10-30: five-rule retrieval ablation
+
+Five handcrafted rules competed in one scope. The SQL rule ranked first on 3/3
+related SQLite prompts, and 4/4 other-domain controls selected their intended
+rule. After a replayed factorial context the cyber adapter passed 0/3 SQL
+contracts without memory and 2/3 with the retrieved rule; the reworded prompt's
+remaining failure used `user_id` against a table with `id` and had an ambiguous
+schema description. The poem retrieved no rule when no scope was provided, but
+retrieved an irrelevant math rule when the five-rule scope was supplied: this
+is not automatic abstention. See `findings/2026-10-30-multirule-memory-ablation.md`
+and `results/multirule_memory_ablation_v1.json`. No generalization claim.
+
+## 2026-10-30: cyber context and memory control
+
+Six exploratory combinations (three verified coder outputs and two SQLite SQL
+prompts) tested the cyber adapter with no prior code, prior code, the prior code
+plus a direct short JSON rule, and the prior code plus that rule from scoped
+MiniLM/Chroma memory. SQL contract pass rates were 6/6, 2/6, 6/6, 6/6;
+standalone prompts are repeated across contexts and represent only two distinct
+prompts. Direct and retrieved-rule inputs and outputs matched all six cases.
+The rule was chosen after observing failure, so do not claim held-out
+performance or a retrieval advantage over direct instruction. Full details:
+`findings/2026-10-30-cyber-context-memory-controls.md`; raw cases:
+`results/cyber_context_memory_controls_v1.json`.
+
+## 2026-10-30: motivation and scaling framing
+
+The user requested an introduction explaining why localized repair, dependency
+tracking and specialist switching could matter for agent workflows. `PAPER.md`
+now presents the 20-step example as a motivation rather than a measured result.
+Historical timing interpretations are withdrawn; see the correction above. The
+specific textual hindsight constraint was a placebo in the tested arithmetic
+setting; this does not establish all text self-correction is ineffective.
+Section 5.1 records scaling to larger models and long contexts as an untested
+hypothesis, including model/cache/adapter compatibility and evaluation controls.
+The user did not request a new experiment or submission in this update.
+
+## 2026-10-30: coder/cyber bridge development
+
+The user replaced UI with cyber for the two-specialist request. The original clamp and SQL contracts also completed in a four-node graph after one coder retry with verifier feedback; the base had passed clamp. See `results/multidomain_coder_cyber_card_graph_v1.json`.  A real four-node derived card graph on pinned `Qwen3-0.6B` completed with cyber and coder and verified base bridges, in 31.947 s CPU including diagnostics; both base node attempts also passed. A separate natural factorial base failure was fixed by coder and bridged; the following cyber attempt failed JSON. The original clamp-based card fixture initially rejected coder; a disclosed verifier-feedback retry subsequently passed. The original 20-node delayed-failure integrated workflow remains incomplete. See `findings/2026-10-30-coder-cyber-bridge.md` and its four JSON records. The arithmetic experiments remain on a different backbone. Do not conflate these observations or claim that the main-track requirements are closed. The user wants an independent research paper for now, adaptable to a future venue. Author: Abhishek Pant, Independent Researcher; MCA (AI/ML specialisation), 2025 graduate; LinkedIn: https://www.linkedin.com/in/abhishek-pant-2b2129236/. A conference and year have not been selected. See `publication/VENUE_ADAPTATION.md`.
 
 ## 2026-10-30: publication draft and reproducibility handoff
 
@@ -159,8 +228,7 @@ to its artifact: `findings/2026-10-29-cgr-as-tool-budget-allocator.md`.
   correctly-localized chains recover;
 - the gate's value is **precision (32/87 = 36.8%) and skipped compute**, not
   recovery: gated and ungated are numerically identical;
-- latency: **173.7 ms vs 2,732.2 ms (25.9x)** on the generation slice, **2.0x**
-  end to end, **1.70x** on the vault. Never quote 26x as loop latency.
+Historical timing interpretation withdrawn; see the evidence correction at the top of this handoff.
 
 Read that file before interpreting any null as "CGR is unnecessary".
 
@@ -171,13 +239,13 @@ Read that file before interpreting any null as "CGR is unnecessary".
 | Component | State / Result | Evidence / Artifact |
 |---|---|---|
 | **Step-4 Tail Bottleneck** | **In-sample only.** Two-Tier ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts Step-4 recall **0.188 to 0.812** and Top-1 to **0.718** — but on the frozen vault its Top-1 drops to **0.625**, below Transformer alone (0.677) and the softmax ensemble (0.680). It is not below on tail recall: corrected 2026-10-29, it calls step 4 on 68/331 rows when 33 are true, giving the *highest* step-4 recall (**0.667** vs 0.545/0.485) at the lowest precision (0.324 vs 0.400/0.471). The threshold is a mistuned recall lever, not a failed localizer. | `results/path_a_loop_h5.json`, `results/verify_vault_h5_localizer_refit.json` |
-| **Autonomous Loop Recovery** | **Resolved on the vault.** **22.1%** (73/331) vs full rewrite **13.9%** (46/331), 43W/16L, p=5.84e-4, **1.59x**. The N=110 figure is 29.1% (32/110); the 2.29x sometimes quoted uses a low-variance rewrite draw and is not the headline. | `results/verify_vault_h5.json` |
-| **Accept-if-Cleaner Gate** | **Implemented; no measurable recovery effect.** Rejected 23/110 and 81/331 edits where rank-2 degraded a confident step ($lp > -0.25$); those rows contained **0 recoveries in both runs**, and gated == ungated Two-Tier exactly (32/110, same tokens/time). It is a conservative filter: precision among accepted rows is 32/87 = 36.8%, and it skips compute. Fallback-to-top-2 probe yielded 0/23 recoveries. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
-| **Physical KV-Cache Slicing** | **Resolved, two numbers.** Generation slice: 4,498.4 ms to 173.7 ms (**25.9x**, -79.4% tokens). Full loop incl. observer + gate: **2,244 ms vs 4,498.4 ms (2.0x)**; on the vault **1,934.7 vs 3,281.9 ms (1.70x)**. The 25.9x/27.2x figures are generation-slice only. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
+| **Autonomous Loop Recovery** | **Resolved on the vault.** **22.1%** (73/331) vs full rewrite **13.9%** (46/331), 43W/16L, p=5.84e-4, **1.59x**. The N=110 figure is 29.1% (32/110); the 2.29x sometimes quoted uses a different stochastic rewrite draw and is not the headline. | `results/verify_vault_h5.json` |
+| **Accept-if-Cleaner Gate** | **Implemented; no measurable recovery effect.** Rejected 23/110 and 81/331 edits where rank-2 degraded a confident step ($lp > -0.25$); those rows contained **0 recoveries in both runs**, and gated == ungated Two-Tier exactly (32/110, same tokens/time). It is a conservative filter: recovery among accepted rows is 32/87 = 36.8%; skipped compute was not measured because candidates were generated before gating. Fallback-to-top-2 probe yielded 0/23 recoveries. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
+| **Physical KV-Cache Slicing** | **Withdrawn systems interpretation.** Prefix-only timing did not include repaired generation; no cache or full-loop speedup is established. See the 2026-10-30 audit. | `results/path_a_loop_h5.json`, `results/verify_vault_h5.json` |
 | **Test 1: Bit-Identical Assertion** | **Pass (100%).** Verified on 20 chains: $\max \|\Delta\text{logit}\| = 4.86 \times 10^{-5} < 10^{-4}$; all argmax tokens bit-identical. | `scratch/check_test1_bit_identical.py` |
 | **Test 2: Blind Vault Replication** | **Pass (p=5.84e-4).** Frozen CGR evaluated on unseen seed (`seed=20261028`, $N=331$ broken chains): **22.1%** (73/331) vs full rewrite **13.9%** (46/331). | `results/verify_vault_h5.json` |
 | **Permutation Control (`random_t`)** | **Decisive (p=7.64e-11).** Uniform random-step rewind collapses to **6.9%** (23/331); CGR wins 57W / 7L, proving localization causally drives repair. | same |
-| **Test 3: Long-Horizon ($H=10$)** | **Ceiling Established.** Localizer achieves **52.0% Top-1** ($5.2\times$ over chance); rollout collapses to 0.0% due to compound errors, establishing horizon boundary $H^* \approx 6$–$8$. | `results/verify_h10_scaling.json` |
+| **Test 3: Long-Horizon ($H=10$)** | **Observed failure, no horizon theorem.** 0/75 full-chain recoveries under tested H=10 policies; causes and any intermediate boundary remain unestablished. | `results/verify_h10_scaling.json` |
 
 ---
 
@@ -304,9 +372,9 @@ Path A executed the three fixes proposed above on the 110 holdout chains of `res
 | Question | Answer | Evidence |
 |---|---|---|
 | Can an ensemble cure the step-4 localization collapse? | **In-sample only.** Two-Tier ($P_{trf}(4) \ge 0.35 \to 4$, else Linear) lifts step-4 recall **0.188 to 0.812** and Top-1 to **0.718** — on the split used to pick the threshold. On the frozen vault its Top-1 falls to **0.625**, below Transformer alone (0.677) and the ensemble (0.680) — but on corrected 2026-10-29 metrics it has the *highest* step-4 recall (0.667 vs 0.545), because it calls step 4 on 68/331 rows when 33 are true. | `results/path_a_loop_h5.json`, `results/verify_vault_h5_localizer_refit.json` |
-| Does improved localization translate to higher loop recovery? | **Yes, on the vault.** 22.1% (73/331) vs rewrite 13.9% (46/331), 43W/16L, p=5.84e-4, **1.59x**. The N=110 run is 29.1% (32/110); 2.29x uses a low-variance rewrite draw. | `results/verify_vault_h5.json` |
+| Does improved localization translate to higher loop recovery? | **Yes, on the vault.** 22.1% (73/331) vs rewrite 13.9% (46/331), 43W/16L, p=5.84e-4, **1.59x**. The N=110 run is 29.1% (32/110); 2.29x uses a different stochastic rewrite draw. | `results/verify_vault_h5.json` |
 | Does the "Accept-if-Cleaner" gate protect prefixes? | **No measurable effect on recovery.** Rejected 23 edits where rank-2 degraded a confident step ($lp > -0.25$); the rejected rows contained 0 recoveries in both the N=110 and N=331 runs, and gated == ungated exactly (32/110, same tokens/time). Its value is precision (32/87 = 36.8% among accepted) and skipped compute. | same |
-| Does KV-cache slicing (`DynamicCache.crop`) substantiate the systems claim? | **Yes, at the slice level.** Generation: 581.1 to 119.7 tokens (-79.4%), 4,498 ms to 173.7 ms (**25.9x**). Full loop: **2,244 ms (2.0x)**; vault **1,934.7 vs 3,281.9 ms (1.70x)**. Observer inference dominates the residual. | same |
+| Does KV-cache slicing (`DynamicCache.crop`) substantiate the systems claim? | **Withdrawn systems interpretation.** Prefix-only timing did not include repaired generation; no cache or full-loop speedup is established. See the 2026-10-30 audit. | same |
 
 Finding: `findings/2026-10-28-path-a-ensemble-kv-slicing.md`. Script: `experiments/path_a_loop.py`.
 
@@ -321,9 +389,9 @@ A strict 5-rule Out-of-Sample Stress & Generalization Audit was executed to veri
 | Does KV-cache slicing introduce numerical drift or token divergence? | **No.** Verified across 20 chains: $\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$, 100% bit-identical argmax tokens. | `scratch/check_test1_bit_identical.py` |
 | Does frozen CGR replicate on an unseen blind vault split ($N=331$)? | **Yes.** CGR achieves **22.1%** (73/331), significantly beating `full_rewrite` (13.9%, 46/331, $43\text{W}/16\text{L}, p = 5.84 \times 10^{-4}$). | `results/verify_vault_h5.json` |
 | Does CGR defeat the random-step permutation control? | **Yes.** Slicing to a random step (`random_t_rank2`) collapses to **6.9%** (23/331); CGR wins $57\text{W}/7\text{L}$ (**$p = 7.64 \times 10^{-11}$**), proving localization causally drives recovery. | same |
-| Does the KV-cache systems speedup replicate out-of-sample? | **Generation only.** Per-chain generation latency 3,281.9 to 120.7 ms (**27.2x**, -79.3% tokens); the loop is 1,934.7 vs 3,281.9 ms (**1.70x**). | same |
+| Does the KV-cache systems speedup replicate out-of-sample? | **Withdrawn systems interpretation.** Prefix-only timing did not include repaired generation; no cache or full-loop speedup is established. See the 2026-10-30 audit. | same |
 | Does localization generalize to deeper reasoning chains ($H=10$)? | **Yes.** Linear majority probe achieves **52.0% Top-1 localization accuracy** on $N=75$ broken chains ($5.2\times$ over chance $0.100$). | `results/verify_h10_scaling.json` |
-| What happens to autonomous recovery at $H=10$? | **Collapses to 0.0% across all arms.** Establishes the unassisted autoregressive capacity ceiling ($H^* \approx 6$–$8$) where rollout error compounding ($(0.45)^6 < 0.01$) demands external tools. Token reduction remains **90.0%** (165.0 vs 1,656.2 tokens). | same |
+| H=10 recovery | 0/75 for tested policies; no universal horizon or necessity of tools established. Token savings were uninstrumented estimates. | `results/verify_h10_scaling.json` |
 
 Finding: `findings/2026-10-28-out-of-sample-and-h10-verification.md`. Harnesses: `experiments/eval_vault.py`, `experiments/eval_h10.py`.
 

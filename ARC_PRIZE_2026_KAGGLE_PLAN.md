@@ -58,32 +58,22 @@ upstream data or model rights. That remains true for the rest of the repository 
 for the SecEval/CyberMetric corpora; it does not block the ARC artifacts, which are
 self-contained and use only Apache-2.0/BSD dependencies.
 
-## Expected accuracy and the falsifier
+## Unmeasured ARC accuracy
 
-The current solver's ceiling is the fraction of ARC-AGI-2 tasks whose *every*
-training pair is reproduced exactly by one of seven global transforms: identity,
-horizontal flip, vertical flip, rotation by 180, transpose, rotation by 90 and
-rotation by 270. Those transforms preserve grid size and only permute positions.
-ARC-AGI-2 tasks are compositional — object segmentation, colour relabelling,
-counting, symmetry repair, multi-step rules — so coverage is expected to be at or
-near zero.
+The solver considers seven fixed global transforms. This is a limited hypothesis
+class; it is not the paper's learned repair mechanism. Transpose and quarter-turn
+rotations swap height and width for rectangular grids. Exact agreement with
+training examples is not a bound on test accuracy: the solver also emits partial-fit
+fallback predictions, and training fit does not guarantee test correctness.
 
-This is a structural bound, not a measurement: no ARC-AGI-2 split is mounted in
-this repository, so **no ARC accuracy has been measured**. The plan therefore
-records an explicit expectation and falsifier rather than a target:
-
-> **Expected result: 0.00 on the public evaluation set.** If a public-eval run
-> returns anything above zero, record the task IDs and the accepted transform for
-> each. If it returns 0.00, report 0.00 and do not reframe it as "near-baseline"
-> or as evidence for the paper's mechanism.
-
-Any claim that the notebook "demonstrates CGR" is false under either outcome: the
-prediction path contains no learned localizer, no cache operation and no adapter.
+No ARC score is established by the synthetic smoke checks. Measure the public
+evaluation split and report the actual result, including zero if observed. Do
+not forecast an exact score or describe symbolic predictions as CGR evidence.
 
 ## What exists and what does not
 
-- Existing arithmetic measurements and coder/cyber experiments are real but are
-  not ARC-AGI evaluation. The tested arithmetic localizer was trained on
+- Existing arithmetic recovery records and coder/cyber experiments are
+  not ARC-AGI evaluation. Historical arithmetic timing interpretations are withdrawn. The tested arithmetic localizer was trained on
   arithmetic states from `Qwen3-0.6B-Base`; a trained ARC error localizer has not
   been demonstrated. The paper's adapter experiments use chat-capable
   `Qwen/Qwen3-0.6B` at revision `c1899de289a04d12100db370d81485cdf75e47ca` and
@@ -113,8 +103,8 @@ All of these must be present before evaluation, because the run has no network:
 - `peft` for the adapter diagnostic (Apache-2.0).
 - The `Qwen/Qwen3-0.6B` snapshot at `c1899de289a04d12100db370d81485cdf75e47ca`,
   attached as a Kaggle dataset. Snapshot directories are named by commit hash;
-  the notebook reads the hash from the directory name, so renaming the attached
-  folder warns and records `revision_verified: false` rather than passing silently.
+  the notebook reads a revision hint from the directory name, so renaming the attached
+  folder warns and records `revision_path_matches` separately. `revision_verified` remains false without content verification.
 - The competition data mounts under `/kaggle/input`. The notebook auto-detects
   competition mode from that path and globs for `*test*challenges*.json`.
 
@@ -164,9 +154,7 @@ Kaggle run, missing inputs and output validation. Prepare the paper only around
 results the working entry demonstrates. If these gates cannot be met, report a
 draft rather than claiming eligibility.
 
-With submissions due **2026-11-02** and no ARC data mounted locally, the baseline
-measurement in step 2 is the only item that fits before the deadline. Steps 3-5 do
-not.
+Completion before the deadline is uncertain. Prioritize the baseline and offline validation; do not claim an integrated method until it exists and is evaluated.
 
 ## Local scaffold checks (2026-10-30)
 
@@ -213,8 +201,7 @@ Known limits of this evidence:
 
 - The notebook still has **no saved cell outputs**. The transcript is the record;
   a Kaggle commit would store outputs and is still required.
-- `revision_verified` is derived from the snapshot directory name, not from a
-  cryptographic attestation of the weights.
+- Older `revision_verified` values were derived from a directory name and are not cryptographic attestations. The corrected notebook keeps this flag false and records path agreement separately.
 - The fp16 tolerance `0.125` has **never been exercised** — every run so far is CPU
   float32 — and is reported with `tolerance_validated: false`. It is a diagnostic,
   not a gate.
@@ -226,10 +213,20 @@ Known limits of this evidence:
 ## Remaining work before any eligibility claim
 
 - [ ] Mount ARC-AGI-2 public evaluation data and record the baseline accuracy
-      (expected 0.00).
+      (no score assumed).
 - [ ] Run the notebook inside Kaggle with internet disabled and confirm the
       committed version produces `submission.json` without manual edits.
 - [ ] Replace or supplement the seven transforms with a mechanism whose predictions
       depend on the paper's actual components.
 - [ ] Produce an ARC-specific paper; the current `PAPER.md` is about arithmetic
       KV-cache repair and specialist routing and cannot serve as the linkage.
+
+## Shared evidence correction (2026-10-30)
+
+The general research paper and ARC route share one evidence standard. Historical
+arithmetic 25.9x/27.2x cache and 2.0x/1.70x full-loop speedup interpretations
+are withdrawn. Those timers omitted required work; the ARC notebook's CPU
+cache-coherence check does not validate them. The ARC entry has no demonstrated
+learned localizer, adapter contribution, or cache speedup on ARC tasks.
+See `findings/2026-10-30-paper-review.md`. A directory name can indicate an
+expected model revision but cannot cryptographically verify the weights.

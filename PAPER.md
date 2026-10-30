@@ -12,18 +12,18 @@
 
 ## Abstract
 
-We study a compositional inference framework that combines frozen language-model backbones, learned error localization, bounded interventions, and task-specific low-rank adapters. The intended benefit is modular repair and specialist selection without updating the base weights at inference. This is a proposed alternative to retraining a monolithic system for every specialized behavior; we do not establish a solution to catastrophic forgetting or a replacement for jointly trained mixtures of experts. On five-step arithmetic with Qwen3-0.6B-Base, a frozen rewind-and-token-exclusion loop recovers 73/331 failed chains versus 46/331 for full rewrite, with a 1.70x measured end-to-end speedup. Separately, on the chat-capable Qwen3-0.6B, an exploratory correctness router trained on 200 SecEval questions achieves 57/80 on CyberMetric-80 versus 54/80 for both the base and a cyber adapter. A live implementation reproduces all 80 base answers and routing decisions and all nine fresh-cache specialist outputs; three switches help and none harm on this sample. These are separate experiments with different backbones and tasks, not a demonstrated end-to-end multi-domain DAG system. The public benchmark was previously examined, possible dataset contamination is unknown, and the routing gain is preliminary.
+We study a compositional inference framework that combines frozen language-model backbones, learned error localization, bounded interventions, and task-specific low-rank adapters. The intended benefit is modular repair and specialist selection without updating the base weights at inference. This is a proposed alternative to retraining a monolithic system for every specialized behavior; we do not establish a solution to catastrophic forgetting or a replacement for jointly trained mixtures of experts. On five-step arithmetic with Qwen3-0.6B-Base, a frozen rewind-and-token-exclusion loop recovers 73/331 already-broken chains versus 46/331 for full rewrite on a blind vault. That comparison is repair conditional on a known failure: every evaluated chain is complete and already wrong, selected using ground-truth first-error labels, so neither detection false positives nor damage to correct chains is measured. The counts are candidate-level, and candidates drawn from one task share that task, so the paired tests treat more units as independent than the design supports. Timing claims are withdrawn: the saved cache measurements crop a prefix cache to its own length and stop before the repaired suffix is generated, so they are not equal-work speedups. Separately, on the chat-capable Qwen3-0.6B, an exploratory correctness router trained on 200 SecEval questions achieves 57/80 on CyberMetric-80 versus 54/80 for both the base and a cyber adapter. A live implementation reproduces all 80 base answers and routing decisions and all nine fresh-cache specialist outputs; three switches help and none harm on this sample, an exact paired result of $p=0.25$. These are separate experiments with different backbones and tasks, not a demonstrated end-to-end multi-domain DAG system. The public benchmark was previously examined, possible dataset contamination is unknown, and the routing gain is preliminary.
 
 ## Contributions and results at a glance
 
 Across the arithmetic and exploratory adapter experiments, we report:
-1. **Falsification of Heuristic Baselines:** Sequence-level pooled observers fail to select correct trajectories better than the model's own raw token logprob ($\text{AUC} = 0.682$ yields only $+0.004$ selection accuracy over free `max-logprob`, $p=1.000$). Similarly, natural language hindsight constraints (`# constraint: x is not 7`) are statistically identical to neutral placebos ($27.3\%$ vs $27.3\%$, paired $p=1.000$).
-2. **Step Localization, and the Threshold That Over-Triggers:** A frozen linear probe over SVD-reduced hidden states achieves $0.923$ recall on early divergence (Step 1) but collapses to $0.188$ on tail steps (Step 4). A cross-step Transformer encoder supplies the complementary tail sensitivity ($0.500$ Step-4 recall in-sample). An asymmetric Two-Tier rule ($P_{trf}(4) \ge 0.35$) lifts Step-4 recall to **$0.812$** and Top-1 to **$0.718$** on the tuning holdout. Out of sample the rule does not collapse — it over-fires. On a frozen blind vault ($N=331$) it calls Step 4 on $68$ rows where only $33$ are Step 4, which gives it the **highest Step-4 recall of any arm ($0.667$ vs $0.545$ for the Transformer) at the lowest Step-4 precision ($0.324$ vs $0.400$)**, and it pays for that in aggregate Top-1 ($0.625$ vs $0.677$). The smooth softmax ensemble is the robust variant ($0.680$ Top-1). A scalar cutoff on one class posterior is a recall lever, not a calibrated classifier.
-3. **Autonomous Loop Recovery:** Driving a rewind loop with localization and rank-2 first-digit exclusion reaches **$29.1\%$** on the $N=110$ tuning holdout. On the blind vault the frozen loop recovers **$22.1\%$** ($73/331$) against $13.9\%$ ($46/331$) for full rewrites ($43\text{W}/16\text{L}$, $p = 5.84 \times 10^{-4}$), a **$1.59\times$** multiplier. The $2.29\times$ figure sometimes quoted pairs the same loop against a lower-variance draw of the stochastic rewrite baseline and is not the headline.
-4. **Systems Efficiency (Two Numbers, Not One):** Physically truncating the attention key-value cache via `DynamicCache.crop(target_len)` cuts per-chain forward tokens from $581.1$ to $119.7$ (**$-79.4\%$**) and *generation-slice* latency from $4,498.4\text{ ms}$ to $173.7\text{ ms}$ (**$25.9\times$**). The **end-to-end loop** is $2,244\text{ ms}$ per chain against $4,498.4\text{ ms}$ — **$2.0\times$** — because ten probe forward passes and the gate readout cost more than the generation they save. $25.9\times$ is a generation-slice measurement and is never a loop claim.
-5. **Out-of-Sample Vault Replication & Generalization:** On an independent holdout vault ($N=331$ unseen broken chains, seed 20261028), frozen CGR achieves **$22.1\%$** recovery, significantly beating full rewrites ($13.9\%$, $p = 5.84 \times 10^{-4}$) and decisively outperforming a random-step permutation control ($6.9\%$, $p = 7.64 \times 10^{-11}$). Slicing matched argmax token sequences, with maximum logit difference $4.86 \times 10^{-5}$. Loop-level speedup on the vault is **$1.70\times$** ($1,934.7$ vs $3,281.9\text{ ms}$ per chain); the $27.2\times$ in the systems block is the generation slice alone.
+1. **No Demonstrated Advantage for Heuristic Baselines:** A sequence-level pooled observer did not select correct trajectories better than the model's own raw token logprob ($\text{AUC} = 0.682$ $[0.573, 0.782]$; selection $+0.004$, $12\text{W}/11\text{L}$, $p=1.000$). Natural-language hindsight constraints matched a neutral placebo ($27.3\%$ vs $27.3\%$, $15\text{W}/15\text{L}$, $p=1.000$). Neither comparison is an equivalence test and neither rules out the method class; both are null results under these pooling, prompt and training conditions.
+2. **Step Localization, and the Threshold That Over-Triggers:** An independently trained per-step MLP, fixed during evaluation, over SVD-32 hidden states (historical code name `LinearStep`) achieves $0.923$ recall on early divergence (Step 1) but collapses to $0.188$ on tail steps (Step 4). A cross-step Transformer encoder supplies complementary tail sensitivity ($0.500$ Step-4 recall in-sample). The two arms do **not** share an input representation — the MLP receives SVD-32 projections, the Transformer full-width standardized features — and they differ in parameter count and positional handling as well, so this comparison does not isolate attention. An asymmetric Two-Tier rule ($P_{trf}(4) \ge 0.35$) lifts Step-4 recall to **$0.812$** and Top-1 to **$0.718$** on the tuning holdout. Out of sample the rule does not collapse — it over-fires. On a frozen blind vault ($N=331$) it calls Step 4 on $68$ rows where only $33$ are Step 4, which gives it the **highest Step-4 recall of any arm ($0.667$ vs $0.545$ for the Transformer) at the lowest Step-4 precision ($0.324$ vs $0.400$)**, while the original fit had lower aggregate Top-1 ($0.625$ vs $0.677$). The smooth softmax ensemble has the highest reported aggregate vault Top-1 ($0.680$ Top-1). The Step-4 counts and recall above come from a later re-fit, whereas Top-1 comes from the original fit; they must not be interpreted as one saved prediction set (§4.3).
+3. **Loop Recovery Conditional on Known Failure:** Driving a rewind loop with localization and rank-2 first-digit exclusion reaches **$29.1\%$** on the $N=110$ tuning holdout. On the blind vault the frozen loop recovers **$22.1\%$** ($73/331$) against $13.9\%$ ($46/331$) for full rewrites ($43\text{W}/16\text{L}$, $p = 5.84 \times 10^{-4}$), a **$1.59\times$** count ratio. Every evaluated chain is already broken and complete, and the broken set is selected using ground-truth `first_error`, so these are repair rates given failure, not detection rates or end-to-end accuracy. The counts are candidate-level; the paired tests ignore clustering within tasks. The $2.29\times$ figure sometimes quoted pairs the same loop against a different draw of the stochastic rewrite baseline and is not the headline.
+4. **Cache Timings Are Not Equal-Work Speedups (Withdrawn):** The saved cache block builds a fresh prefix cache, calls `crop` with that cache's existing length, stops the timer before the repaired suffix is generated, and excludes localization and the gate. It therefore measures a prefill fragment, not cached repair generation. The recorded values — $581.1 \to 119.7$ tokens and $4{,}498.4 \to 173.7\text{ ms}$ — are retained as historical prefix-prefill records with a **$25.9\times$** ratio that must not be read as a generation or loop speedup. Token counts in every arm are formulas (prompt length $+2$ per step), not forward-pass instrumentation. A replacement benchmark must build a cache over a full failed trajectory, truncate it to a boundary strictly inside that trajectory, generate and verify the repaired suffix, and price localization and gating inside the same timer. Separately, a CPU numerical check confirms that `DynamicCache.crop` continuation matches fresh recomputation to $1.86\times10^{-5}$ maximum logit difference with matching argmax; that supports coherence of the operation, not a speedup.
+5. **Out-of-Sample Vault Replication:** On an independent holdout vault ($N=331$ unseen broken chains, seed 20261028), frozen CGR recovers **$22.1\%$**, beating full rewrites ($13.9\%$, $43\text{W}/16\text{L}$, $p = 5.84 \times 10^{-4}$) and a random-step permutation control ($6.9\%$, $57\text{W}/7\text{L}$, $p = 7.64 \times 10^{-11}$). These p-values are candidate-level and do not account for multiple candidates per task; the vault artifact stores aggregate wins and losses, not row-level outcomes, so a task-clustered test cannot be reconstructed from it. A historical narrative reports a separate slicing comparison; the independently saved CPU check is described in §4.2. The previously reported $1.70\times$ loop speedup and $27.2\times$ generation-slice speedup are withdrawn for the reasons given in item 4.
 
-6. **Live specialist routing:** On a previously inspected 80-question public cybersecurity benchmark, the frozen SecEval-trained binary router scores 57/80 versus 54/80 for the base and the cyber adapter; a per-question oracle scores 61/80. The live loop regenerates all base answers, reproduces all nine selected cyber outputs after full-prompt prefill from an empty cache, and observes three useful and zero harmful switches in this sample. Neither the base nor adapter weights are updated during inference, although the router heads were supervised-trained. This validates a narrow implementation, not universal safety or general multi-step compositional recovery.
+6. **Live specialist routing:** On a previously inspected 80-question public cybersecurity benchmark, the frozen SecEval-trained binary router scores 57/80 versus 54/80 for the base and the cyber adapter; a per-question oracle scores 61/80. The live loop regenerates all base answers, reproduces all nine selected cyber outputs after full-prompt prefill from an empty cache, and observes three useful and zero harmful switches in this sample; the exact paired test on $3$ versus $0$ gives $p = 0.25$, so this is an exploratory observation rather than established superiority. Neither the base nor adapter weights are updated during inference, although the router heads were supervised-trained. This validates a narrow implementation, not universal safety or general multi-step compositional recovery.
 
 ## Introduction
 
@@ -31,12 +31,16 @@ A long generated solution may contain many steps that are useful even after a la
 
 This paper investigates whether an inference controller can keep the verified prefix, locate a suspected failure, and repair only the necessary portion. A dependency graph records which artifacts depend on the changed step: descendants require revalidation or regeneration, while independent artifacts can be preserved. The attention cache has a stricter constraint: even preserved artifacts that occur after a changed prefix may need their tokens replayed, because their cached states were computed in the old context. The controller therefore records the pre-error token boundary, truncates the cache to that boundary, and rebuilds later state rather than assuming artifact independence implies cache independence.
 
-The measured arithmetic experiments show that physical KV-cache truncation is possible for the tested model and cache implementation. On a 110-chain tuning holdout on a GTX 1050 4 GB GPU, the cached **generation slice** was 25.9 times faster than a full rewrite; including the observer and gate, the measured full loop was 2.0 times faster. On the 331-chain vault the full-loop speedup was 1.70 times. These figures are specific to the reported tasks, model, hardware and accounting; they are not measurements of code-agent repair or frontier models. Similarly, the tested textual hindsight constraint performed no better than its neutral placebo on the arithmetic task; this does not establish that all language-based self-correction is ineffective.
+A separately recorded CPU float32 diagnostic checks physical cache truncation on one fixed prompt: recomputing its suffix after cropping matches the fresh full-prefill next-token argmax, with maximum logit difference 1.86e-5. This supports that tested operation, not a general equivalence theorem or latency advantage. Historical arithmetic speedup interpretations are withdrawn (§4.2). Similarly, the tested textual hindsight constraint showed no advantage over its neutral placebo; this does not establish that language-based self-correction is generally ineffective.
 
 The architecture also explores a second route to a different repair: a separately trained specialist adapter can generate a candidate after a verifier rejects a result. Accepted specialist tokens can be replayed under the base model through a bridge before continuation. We report a natural base-failure/coder-pass example and a separate four-node coder/cyber card fixture, including its failed first coder attempt and verifier-feedback retry. We also report a live binary cyber-router experiment. These results test components and small integrations; they do not yet establish a complete 20-step delayed-failure graph, a universally reliable error detector, or safe deployment across domains.
 
 The motivation is broader than any one model size: if failures can be identified and useful state preserved, localized repair may avoid unnecessary recomputation. Whether the same approach helps larger models, frontier agents or different hardware is an open empirical question. We do not assume that a larger model always repairs an error, or that adapters and caches can be interchanged between different base models.
 
+
+### Relation to prior work
+
+Memory-based feedback without weight updates is not new: [Shinn et al., Reflexion](https://arxiv.org/abs/2303.11366) maintain reflective text across trials. Our manually authored rule controls do not establish an advantage over that approach. [Huang et al.](https://arxiv.org/abs/2310.01798) study intrinsic self-correction without external feedback; that setting differs from repair using deterministic verifiers or supervised localization. [Sheng et al., S-LoRA](https://arxiv.org/abs/2311.03285) address serving many adapters and managing adapter/cache memory. We do not claim adapter serving or memory reuse as new primitives. This paper investigates a particular combination of conditional localization, intervention and specialist routing; it has not established superiority to these systems or a unified end-to-end implementation.
 
 ---
 
@@ -47,17 +51,17 @@ Autonomous error recovery in language models requires answering three nested que
 * *Localization:* Can an observer determine *which* discrete step was the first point of divergence?
 * *Intervention:* Can the generation be steered away from the error without re-running sound prefix computation?
 
-Before building the step-localizer, we tested and falsified three common hypotheses in the literature.
+Before building the step-localizer, we tested three common hypotheses in the literature. None showed an advantage over its control in these experiments; none is refuted by them.
 
 ### 1.1 Sequence-Level Observer Ranking Null
 
 A persistent conjecture is that an auxiliary sequence-level observer head trained on pooled sequence representations can rerank sampled model outputs more effectively than token logprobs.
 
-We evaluated a 2-layer sequence-level MLP head across $n=500$ multi-step arithmetic tasks ($1,096$ wrong-but-well-formed holdout candidates). While the head achieved above-chance discrimination ($\text{AUC} = 0.682$ $[0.573, 0.782]$ vs permutation control $0.496$), it failed completely as a generation selector:
+We evaluated a 2-layer sequence-level MLP head across $n=500$ multi-step arithmetic tasks ($1,096$ wrong-but-well-formed holdout candidates). While the head achieved above-chance discrimination ($\text{AUC} = 0.682$ $[0.573, 0.782]$ vs permutation control $0.496$), it did not outperform the free baseline as a generation selector:
 
 $$\text{Head Selection Top-1: } 0.560 \quad \text{vs} \quad \text{Max-Logprob: } 0.556 \quad (+0.004, \; 12\text{W} / 11\text{L}, \; p = 1.000)$$
 
-The observer added zero marginal value over the model's own intrinsic token probabilities, which are free. Sequence pooling collapses the localized signal: an early catastrophic arithmetic failure produces similar average activation drift to a subtle late rounding error.
+The observer's $+0.004$ selection advantage over the model's own token logprobs is within noise ($12\text{W}/11\text{L}$, $p = 1.000$). This is a failure to demonstrate an advantage, not a demonstration of equivalence. One plausible explanation, not established here, is that sequence pooling averages away position-specific evidence: an early catastrophic arithmetic failure and a subtle late rounding error can produce similar mean activation drift.
 
 ### 1.2 Sub-1B Symbolic State-Tracking Floor
 
@@ -69,11 +73,11 @@ When Step 1 fails in $77.5\%$ of instances, the ground-truth first-error index i
 
 ### 1.3 Capacity Control & In-Distribution Steering Nulls
 
-In early modular plastic memory experiments (CGR/FiLM architecture), the apparent gating gain turned out to be capacity. Against a LoRA-only checkpoint it looked decisive — $+0.135$ $[0.060, 0.210]$, significant — but that control trained $442{,}368$ parameters against CGR's $8{,}149{,}661$, so the comparison confounded conditioning with a $19\times$ capacity gap (`findings/2026-10-25-steering-capacity-control.md`). Raising the baseline to a matched $22{,}324{,}637$ trainable parameters, with the same corpus, seed and schedule, moved it from $0.245$ to $0.350$ while CGR moved from $0.380$ to $0.385$. The matched paired difference is $+0.035$ $[-0.045, +0.115]$ — **not significant** — and the one significant difference runs the wrong way: the steered arm damages edit quality by $-0.156$ $[-0.240, -0.065]$ while restoring the thesis no more reliably than the control.
+In early modular plastic memory experiments (CGR/FiLM architecture), the apparent gating gain was confounded by capacity. Against a LoRA-only checkpoint it looked decisive — $+0.135$ $[0.060, 0.210]$, significant — but that control trained $442{,}368$ parameters against CGR's $8{,}149{,}661$, so the comparison confounded conditioning with a $19\times$ capacity gap (`findings/2026-10-25-steering-capacity-control.md`). Raising the baseline to a matched $22{,}324{,}637$ trainable parameters, with the same corpus, seed and schedule, moved it from $0.245$ to $0.350$ while CGR moved from $0.380$ to $0.385$. The matched paired difference is $+0.035$ $[-0.045, +0.115]$ — **not significant** — and the one significant difference runs the wrong way: the steered arm damages edit quality by $-0.156$ $[-0.240, -0.065]$ while restoring the thesis no more reliably than the control.
 
 <small>*Erratum (2026-10-29):* an earlier draft reported this control as "$+0.105$ vanished when matched against parameter-equivalent LoRA adapters ($8.15\text{M}$ vs $442\text{K}$)". No artifact contains that pairing: `8.15M` vs `442K` is the *unmatched* comparison, which produced $+0.135$, not $+0.105$, and $+0.105$ appears nowhere in `results/`. The matched control is $22.3\text{M}$ vs $22.3\text{M}$. See Errata at the end.</small>
 
-**Conclusion:** Heuristic rerankers, ungrounded prompt tweaks, and parameter-unmatched gates yield illusory gains. Progress requires explicit step-level credit assignment grounded in physical key-value states.
+**Summary:** Heuristic rerankers, ungrounded prompt tweaks and parameter-unmatched gates showed no advantage over their controls in these experiments. That is a null result under these conditions, not a proof that the method classes cannot work. Progress in this project required explicit step-level credit assignment grounded in physical key-value states.
 
 ---
 
@@ -92,22 +96,24 @@ We evaluated four non-learned baselines on $N=110$ held-out broken chains:
 | `argmin_logprob` | $\arg\min_t \log P(v_t)$ | $0.400$ | $0.293$ | Predicts Step 4 in 93/110 cases |
 | `poslogprob` | Position bias + slope | $0.445$ | $0.347$ | 10 params; non-modal accuracy collapses to $0.141$ |
 
-Per-step token confidence ($\log P$) is dominated by sequence position rather than correctness: token entropies naturally drift as sequence length increases. Consequently, `argmin_logprob` simply predicts the final step ($t=4$) regardless of where the arithmetic actually derailed.
+In this sample, `argmin_logprob` selects the final step on 93/110 chains. This shows a strong position-associated bias for this heuristic, not that token confidence is universally uninformative or that positional drift has been isolated as its cause.
 
-### 2.2 Linear vs. Transformer Localizers: Complementary Defect Profiles
+### 2.2 Per-Step MLP vs. Transformer Localizers: Complementary Defect Profiles
 
-We trained two observer families on frozen $SVD_{32}$ projections of the hidden states:
-1. **Linear Probe:** Independent linear classification per step with no cross-step attention.
-2. **Transformer Encoder:** A 1-layer bidirectional self-attention encoder over the $H$ step embeddings.
+We trained two observer families on frozen hidden states. They do **not** share an input representation, which bounds how the comparison can be read:
+1. **Per-step MLP (historical code name `LinearStep`):** an independent two-layer MLP applied to each step, `Linear(d, 64) → GELU → Dropout(0.1) → Linear(64, 1)`, with SVD-32 projections of the step features and no cross-step attention.
+2. **Transformer Encoder:** a 1-layer bidirectional self-attention encoder over the $H$ step embeddings, fed full-width standardized features.
 
-While both models achieve identical aggregate Top-1 accuracy ($0.618$), their per-step error profiles are non-overlapping:
+The width difference is not incidental. `path_a_loop.py:91-92` and `eval_vault.py:76-77` pass the SVD projection (`proj`) to the MLP arm and `None` to the Transformer arm, so the Transformer sees the full feature width while the MLP sees 32 dimensions. The two arms therefore differ in input dimension, parameter count, positional handling and attention simultaneously. The architectural description follows the loop code, whose `localizer_eval` block records Table 1 diagnostics. Historical class names are retained in artifact keys for traceability.
+
+Both families reach the same aggregate Top-1 accuracy ($0.618$) on the tuning holdout, but their per-step error profiles differ:
 
 ```
-Step 1 Divergence: [Linear Recall: 0.923]  >>>  [Transformer Recall: 0.769]  (Linear +0.154)
-Step 4 Divergence: [Linear Recall: 0.188]  <<<  [Transformer Recall: 0.500]  (Trf +0.312)
+Step 1 Divergence: [MLP Recall: 0.923]  >>>  [Transformer Recall: 0.769]  (MLP +0.154)
+Step 4 Divergence: [MLP Recall: 0.188]  <<<  [Transformer Recall: 0.500]  (Trf +0.312)
 ```
 
-The linear localizer defaults to Step 1 in $59\%$ of instances, failing catastrophically on late-chain errors (Step-4 recall collapses to $0.188$). Conversely, the Transformer's bidirectional attention mechanism resolves cross-step relational dependencies, allowing it to accurately identify when Step 4 deviates from an otherwise coherent prefix.
+The per-step MLP defaults to Step 1 in $59\%$ of instances and is weak on late-chain errors (Step-4 recall $0.188$). One candidate explanation for the Transformer's tail-step behaviour is that bidirectional attention lets a late step be compared against earlier ones. That is a hypothesis, not an isolated effect: the comparison confounds attention with feature width, parameter count and positional encoding, and §2.4 states what would be needed to separate them.
 
 ### 2.3 The Threshold Over-Fires Out-of-Sample
 
@@ -119,42 +125,35 @@ $$\hat{t} = \begin{cases} 4, & \text{if } P_{trf}(t=4) \ge 0.35 \\ \arg\max_{t} 
 
 | Architecture | Top-1 Accuracy | Balanced Accuracy | Step 1 Recall ($n=39$) | Step 2 Recall ($n=23$) | Step 3 Recall ($n=13$) | Step 4 Recall ($n=32$) |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
-| Linear Majority ($SVD_{32}$) | $0.618$ | $0.515$ | **$0.923$** | $0.696$ | **$0.769$** | $0.188$ |
+| Per-step MLP (`LinearStep`, $SVD_{32}$) | $0.618$ | $0.515$ | **$0.923$** | $0.696$ | **$0.769$** | $0.188$ |
 | Transformer Majority | $0.618$ | $0.505$ | $0.769$ | $0.565$ | $0.692$ | $0.500$ |
 | Ensemble (Softmax Mean) | $0.691$ | **$0.571$** | $0.897$ | **$0.783$** | **$0.769$** | $0.406$ |
 | **Two-Tier Localizer** | **$0.718$** | $0.559$ | $0.846$ | $0.522$ | $0.615$ | **$0.812$** |
 
 The Two-Tier localizer achieves a **$4.3\times$ gain in Step-4 recall** ($0.188 \to 0.812$), lifting aggregate Top-1 localization accuracy from $0.618$ to **$0.718$** ($+10.0\%$ absolute) — **on the split used to choose $\tau=0.35$**.
 
-That last qualification is load-bearing. On the frozen blind vault ($N=331$, Table 5) the same rule scores $0.625$ Top-1, below the Transformer alone ($0.677$) and below the softmax ensemble ($0.680$). It is not failing to localize tail steps, though: it calls Step 4 on $68$ of $331$ rows when only $33$ are Step 4, which lifts Step-4 recall to $0.667$ (Transformer $0.545$, ensemble $0.485$) and drops Step-4 precision to $0.324$ ($0.400$, $0.471$). A single scalar threshold on one class posterior is a fitted recall lever, and out of sample it over-fires. The ensemble has no threshold and generalizes; the Two-Tier rule is reported here as the tuning-set maximum, not as the recommended model.
+Parameter counts are not matched. From the module definitions (`experiments/localizer.py:124-164`) at the loop's own settings (width $64$, one encoder layer, four heads, $H=5$), the per-step MLP has $2{,}177$ parameters at $d=32$, while the Transformer has $99{,}585$ at $d=1{,}024$, of which $65{,}600$ are in its input projection alone. The Transformer therefore has roughly $46\times$ the parameters of the MLP it is compared against. These counts are computed from the constructors, not read from a saved record.
 
-### 2.4 Dissecting the Inductive Bias: Relational Attention vs. Parameter Capacity Confound
+That last qualification is load-bearing. On the frozen blind vault ($N=331$, Table 5) the same rule scores $0.625$ Top-1, below the Transformer alone ($0.677$) and below the softmax ensemble ($0.680$). It is not failing to localize tail steps, though: it calls Step 4 on $68$ of $331$ rows when only $33$ are Step 4, which lifts Step-4 recall to $0.667$ (Transformer $0.545$, ensemble $0.485$) and drops Step-4 precision to $0.324$ ($0.400$, $0.471$). A single scalar threshold on one class posterior is a fitted recall lever, and out of sample it over-fires. The ensemble uses no class-specific cutoff and retained similar aggregate accuracy on this vault; the Two-Tier rule is reported here as the tuning-set maximum, not as the recommended model.
 
-A skeptical reviewer might reasonably ask the exact question that falsified the Phase 1 auxiliary-head claim: *Is the Transformer localizer winning because of cross-step attention, or merely because it possesses more trainable parameters than a linear projection?*
+### 2.4 Attention or Confounded Capacity? An Open Question
 
-The empirical evidence rules out the parameter-capacity hypothesis by examining **where** the performance divergence occurs:
+A skeptical reviewer should ask the question that ended the Phase 1 auxiliary-head claim: *Is the Transformer localizer winning because of cross-step attention, or because it has more trainable parameters and a wider input?*
 
-1. **Parameter Count Does Not Explain Per-Step Asymmetry:**  
-   If parameter volume alone explained the Transformer's edge ($0.677$ vs $0.604$ Top-1 on blind vault data), a wider multi-layer perceptron operating on steps independently should have matched it. Instead, the models exhibit complementary functional specializations:
-   * **The Linear Probe's Early-Step Competence:** The linear probe achieves **$0.923$ recall on Step 1**. When an early error occurs, it introduces severe, immediate mathematical divergence into the local hidden state $h_1$. A single linear hyperplane easily partitions this perturbed activation from normal prefixes; additional parameters provide no marginal utility.
-   * **The Transformer's Tail-Step Competence:** The Transformer's advantage is concentrated exclusively on late-chain divergence (Step-4 recall jumps from $0.188$ to $0.500$ on holdout, and from $0.394$ to $0.545$ on the vault re-fit).
+The present experiments cannot answer it, and we no longer claim they do. The two arms differ simultaneously in input dimension ($SVD_{32}$ vs full width), parameter count ($2{,}177$ vs $99{,}585$ at the loop's settings; §2.2), positional handling, and the presence of cross-step attention. No width-, parameter- or input-matched per-step MLP control, no position-only control, and no attention-disabled counterpart was run for this comparison. The FiLM capacity control in §1.3 matched a different architecture on a different task and does not control this one. What the data support is a descriptive asymmetry, not a causal decomposition:
 
-2. **The Residual Stream Drift Problem:**  
-   In deep autoregressive sequences, later-step activations accumulate residual stream variance, positional encodings, and multi-token attention mixing. By Step 4, even an arithmetic step that evaluated correctly possesses a complex, drifted activation profile that mathematically overlaps with an erroneous step when projected in isolation. Consequently, an isolated linear probe loses discriminative sharpness and collapses to the empirical majority prior (Step 1).
-
-3. **Cross-Step Attention as Relational Inductive Bias:**  
-   The 1-layer Transformer encoder computes all-to-all self-attention across the $H$ step embeddings:
-   $$\mathbf{A} = \text{Softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}}\right) \mathbf{V}$$
-   This allows Step 4's representation to attend backward over Steps 1, 2, and 3. By performing relational comparison—verifying that the representations of Steps 1–3 are internally coherent and match task priors—the attention head isolates the anomaly specifically to Step 4. Relational context, not raw weight volume, resolves tail ambiguity.
-
-4. **The Principled Two-Tier Synthesis:**  
-   The Two-Tier architecture directly operationalizes this functional division: Tier 1 (Linear) executes fast, parameter-minimal cuts on early steps, while Tier 2 (Transformer) acts as a targeted override only when tail-step posterior probability exceeds threshold ($P_{trf}(4) \ge 0.35$).
+1. **Per-step asymmetry (descriptive).** The per-step MLP reaches $0.923$ Step-1 recall, while the Transformer reaches $0.500$ Step-4 recall against the MLP's $0.188$ on the tuning holdout, and $0.545$ against $0.394$ on the vault re-fit. The two error profiles are complementary in this configuration.
+2. **A hypothesis, not a mechanism.** One reading is that an early error perturbs a single step's state enough for an independent per-step classifier, while a late error is separable only in relation to earlier steps. Residual-stream drift, positional encoding, attention mixing and the wider input are all candidate contributors. Per-step error asymmetry cannot distinguish them, and no experiment here does.
+3. **What would count as evidence.** A width-, parameter- and input-matched per-step MLP; a position-only variant; a Transformer with attention disabled but the same input projection; and the same comparison on both the tuning split and the vault. Until those exist, the honest statement is that cross-step attention is a plausible contributor and its contribution is unmeasured.
+4. **The Two-Tier synthesis is operational, not mechanistic.** Tier 1 runs the per-step MLP on early steps; Tier 2 overrides with the Transformer when $P_{trf}(4) \ge 0.35$. That combination performs well on the split where $\tau$ was chosen and over-fires out of sample (§2.3). It is a fitted recall lever built from two differently configured arms, not a validated theory of relational inductive bias.
 
 ---
 
 ## 3. Mechanism of Repair: Hindsight Placebo vs. Token Exclusion
 
 Localization specifies *where* to intervene, but not *how*. We evaluated seven intervention mechanisms under an **Oracle Localizer** (intervening at the true divergence step $t^*$) across all $110$ broken holdout chains.
+
+**Scope condition.** The $110$ chains are complete and already wrong, selected by the dataset loader using ground-truth `first_error` (`experiments/localizer.py:68-85`). Malformed or incomplete chains are excluded, and chains that were generated correctly are absent. Every rate in this section is therefore *recovery given a known failure at a known step*, not detection or end-to-end accuracy, and not a measure of how often the mechanism damages a correct chain.
 
 #### Table 2: Oracle Intervention Taxonomy ($N=110$ Broken Chains, Qwen3-0.6B-Base)
 
@@ -165,8 +164,8 @@ Localization specifies *where* to intervene, but not *how*. We evaluated seven i
 | `resample` | Sample step $t^*$ ($T=0.8$), greedy after | 22 / 110 | $0.200$ | $[0.136, 0.284]$ | $0.445$ | $15\text{W} / 13\text{L}, p=0.85$ |
 | `hindsight` | Prompt: `# constraint: x is not <bad>` | 30 / 110 | $0.273$ | $[0.198, 0.363]$ | $0.136$ | $23\text{W} / 13\text{L}, p=0.13$ |
 | `hindsight_neutral` | Prompt: `# constraint: none` (Placebo) | 30 / 110 | $0.273$ | $[0.198, 0.363]$ | $0.500$ | $20\text{W} / 10\text{L}, p=0.10$ |
-| **`rank2`** | **Forbid bad first digit via logit mask** | **35 / 110** | **$0.318$** | **$[0.239, 0.410]$** | **$0.000$** | **$22\text{W} / 7\text{L}, p=0.008$** |
-| `oracle_force` | Inject ground-truth value at $t^*$ | 94 / 110 | $0.855$ | $[0.777, 0.908]$ | — | Ceiling ($79.5\%$ non-trivial) |
+| **`rank2`** | **Forbid opening tokens of the bad value via logit mask** | **35 / 110** | **$0.318$** | **$[0.239, 0.410]$** | **$0.000$** | **$22\text{W} / 7\text{L}, p=0.008$** |
+| `oracle_force` | Inject ground-truth value at $t^*$ | 94 / 110 | $0.855$ | $[0.777, 0.908]$ | — | Reference ($79.5\%$ non-trivial) |
 
 ### 3.1 The Greedy No-Op and Prompting Placebo
 
@@ -175,71 +174,79 @@ Localization specifies *where* to intervene, but not *how*. We evaluated seven i
 
 $$30/110 \quad \text{vs} \quad 30/110 \quad (15\text{W} / 15\text{L}, \; p = 1.000)$$
 
-The prompt text suppresses the named token (re-emission drops to $13.6\%$), but fails to steer generation toward truth; the model simply selects an alternative erroneous digit. The apparent benefit of "hindsight prompting" is entirely attributable to the syntactic whitespace and token shift of adding an extra prompt comment.
+The prompt text suppresses the named token (re-emission drops to $13.6\%$), but does not steer generation toward truth; the model selects an alternative erroneous digit instead. A plausible reading is that the apparent benefit comes from the extra prompt tokens rather than from the constraint, but the experiment does not separate whitespace, token shift and constraint content, so that attribution is not established.
 
 ### 3.2 Rank-2 Logit Exclusion Beats Sampling
 
-Physical logit masking (`rank2`) sets the logits of the first digit of the rejected value to $-\infty$:
+Physical logit masking (`rank2`) sets the logits of the tokens that could begin the rejected value to $-\infty$:
 
-$$\tilde{z}_i = \begin{cases} -\infty, & \text{if } i \in \text{Digits}(\text{bad\_val}[0]) \\ z_i, & \text{otherwise} \end{cases}$$
+$$\tilde{z}_i = \begin{cases} -\infty, & \text{if } i \in \text{FirstTokens}(\text{bad\_val}) \\ z_i, & \text{otherwise} \end{cases}$$
 
-This forces the model to take its second-highest probability branch without relying on instruction following. `rank2` recovers **$31.8\%$** of broken chains ($22\text{W} / 7\text{L}, p=0.008$), completely eliminating bad-value re-emission ($0.0\%$).
+This prevents the model from beginning the next value with the same token; it does not enumerate alternate complete answers or select the globally second-best chain. `rank2` recovers **$31.8\%$** of broken chains ($22\text{W} / 7\text{L}, p=0.008$), eliminating re-emission of the *same* value ($0.0\%$). Because the exclusion applies to the opening digit, a different multi-digit value in the same digit range remains reachable, which is consistent with the gap to the oracle-injection arm in Table 2.
 
 ---
 
-## 4. End-to-End Autonomous Loop & Systems Benchmark
+## 4. Repair Conditional on Known Failure and Measurement Audit
 
-We wired the Two-Tier localizer, the `rank2` intervention, and an "Accept-if-Cleaner" gate into a fully automated rewind loop operating on un-annotated, raw model completions.
+We wired the Two-Tier localizer, the `rank2` intervention, and an "Accept-if-Cleaner" gate into an automated rewind loop. The loop is not given the error index at inference time, but every chain it is run on was already selected as complete and broken using ground-truth `first_error`. The measurements below are therefore repair conditional on known failure, not detection (§3).
 
 ### 4.1 The Accept-if-Cleaner Gate
 
 When an observer mis-localizes a late defect to Step 1, applying `rank2` risks corrupting an already-correct prefix. We implemented a confidence guard:
-* Let $lp_{orig}$ be the logprob of the original emitted token at $\hat{t}$, and $lp_{edit}$ be the logprob under rank-2 masking.
+* Let $lp_{orig}$ and $lp_{edit}$ be the mean token log probabilities of the original and repaired value strings, respectively, evaluated under the unmasked base model with the same prefix. Masking applies during candidate generation, not during these readouts.
 * If the original step was confident ($lp_{orig} > -0.25$) and the edit sharply degrades confidence ($lp_{edit} < lp_{orig} - 0.35$), the edit is **rejected**, and the prefix is preserved.
 
-In empirical holdout testing, the gate rejected $23/110$ candidate edits. The gated and ungated Two-Tier arms are **numerically identical** ($32/110$, $34{,}046$ tokens, $246{,}826\text{ ms}$), because the rejected rows contributed zero recoveries when ungated. The same holds on the vault: $81/331$ rejected, $0$ recoveries among them, and the gated arm is the only arm run there. So the gate is a *conservative filter that cost nothing*, not a demonstrated recovery gain: it removes edits that would not have helped, and it buys precision ($32/87 = 36.8\%$ recovery among accepted rows on $N=110$) plus skipped compute. An auxiliary probe evaluated falling back to the localizer's second-highest ranked step ($\hat{t}_2$) on those 23 rejected rows: fallback hit the true step in $3/23$ instances but converted $0/23$ chains into additional recoveries, which is why terminating on rejection is the compute policy we use.
+In empirical holdout testing, the gate rejected $23/110$ candidate edits. The gated and ungated Two-Tier arms recover the same number of chains ($32/110$), because the rejected rows contributed zero recoveries when ungated. On the vault, $81/331$ edits were rejected with $0$ recoveries among them, and only the gated arm was run there, so no ungated vault comparison exists. On this sample the gate is a *conservative filter that did not reduce recovery*, not a demonstrated recovery gain: it removes edits that would not have helped and buys precision ($32/87 = 36.8\%$ recovery among accepted rows on $N=110$). Their identical token and time totals are shared accounting, not a measurement: the repair timer is reused across both arms and the gate is evaluated after the candidate has already been generated, so those totals are not evidence that gating was free. An auxiliary probe evaluated falling back to the localizer's second-highest ranked step ($\hat{t}_2$) on those 23 rejected rows: fallback hit the true step in $3/23$ instances but converted $0/23$ chains into additional recoveries, which is why terminating on rejection is the compute policy we use.
 
-#### Table 3: End-to-End Autonomous Loop Recovery on the Tuning Holdout ($N=110$)
+#### Table 3: Conditional Repair Recovery on the Tuning Holdout ($N=110$)
 
 | Autonomous Arm | Localization Model | Intervention | Recovered / $N$ | Success Rate | 95% Wilson CI | $\hat{t} = t^*$ Exact | Accepted / $N$ |
 |---|---|---|:---:|:---:|:---:|:---:|:---:|
 | `full_rewrite` | None (Sample $T=0.8$) | Full sequence | 14 / 110 | $0.127$ | $[0.077, 0.202]$ | — | — |
-| `linear_ungated` | Linear Majority | `rank2` | 24 / 110 | $0.218$ | $[0.151, 0.304]$ | $0.618$ | — |
+| `linear_ungated` | Per-step MLP Majority | `rank2` | 24 / 110 | $0.218$ | $[0.151, 0.304]$ | $0.618$ | — |
 | `ensemble_ungated` | Ensemble Average | `rank2` | 31 / 110 | $0.282$ | $[0.206, 0.372]$ | $0.691$ | — |
 | **`two_tier_ungated`** | **Two-Tier Rule** | **`rank2`** | **32 / 110** | **$0.291$** | **$[0.214, 0.382]$** | **$0.718$** | — |
 | `ensemble_gated` | Ensemble Average | `rank2` + Gate | 31 / 110 | $0.282$ | $[0.206, 0.372]$ | $0.691$ | 66 / 110 |
 | **`two_tier_gated`** | **Two-Tier Rule** | **`rank2` + Gate** | **32 / 110** | **$0.291$** | **$[0.214, 0.382]$** | **$0.718$** | **87 / 110** |
 
-Autonomous loop recovery jumps from $12.7\%$ (rewrite) and $21.8\%$ (linear) to **$29.1\%$** ($32/110$). Because the theoretical ceiling of `rank2` under an omniscient oracle is $31.8\%$ ($35/110$, Table 2), the Two-Tier autonomous loop captures:
+Autonomous loop recovery rises from $12.7\%$ (rewrite) and $21.8\%$ (per-step MLP) to **$29.1\%$** ($32/110$). Under an omniscient oracle that intervenes at the true step, `rank2` recovers $35/110$ ($31.8\%$, Table 2). The autonomous loop therefore reproduces $32/35$ of that observed oracle-localized count on this tuning sample:
 
-$$\frac{29.1\%}{31.8\%} = \mathbf{91.5\% \text{ of the theoretical oracle repair ceiling}}$$
+$$\frac{32}{35} = \mathbf{91.4\% \text{ of the observed oracle-localized rank-2 recovery count}}$$
 
-This ratio is a property of the $N=110$ tuning draw and should be read as such: the oracle ceiling was not re-measured on the vault, so no vault ceiling ratio is claimed. The vault result (Section 4.3) stands on its own paired comparison against full rewrites.
+This is a descriptive ratio between two arms measured on the same $110$ rows, not an upper bound. $31.8\%$ is a count for one intervention with one decoding rule, not a ceiling over interventions: a different edit, an earlier rewind, or a stronger decoder could in principle exceed $35/110$. The oracle was not re-measured on the vault, so no vault ratio is claimed. The vault result (Section 4.3) stands on its own paired comparison against full rewrites.
 
-### 4.2 Physical KV-Cache Slicing (`DynamicCache.crop`)
+### 4.2 Historical Cache-Slicing Measurements (Not Equal-Work Speedups)
 
-Prior rewind experiments re-ran forward passes over the entire prompt and prefix. To test the systems claim, we integrated physical key-value cache slicing using HuggingFace's `DynamicCache.crop(target_len)`.
+An earlier version of this section reported a $25.9\times$ generation-slice speedup and a $2.0\times$ end-to-end loop speedup from physical key-value cache truncation via `DynamicCache.crop`. Both interpretations are withdrawn.
 
-During autoregressive generation, past key-value projections for prompt tokens and verified prefix steps are retained in memory. When the localizer triggers a rewind to step $\hat{t}$:
-1. The token length $L_{\hat{t}}$ corresponding to the prompt up to step $\hat{t}-1$ is computed.
-2. The past key-value tensors are truncated in-place: `cache.crop(L_target)`.
-3. Generation resumes from step $\hat{t}$ without re-evaluating preceding tokens.
+The timed block builds a fresh cache over a *prefix* prompt, calls `crop` with that cache's current length, and stops the timer before any repaired suffix token is generated (`experiments/eval_vault.py:377-385`, `experiments/path_a_loop.py:269-278`). Cropping a cache to the length it already has is a no-op, and the rewind that matters — truncating a cache that holds a longer, failed trajectory — is never performed inside the measurement. The recovery outputs are produced separately by `gen_step` and `finish_chain`, which pass fresh prompts to `model.generate` and never receive the cropped cache (`experiments/oracle_rewind.py:93-117`). The token counters add $(steps - \hat{t}) \cdot 2$ without generating those tokens inside the timed block.
 
-#### Table 4: Systems Benchmark, Generation Slice Only ($N=110$ Chains, GTX 1050 4GB)
+The saved record therefore contains a prefix-prefill fragment, not cached repair generation:
 
-| Generation Arm | Mean Tokens / Chain | Mean Latency / Chain | FLOPs / Token Reduction | Latency Reduction | Relative Speedup |
-|---|:---:|:---:|:---:|:---:|:---:|
-| **Full Rewrite** ($T=0.8$) | $581.1$ | $4,498.4\text{ ms}$ | Baseline | Baseline | $1.0\times$ |
-| **Un-cached Fresh Rewind** | $379.5$ | $2,732.2\text{ ms}$ | $-34.7\%$ | $-39.3\%$ | $1.6\times$ |
-| **KV-Cache Truncated Rewind** | **$119.7$** | **$173.7\text{ ms}$** | **$-79.4\%$** | **$-96.1\%$** | **$25.9\times$** |
+#### Table 4: Historical Prefix-Prefill Record ($N=110$ Chains, GTX 1050 4GB)
 
-Compared to standard full-sequence regeneration, surgical KV-cache truncation eliminates $79.4\%$ of forward tokens and reduces *generation-slice* wall-clock latency by $96.1\%$ (a $25.9\times$ speedup). Even against naive un-cached rewinds, retaining the prefix key-value states delivers a $15.7\times$ speedup ($2,732.2\text{ ms} \to 173.7\text{ ms}$).
+| Timed operation | Formula token estimate / chain | Recorded time / chain |
+|---|---:|---:|
+| Full fresh-prompt rewrite | 581.1 | 4,498.4 ms |
+| Fresh-prompt repair (ensemble target) | 379.5 | 2,732.2 ms |
+| Prefix prefill plus equal-length crop; no suffix generation | 119.7 | 173.7 ms |
 
-**This table is not loop latency.** Measured end to end, the same arm in Table 3 cost $246,826\text{ ms}$ for $110$ chains — **$2,244\text{ ms}$ per chain against $4,498.4\text{ ms}$ for a full rewrite, i.e. $2.0\times$**. The difference is the observer: ten probe forward passes plus the post-edit readout needed by the Accept-if-Cleaner gate. On the vault the same accounting gives $1,934.7\text{ ms}$ vs $3,281.9\text{ ms}$ per chain, **$1.70\times$**. The honest systems claim is therefore two-tiered: *generation* is $25.9$-$27.2\times$ cheaper, the *loop* is $1.7$-$2.0\times$ cheaper. Quoting the first as the second would overstate the system benefit by an order of magnitude.
+The rows time different work. No relative speedup is inferred.
 
-### 4.3 Out-of-Sample Vault Replication ($N=331$) and Anti-Self-Deception Controls
+These values are retained because they are stored in `results/path_a_loop_h5.json` and the systems block of `results/verify_vault_h5.json`, and because a correction should not erase history. They do not support a speedup claim:
 
-To eliminate post-hoc threshold overfitting concerns on small holdout splits, we conducted a blind vault replication on an independent test split (`seed=20261028`, $140$ tasks, $560$ candidates, yielding **$331$ complete broken chains**) with all probe weights, SVD projection matrices, and decision thresholds permanently frozen ($\tau_{trf}=0.35, lp_{orig}=-0.25, \Delta lp=-0.35$).
+- **No longer cache is truncated.** The cache being cropped was built from a short prefix and cropped to its own length.
+- **No repaired suffix is timed.** The timer stops before generation; the $73/331$ vault recoveries were produced outside it by fresh-prompt generation.
+- **No observer or gate cost is included.** Feature extraction, localizer forward passes and the gate readout fall outside the timed region.
+- **Tokens are formulas.** Each arm's token count is computed as prompt length plus two per step, not measured from model forwards, so the $-79.4\%$ is an estimate of a quantity that was also not generated in the timed block.
+
+The "$2.0\times$ loop" and "$1.70\times$ vault loop" figures are withdrawn for the same reasons. The per-chain value $246{,}826\text{ ms} / 110 = 2{,}244\text{ ms}$ does come from a timer, but that timer excludes the observer and gate, and the gated and ungated arms share one repair timer. Their identical cost is shared accounting, not a measured equality.
+
+**What would be needed.** A defensible benchmark would build a cache over a full failed trajectory, truncate it to a token boundary strictly inside that trajectory, generate and verify the repaired suffix on the truncated cache, and price feature extraction, localization, repair, gating and verification inside one timer, with the baseline required to produce the same output work. The independent cache evidence this project does have is numerical rather than temporal: on a CPU float32 run, cropped-cache continuation matched fresh recomputation to $\max|\Delta\text{logit}| = 1.86\times10^{-5}$ with matching argmax (`results/arc_kaggle_scaffold_smoke/verification_results.json`). That supports coherence of the operation, not a speedup.
+
+### 4.3 Vault Evaluation ($N=331$ Broken Candidates)
+
+To examine transfer beyond the tuning split on small holdout splits, we conducted a blind vault replication on an independent test split (`seed=20261028`, $140$ tasks, $560$ candidates, yielding **$331$ complete broken chains**) with the training recipe and thresholds fixed before vault evaluation; the scripts re-fit the heads on the original training set and hold them fixed during evaluation ($\tau_{trf}=0.35, lp_{orig}=-0.25, \Delta lp=-0.35$).
 
 #### Table 5: Blind Vault Replication and Permutation Control ($N=331$ Unseen Chains)
 
@@ -249,12 +256,12 @@ To eliminate post-hoc threshold overfitting concerns on small holdout splits, we
 | `random_t_rank2` | Uniform random $\hat{t} \in \{1 \dots 4\}$ + `rank2` | 23 / 331 | $0.069$ | $[0.047, 0.102]$ | $0.245$ | — |
 | **`two_tier_gated` (CGR)** | **Two-Tier Probe + Gate + `rank2`** | **73 / 331** | **$0.221$** | **$[0.179, 0.268]$** | **$0.625$** | **250 / 331** |
 
-1. **Localization Generalizes; the Hard Threshold Over-Triggers (Rule 1, reframed):**  
-   The relational inductive bias holds out of sample: Transformer Majority Top-1 reached **$0.677$** (vs $0.604$ for Linear), up from $0.618$ on the tuning holdout, and the Ensemble Average held at **$0.680$** — a $0.011$ drop, not a collapse. The **Two-Tier rule** lands at **$0.625$** Top-1, below both, and the reason is not that it stopped finding tail errors. It is that $\tau_{trf}=0.35$ is a recall lever: it calls Step 4 on **$68$ of $331$ rows where only $33$ are Step 4**, buying the highest Step-4 recall of any arm at the lowest Step-4 precision.
+1. **Localization Transfers; the Hard Threshold Over-Triggers (Rule 1, reframed):**
+   The descriptive complementarity holds out of sample: Transformer Majority Top-1 reached **$0.677$** (vs $0.604$ for Linear), up from $0.618$ on the tuning holdout, and the Ensemble Average held at **$0.680$** — a $0.011$ drop, not a collapse. The **Two-Tier rule** lands at **$0.625$** Top-1, below both, and the reason is not that it stopped finding tail errors. It is that $\tau_{trf}=0.35$ is a recall lever: it calls Step 4 on **$68$ of $331$ rows where only $33$ are Step 4**, buying the highest Step-4 recall of any arm at the lowest Step-4 precision.
 
    | Arm | Top-1 (published fit) | Step-4 Recall (re-fit) | Step-4 Precision (re-fit) | Rows called Step 4 (re-fit) |
    |---|:---:|:---:|:---:|:---:|
-   | Linear Majority | $0.604$ | $0.394$ | $0.342$ | $38$ |
+   | Per-step MLP Majority | $0.604$ | $0.394$ | $0.342$ | $38$ |
    | Transformer Majority | **$0.677$** | $0.545$ | $0.400$ | $45$ |
    | Ensemble (softmax mean) | **$0.680$** | $0.485$ | $0.471$ | $34$ |
    | **Two-Tier ($\tau=0.35$)** | $0.625$ | **$0.667$** | $0.324$ | **$68$** |
@@ -263,42 +270,41 @@ To eliminate post-hoc threshold overfitting concerns on small holdout splits, we
 
    <small>*Metric erratum (2026-10-29):* the previous version of this item read "$0.625$ / $0.410$ Step-4 recall, below both". The $0.410$ was a per-step **precision**, produced by calling `per_step_recall(lab, pred)` where the signature is `per_step_recall(pred, lab)`. On recall the Two-Tier arm was never below the others; it was above them. Top-1 above is from the published fit because that fit drove the loop in Table 5; the recall, precision and call-count columns are a deterministic CPU re-fit (two runs identical), because the 2026-10-28 fit ran on a different torch build and stored no predictions. The re-fit reproduces Linear and Transformer Top-1 within $0.01$ and moves the two threshold-dependent arms by $0.027$ (Two-Tier $0.625 \to 0.598$), which is the same `P_trf(4) >= 0.35` fragility argued for here. Both fits agree on the ordering that matters: Two-Tier maximizes Step-4 recall and minimizes Step-4 precision. See Errata.</small>
 2. **Defeating the Permutation Control (Rule 3 PASS):**  
-   Slicing back to a uniformly random step with rank-2 exclusion (`random_t_rank2`) collapses to **$6.9\%$ recovery** ($23/331$)—performing at roughly half the recovery rate of doing a standard full rewrite ($13.9\%$). Arbitrary rewinds actively destroy sound prefixes. In contrast, Two-Tier CGR achieves **$22.1\%$** ($73/331$). The paired McNemar test demonstrates decisive statistical superiority:
+   Slicing back to a uniformly random step with rank-2 exclusion (`random_t_rank2`) collapses to **$6.9\%$ recovery** ($23/331$)—performing at roughly half the recovery rate of doing a standard full rewrite ($13.9\%$). This particular random-step policy recovered fewer already-broken chains; damage to initially correct chains was not measured. In contrast, Two-Tier CGR achieves **$22.1\%$** ($73/331$). The candidate-level paired test gives the following result; within-task dependence is not accounted for:
    $$\mathbf{57\text{ Wins} \; / \; 7\text{ Losses}} \quad (p = 7.64 \times 10^{-11})$$
    The paired odds ratio of $8.14 : 1$ shows a recovery advantage over this particular random-step control; it does not isolate all causal mechanisms.
-3. **Replicating Out-of-Sample Systems Savings (Rule 2, qualified):**  
-   CGR significantly outperforms full-chain rewrites ($22.1\%$ vs $13.9\%$, $43\text{W}/16\text{L}, p = 5.84 \times 10^{-4}$) while slashing forward tokens from $580.6$ to $120.1$ ($-79.3\%$) and per-chain latency from $3,281.9\text{ ms}$ to $120.7\text{ ms}$—a **$27.2\times$ generation-slice speedup**, with the end-to-end loop at $1,934.7\text{ ms}$ vs $3,281.9\text{ ms}$ per chain ($1.70\times$).
-4. **Argmax-Identical Slicing Verification (Rule 4 PASS):**  
-   To check cache slicing for numerical drift or token divergence, we benchmarked `DynamicCache.crop` against un-cached recomputations across 20 validation sequences. The observed maximum absolute logit difference was $\max |\Delta\text{logit}| \le 4.86 \times 10^{-5}$, below the $10^{-4}$ comparison tolerance, with $100\%$ identical argmax token sequences. This is not a claim that the logit difference is below fp32 machine epsilon.
+3. **Vault timing interpretation withdrawn:**
+   The historical 3,281.9 ms rewrite time and 120.7 ms prefix-prefill fragment do not measure equivalent work. The 1,934.7 ms repair timer excludes localization and gate evaluation. None establishes a cache-generation or full-loop speedup. Formula-derived token totals are not measured FLOPs or model-forward counts (§4.2).
+4. **Cache-coherence evidence:**
+   A historical findings report describes 20 comparisons with maximum logit difference 4.86e-5 and matching argmax outputs. The current audit has not located an equivalent per-case machine-readable record for that older check, so it is not treated as independently verified here. The separately saved CPU smoke test checks one fixed prompt, with maximum difference 1.86e-5 and matching next-token argmax; it does not establish all-token equality, GPU behavior or speedup (§4.2).
 
-### 4.4 Long-Horizon Scaling ($H=10$) & The Generative Horizon Boundary ($H^*$)
+### 4.4 Longer-Horizon Development Evaluation ($H=10$)
 
 To establish the limits of test-time KV rewinds as reasoning chains deepen, we scaled the arithmetic task from $H=5$ to $H=10$ assignments on `Qwen3-0.6B-Base` ($N=75$ broken holdout chains, `results/verify_h10_scaling.json`).
 
 #### Table 6: Horizon Scaling Diagnostics and Recovery at $H=10$ ($N=75$)
 
-| Evaluation Arm | Mechanism | Top-1 Localization | Full-Chain Recovery | 95% Wilson CI | Mean Forward Tokens |
+| Evaluation Arm | Mechanism | Top-1 Localization | Full-Chain Recovery | 95% Wilson CI | Formula token estimate |
 |---|---|:---:|:---:|:---:|:---:|
-| `linear_localizer` | SVD-32 Linear Probe (5 seeds) | **$0.520$** (Chance $0.100$) | — | — | — |
+| `linear_localizer` | SVD-32 per-step MLP (5 seeds) | **$0.520$** (Chance $0.100$) | — | — | — |
 | `full_rewrite` | Regenerate from Step 0 ($T=0.8$) | — | 0 / 75 ($0.000$) | $[0.000, 0.049]$ | $1,656.2$ |
 | `in_context_oops` | Verbal retry prompt without KV crop | — | 0 / 75 ($0.000$) | $[0.000, 0.049]$ | $220.6$ |
 | `two_tier_gated_1rewind` | Two-Tier CGR + `rank2` + Gate | $0.520$ | 0 / 75 ($0.000$) | $[0.000, 0.049]$ | **$165.0$** |
 | `two_tier_gated_max2` | Sequential max-2 rewinds | — | 0 / 75 ($0.000$) | $[0.000, 0.049]$ | $171.9$ |
 
-1. **Robust Localization vs. Multiplicative Rollout Decay:** While the localizer reliably identifies the erroneous step with **$52.0\%$ accuracy** ($5.2\times$ over chance), every generation arm collapsed to $0.0\%$ full-chain recovery. Because per-step conditional accuracy on sub-1B models hovers at $p \approx 0.35$–$0.50$, the joint probability of completing the remaining $10 - t$ steps correct without error decays exponentially: $\prod_{k=t+1}^{10} p_k \le (0.50)^6 \approx 0.015$.
-2. **Identification of the Autoregressive Horizon Boundary ($H^*$):** For small language models, unassisted autoregressive arithmetic possesses an empirical horizon ceiling at $H^* \approx 6$–$8$. Beyond $H^*$, error recovery cannot rely solely on test-time branch exploration; it strictly necessitates external symbolic tool invocations (e.g. calculator tool) or checkpoint scaling to preserve late-step fidelity.
-3. **Token Conservation Does Not Become Latency:** Even at the generative capacity ceiling, surgical KV-cache truncation reduces token forward evaluation by **$90.0\%$** ($165.0$ vs $1,656.2$ tokens). Wall-clock latency, however, moves from $7,502.7\text{ ms}$ to $6,399.2\text{ ms}$ — **$1.17\times$** — because un-batched single-sequence inference at this scale is dominated by framework launch and prefill overhead rather than decode FLOPs. A $90\%$ token reduction therefore does not imply a $90\%$ latency reduction, and at $H=10$ the loop is only marginally faster while recovering nothing.
+The tested policies recovered 0/75 complete broken chains at H=10. This does not locate a horizon boundary at 6–8 steps, establish an impossibility result, or identify model capacity as the cause. Localization, intervention quality, task difficulty and downstream errors remain possible contributors. Tools and other model checkpoints are future comparisons, not demonstrated necessities.
+
+The historical 165.0 versus 1,656.2 token figures are formulas, not instrumented forward counts. The H=10 repair implementation uses fresh prompts and does not crop a persistent cache, so the previously claimed 90% cache-related token saving is withdrawn. The saved 6,399.2 versus 7,502.7 ms timings cover different generation policies; the repair includes gate readouts but excludes localization and feature acquisition. They do not establish a cache or full-controller speedup.
 
 ---
 
 ## 5. Limitations & Remaining Headroom
 
-While Path A substantially resolves the localization bottleneck and establishes that KV slicing is real, four claims required correction after the audit and are reported as such above: the Two-Tier threshold is a recall lever rather than a joint classifier, the vault Step-4 column was a precision mislabelled as recall, the loop speedup is 1.7-2.0x rather than 27x, and the rewrite multiplier is 1.59x rather than 2.29x. Beyond those corrections, several challenges remain.
-
-1. **The Rank-2 to Oracle Gap ($31.8\%$ vs $79.5\%$):**  
-   Under an oracle that directly injects the ground-truth value, $79.5\%$ of non-trivial broken chains are restored. Under `rank2`, recovery caps at $31.8\%$. First-digit exclusion guarantees that the model will not repeat its previous answer, but when numbers span multi-digit ranges ($[1, 99]$), excluding one digit still leaves multiple plausible incorrect candidates. Closing this remaining headroom requires token-level value steering or beam-guided branch exploration at step $\hat{t}$.
-2. **The Autoregressive Horizon Ceiling ($H^* \approx 6$–$8$):**  
-   While the Two-Tier hidden-state localizer continues to isolate defects accurately at $H=10$ ($52.0\%$ vs $10.0\%$ chance), full-chain recovery collapses to $0.0\%$ across all arms due to multiplicative rollout compounding ($(0.45)^6 < 0.01$). Slicing past the error point succeeds locally, but completing long downstream sequences requires coupling CGR with external symbolic tool execution or larger parameter checkpoints to prevent subsequent divergence.
+The recovery observations are conditional on known failures, not a complete detection-and-repair evaluation. Historical cache speedups and full-loop timings are withdrawn (§4.2). Candidate-level statistical tests do not account for multiple completions of the same task. Other limitations follow.
+1. **The Observed Rank-2 to Oracle Gap ($31.8\%$ vs $79.5\%$):**
+   Under an oracle that directly injects the ground-truth value, $79.5\%$ of non-trivial broken chains are restored. The tested `rank2` arm recovered $31.8\%$ on this sample. First-digit exclusion guarantees that the model will not repeat its previous answer, but when numbers span multi-digit ranges ($[1, 99]$), excluding one digit still leaves multiple plausible incorrect candidates. Closing this remaining headroom requires token-level value steering or beam-guided branch exploration at step $\hat{t}$.
+2. **Longer-horizon failure:**
+   None of the tested H=10 policies recovered a complete chain. The data do not establish a universal horizon or that only tools or larger models can improve it (§4.4).
 3. **Hybrid Architecture Compatibility:**  
    In linear-attention or state-space models (e.g., Mamba, LFM3), key-value caching is replaced by recurrent convolutional and state matrices. Rewinding in such architectures requires rolling back the hidden recurrent state $h_t$ rather than slicing a sequence cache.
 
@@ -358,12 +364,11 @@ must be compared with full-prefix specialist prefill. Keeping the adapter active
 to termination avoids another switch but does not itself prove coherence or
 equivalent generation quality.
 
-The crop operation itself is measured, not assumed: on 20 validation sequences
-`DynamicCache.crop` reproduced un-cached recomputation to
-$\max|\Delta\text{logit}| \le 4.86 \times 10^{-5}$ with $100\%$ bit-identical
-argmax sequences (Section 4.3, Rule 4). What is *not* measured is whether an
-adapter's $\Delta W_q$ keeps that equivalence — the bit-identity result was
-obtained with the base weights only.
+The separately saved CPU smoke check compares cropped continuation with fresh
+prefill on one prompt (maximum logit difference 1.86e-5; next-token argmax
+matches). It uses base weights only, so it does not establish equivalence of
+mixed base/adapter cache policies. Historical 20-sequence numerical claims need
+their original per-case artifact before being treated as independently audited.
 
 ### 6.2 The Bridge Protocol: Targeted Re-Encoding
 
@@ -475,7 +480,7 @@ We trained binary correctness heads on a 200-item single-answer SecEval sample, 
 | SecEval-trained router | **57/80** | **71.25%** |
 | Oracle, choose a correct arm if available | 61/80 | 76.25% |
 
-The router selected the adapter on nine questions, producing three useful switches and zero harmful switches. These are sample-level observations, not a proof of safety. On the disjoint 40-question SecEval sample, base/cyber/router/oracle scored 26/23/26/29; one switch helped and one harmed. In the reverse direction, heads trained on all 80 CyberMetric items evaluated on 100 SecQA items gave base/cyber/router/oracle scores of 97/90/97/97, with nine switches and neither useful nor harmful switches. Strict answer-format parsing counted 2 CyberMetric, 5 SecEval and 7 SecQA cyber responses as invalid; those must not silently be treated as correct.
+The router selected the adapter on nine questions, producing three useful switches and zero harmful switches (two-sided exact paired binomial p=0.25 versus base). These are sample-level observations, not a proof of safety. On the disjoint 40-question SecEval sample, base/cyber/router/oracle scored 26/23/26/29; one switch helped and one harmed. In the reverse direction, heads trained on all 80 CyberMetric items evaluated on 100 SecQA items gave base/cyber/router/oracle scores of 97/90/97/97, with nine switches and neither useful nor harmful switches. Strict answer-format parsing counted 2 CyberMetric, 5 SecEval and 7 SecQA cyber responses as invalid; those must not silently be treated as correct.
 
 The live CyberMetric loop regenerated the base output, computed the frozen router score, and, when selected, discarded the previous generation cache and generated from the complete prompt with the cyber adapter. It reproduced all 80 saved base outputs and routing decisions and all nine selected standalone cyber outputs. A forward hook verified that each specialist's initial forward received the full prompt and a cache of length zero. This demonstrates the specified full-prefill behavior and outcome on these questions. It does not verify a multi-step DAG, classifier calibration, safe commit decision, or specialist-to-base bridge. The SecEval and CyberMetric material is public and CyberMetric had already been examined; exact and high character-similarity checks do not eliminate paraphrases or unknown pretraining/adapter contamination. The +3/80 gain is exploratory and does not establish generality or safety. Artifacts: `experiments/cyber_router_crossdataset.py`, `experiments/cyber_router_live.py`, `results/cyber_router_crossdataset_v1.json`, and `results/cyber_router_live_cybermetric80_v3.json`.
 
@@ -510,9 +515,9 @@ A paired FocusFlow landing-page prompt produced complete HTML from both the base
 
 ## 7. Conclusion
 
-The measured arithmetic repair loop operates without fine-tuning the base language model at inference or relying on text-based self-correction prompts. By reading un-pooled intermediate hidden states, enforcing physical logit exclusion, and surgically cropping the key-value cache, language models can detect and repair reasoning divergence at a fraction of the computational cost of regeneration: 1.59x the recovery rate of a full rewrite on a blind 331-chain vault, with the repair's generation step 26x faster than regenerating the chain.
+On complete arithmetic chains already known to be wrong, the recorded localizer-guided token-exclusion policy recovered 73/331 chains versus 46/331 for full rewrite. This is a conditional repair result from fresh-prompt generation; the historical implementation does not connect these outcomes to persistent cropped-cache decoding. Task clustering limits the candidate-level statistical interpretation.
 
-On the reported arithmetic workload, cache-truncated regeneration reduces the measured generation slice from about 4.5 seconds to below 200 milliseconds; this timing includes generation after the crop and is not the cost of the crop alone. The full loop, including observer inference, runs at $1.7$-$2.0\times$ the speed of a rewrite in the reported arithmetic experiments. A future multi-step evaluation must test whether dependency-aware replay, verification and specialist routing preserve that advantage on real tasks and different model and hardware configurations.
+Separate numerical checks support cache-continuation coherence in tested configurations. The historical timing blocks do not establish a cache or end-to-end speedup. The live cyber router reproduced 57/80 correct answers versus 54/80 for each individual arm, with three useful and zero harmful switches in this sample (exact paired p=0.25). Multi-domain bridge examples and memory controls remain development demonstrations. A unified, independently evaluated controller and an equal-work systems benchmark remain future work.
 
 **What this paper does not establish.** Four boundaries are load-bearing, and each is stated where the relevant experiment appears:
 
@@ -534,6 +539,8 @@ The routing gain is +3/80 on a benchmark that had been examined before the exper
 - Project source records and model/data revisions are indexed in `REPRODUCIBILITY.md` and in the linked findings and result files.
 ### Errata
 
+**2026-10-30 — systems timing and method audit.** The 25.9x/27.2x cache-generation and 2.0x/1.70x full-loop interpretations are withdrawn. The cache block timed prefix prefill without suffix decoding; repair timers excluded observer and gate costs. Token/FLOP savings were formulas. `LinearStep` is an MLP, not a linear probe; its arithmetic input differs from the Transformer's. No universal 6–8-step horizon or theoretical rank-2 ceiling is established. Raw historical JSON is preserved; `findings/2026-10-30-paper-review.md` records the evidence and `results/measurement_audit_20261030.json` records machine-readable caveats.
+
 **2026-10-29 — the vault Step-4 column was a precision, not a recall.**
 `experiments/eval_vault.py` called `per_step_recall(v_lab, pred)` and `balanced_accuracy(v_lab, pred)` where both signatures are `(pred, lab)`. Every `*_rec` array written to `results/verify_vault_h5.json` is therefore per-step *precision*, and every `*_bal` value is a macro-precision. The consequence is the sentence this paper used to carry — that the Two-Tier rule fell to `0.410` Step-4 recall and underperformed both single probes — which is the opposite of what the arm does on recall.
 
@@ -544,14 +551,14 @@ A re-fit was necessary rather than a re-label because the 2026-10-28 run never s
 **2026-10-29 — §1.3 described a control that does not exist.**
 The section reported `+0.105` "vanishing when matched against parameter-equivalent LoRA adapters (`8.15M` vs `442K`)". Three problems: `8.15M` vs `442K` is not parameter-equivalent — it is the *unmatched* comparison, and it produced `+0.135`, not `+0.105`; the matched control is `22.3M` vs `22.3M` and produced `+0.035` `[-0.045, +0.115]`, not significant; and `+0.105` does not appear in any artifact in `results/`. §1.3 now reports the matched control from `findings/2026-10-25-steering-capacity-control.md`, and the unmatched `+0.135` is named as what it was.
 
-Both corrections change conclusions rather than wording, which is why they are listed here instead of being edited away.
+These corrections change conclusions rather than wording, which is why they are listed here instead of being edited away.
 
 ---
 
 ### Reproducibility & Source Verification
 
-All code, trained weights, raw outputs, and evaluation logs are deterministic and tracked:
+The following code and recorded artifacts are available locally or referenced by the repository. This is not a claim that every historical prediction or checkpoint was saved, that every local file is versioned, or that fresh-clone regeneration is exact. Original localizer predictions are missing; re-fits differ; model assets and dependencies remain external. See `REPRODUCIBILITY.md` and the evidence audit:
 * **Harness & Pipelines:** [`experiments/path_a_loop.py`](experiments/path_a_loop.py), [`experiments/eval_vault.py`](experiments/eval_vault.py), [`experiments/interp_calls.py`](experiments/interp_calls.py)
 * **Raw JSON Metrics:** [`results/path_a_loop_h5.json`](results/path_a_loop_h5.json), [`results/verify_vault_h5.json`](results/verify_vault_h5.json), [`results/verify_vault_h5_localizer_refit.json`](results/verify_vault_h5_localizer_refit.json), [`results/verify_h10_scaling.json`](results/verify_h10_scaling.json), [`results/oracle_rewind_h5.json`](results/oracle_rewind_h5.json)
 * **Underlying Corpus:** [`results/arith_steps_h5.pt`](results/arith_steps_h5.pt) (tuning), [`results/arith_steps_h5_vault.pt`](results/arith_steps_h5_vault.pt) (blind vault)
-* **Detailed Finding Reports:** [`findings/2026-10-28-out-of-sample-and-h10-verification.md`](findings/2026-10-28-out-of-sample-and-h10-verification.md) (vault + H=10, authoritative for the systems and generalization numbers above); [`findings/2026-10-28-path-a-ensemble-kv-slicing.md`](findings/2026-10-28-path-a-ensemble-kv-slicing.md) (Path A; corrected in place on 2026-10-28 after the vault audit); [`findings/2026-10-25-steering-capacity-control.md`](findings/2026-10-25-steering-capacity-control.md) (capacity control cited in §1.3)
+* **Detailed Finding Reports:** [`findings/2026-10-28-out-of-sample-and-h10-verification.md`](findings/2026-10-28-out-of-sample-and-h10-verification.md) (historical vault + H=10 report; systems interpretation superseded by the 2026-10-30 audit); [`findings/2026-10-28-path-a-ensemble-kv-slicing.md`](findings/2026-10-28-path-a-ensemble-kv-slicing.md) (Path A; corrected in place on 2026-10-28 after the vault audit); [`findings/2026-10-25-steering-capacity-control.md`](findings/2026-10-25-steering-capacity-control.md) (capacity control cited in §1.3)

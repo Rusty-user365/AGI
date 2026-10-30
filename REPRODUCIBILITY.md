@@ -96,5 +96,34 @@ marked playwright`; set `PAPER_BROWSER` if Edge is not in its standard location,
 then run `node publication/build_paper.cjs`. The script also accepts
 `PAPER_NODE_MODULES` for an alternative directory containing marked and
 playwright. Browser, Node, font and library version differences may alter layout.
-The paper currently lists `Research Team` as the author placeholder and requires
-actual author/affiliation and submission review before publication.
+The named author is Abhishek Pant, an independent researcher. Venue-specific
+formatting, anonymity, authorship information and submission review remain to
+be completed for the selected venue.
+
+## Experience-memory similarity gate
+
+`ExperienceMemory` defaults to returning only candidates whose cosine similarity
+is strictly greater than 0.90. This is configurable through the constructor's
+`similarity_threshold` parameter, with cosine range -1 to 1. This threshold was
+user-selected and is not calibrated; it suppresses all three relevant SQL
+queries in `results/multirule_memory_gate_090_v1.json`. Scripts reproducing the
+older ungated memory experiments explicitly set `similarity_threshold=-1.0`;
+their recorded outcomes must not be attributed to the new default gate.
+
+## Measurement audit, 2026-10-30
+
+Historical arithmetic cache-generation and full-controller speedup interpretations
+are withdrawn. `results/measurement_audit_20261030.json` records original JSON
+hashes and scope caveats; original numbers are not silently replaced. Updated
+arithmetic scripts default to separate `_audited_v2.json` files, reject overwriting
+existing experiment outputs, omit misleading speedup fields, and explicitly label
+incomplete timing and estimated token accounting. Vault reruns save row IDs and
+recovery arrays. The random-step seed now uses SHA-256 rather than Python's
+process-randomized string hash; a future run is a new experiment, not byte-exact
+reproduction of the historical control. The diagnostics-only historical
+correction path remains separate. No new model experiment was run for this audit.
+
+The ARC notebook now records directory-name agreement separately from actual
+model revision verification, which remains false without content verification.
+Historical smoke outputs retain their original provenance; later code changes
+must not be attributed to the earlier run.

@@ -1,10 +1,8 @@
-"""Evaluation harness for Scenario 2 & 3: The Long-Horizon 'Context Rot' Scaling Test (H=10).
+"""Historical fresh-prompt conditional-repair experiment, with audited reporting.
 
-Evaluates:
-  1. full_rewrite (from Step 0)
-  2. in_context_oops (verbal retry prompt without KV truncation)
-  3. two_tier_gated_kv_crop (1 rewind)
-  4. two_tier_gated_kv_crop_max2 (up to 2 sequential rewinds)
+This implementation does not generate repairs from a persistent cropped cache.
+Token counters are formula estimates. Timings exclude parts of the controller.
+See results/measurement_audit_20261030.json. Historical results are not replaced.
 """
 from pathlib import Path
 import argparse
@@ -50,8 +48,11 @@ def main():
     parser.add_argument("--seeds", type=int, default=5)
     parser.add_argument("--max-new", type=int, default=5)
     parser.add_argument("--limit", type=int, default=0)
-    parser.add_argument("--out", default="results/verify_h10_scaling.json")
+    parser.add_argument("--out", default="results/verify_h10_scaling_audited_v2.json")
     args = parser.parse_args()
+    if Path(args.out).exists() and not getattr(args, "diagnostics_only", False):
+        raise FileExistsError("Preserve recorded evidence: choose a new --out path")
+    print("AUDIT: conditional repair; token counts are estimates; timings are not full-controller or cache speedups.")
     args.device = str(_resolve_device(args.device))
 
     steps = 10
@@ -307,6 +308,13 @@ def main():
 
     # Save to JSON
     out_dict = {
+        "measurement_scope": {
+            "repair_uses_persistent_cropped_cache": False,
+            "full_controller_latency_measured": False,
+            "token_counts_are_estimates": True,
+            "task_clustering_accounted_for": False,
+            "historical_interpretation_audit": "results/measurement_audit_20261030.json",
+        },
         "n": n_tot,
         "arms": {
             k: {

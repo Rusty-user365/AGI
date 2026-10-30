@@ -1,0 +1,85 @@
+
+--- Notebook cell 2 ---
+licence=MIT-0 | mode=demo | strict=True | qwen_diagnostic=False | adapter_diagnostic=False
+
+--- Notebook cell 3 ---
+
+--- Notebook cell 4 ---
+Synthetic training checks: {
+  "checks": [
+    {
+      "candidate": "identity",
+      "training_examples_passed": 0,
+      "training_examples": 2,
+      "accepted": false
+    },
+    {
+      "candidate": "flip_h",
+      "training_examples_passed": 2,
+      "training_examples": 2,
+      "accepted": true
+    },
+    {
+      "candidate": "flip_v",
+      "training_examples_passed": 0,
+      "training_examples": 2,
+      "accepted": false
+    },
+    {
+      "candidate": "rot180",
+      "training_examples_passed": 1,
+      "training_examples": 2,
+      "accepted": false
+    },
+    {
+      "candidate": "transpose",
+      "training_examples_passed": 0,
+      "training_examples": 2,
+      "accepted": false
+    },
+    {
+      "candidate": "rot90",
+      "training_examples_passed": 0,
+      "training_examples": 2,
+      "accepted": false
+    },
+    {
+      "candidate": "rot270",
+      "training_examples_passed": 0,
+      "training_examples": 2,
+      "accepted": false
+    }
+  ],
+  "accepted": [
+    "flip_h"
+  ],
+  "selected": [
+    "flip_h",
+    "rot180"
+  ],
+  "selected_by_test": [
+    [
+      "flip_h",
+      "rot180"
+    ]
+  ],
+  "distinct_attempts": [
+    true
+  ],
+  "fallback": false
+}
+Synthetic test prediction: [{'attempt_1': [[3, 2, 1], [6, 5, 4]], 'attempt_2': [[6, 5, 4], [3, 2, 1]]}]
+
+--- Notebook cell 5 ---
+Live Qwen cache diagnostic skipped; enable only with an attached checkpoint.
+
+--- Notebook cell 6 ---
+Live coder diagnostic skipped; no adapter result was generated.
+
+--- Notebook cell 7 ---
+Sample reconciliation skipped; no unambiguous sample_submission.json found.
+Wrote D:\Research Paper\results\arc_scaffold_audit_checks\arc_demo_predictions.json | tasks: 1 | test inputs: 1 | elapsed seconds: 0.002
+Distinct attempt pairs: 1/1 | tasks without a fully accepted candidate: 0/1
+Synthetic output only. This is not a Kaggle submission or ARC score.
+
+Explicit scaffold checks passed.

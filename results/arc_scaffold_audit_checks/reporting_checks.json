@@ -1,0 +1,9 @@
+{
+  "results/path_a_loop_h5.json": "historical bytes unchanged",
+  "results/verify_vault_h5.json": "historical bytes unchanged",
+  "results/verify_h10_scaling.json": "historical bytes unchanged",
+  "path_a_loop": "parses; refuses overwrite before experiment runs",
+  "eval_vault": "parses; refuses overwrite before experiment runs",
+  "eval_h10": "parses; refuses overwrite before experiment runs",
+  "notebook": "all cells parse; demo checks saved separately"
+}

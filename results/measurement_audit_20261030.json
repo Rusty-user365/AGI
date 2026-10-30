@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-30",
+  "historical_results_preserved": true,
+  "records": {
+    "results/path_a_loop_h5.json": {
+      "sha256": "7ea35ee28ec081ac2e56f1c3f19284abce300baa57bae1c922dc7771477118e4"
+    },
+    "results/verify_vault_h5.json": {
+      "sha256": "03301acdb14d80daa03842beec5a3bffd52fa4126cb565be47f5e6e6ed77c51e"
+    },
+    "results/verify_h10_scaling.json": {
+      "sha256": "c77a4950d9fe5d4f581305cfd85180ffa07120bcd95771392bc60ab40260bde0"
+    }
+  },
+  "interpretation": {
+    "cached_speedups": "withdrawn: prefix prefill plus equal-length crop, no suffix decode",
+    "full_loop_speedups": "withdrawn: required localization and (H5) gate costs excluded",
+    "tokens": "formula estimates, not instrumented forwards or FLOPs",
+    "statistics": "candidate-level; task clustering unaccounted for",
+    "recovery": "fresh-prompt repair conditional on complete known failures"
+  },
+  "new_benchmark_results": false
+}
