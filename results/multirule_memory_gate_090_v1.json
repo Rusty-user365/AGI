@@ -1,0 +1,420 @@
+{
+  "experiment": "multirule_memory_gate_090_v1",
+  "created_at": "2026-10-30T11:23:51.198136+00:00",
+  "complete": true,
+  "threshold": 0.9,
+  "comparison": "strictly greater than 0.90",
+  "rule_count": 5,
+  "scope": "same explicit scope for five rules; poem evaluated with and without it",
+  "source_experiment": "D:\\Research Paper\\results\\multirule_memory_ablation_v1.json",
+  "rows": [
+    {
+      "id": "sql_name_original",
+      "expected": "sql_json",
+      "text": "Return a JSON object with sql and params. Select id,name from users by the supplied name, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": 0.4253867268562317,
+          "similarity": 0.5746132731437683
+        },
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 0.9555660486221313,
+          "similarity": 0.04443395137786865
+        },
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 0.9967598915100098,
+          "similarity": 0.0032401084899902344
+        },
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 1.0240082740783691,
+          "similarity": -0.02400827407836914
+        },
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 1.064164638519287,
+          "similarity": -0.06416463851928711
+        }
+      ],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": false
+    },
+    {
+      "id": "sql_id_original",
+      "expected": "sql_json",
+      "text": "Return a JSON object with sql and params. Select id,name from users by the supplied integer id, using one SQLite parameter. Represent the runtime input with params: [\"$input\"].",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": 0.432000994682312,
+          "similarity": 0.567999005317688
+        },
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 0.9551391005516052,
+          "similarity": 0.044860899448394775
+        },
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 0.9843314290046692,
+          "similarity": 0.01566857099533081
+        },
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 0.9989283680915833,
+          "similarity": 0.001071631908416748
+        },
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 1.0378447771072388,
+          "similarity": -0.03784477710723877
+        }
+      ],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": false
+    },
+    {
+      "id": "sql_name_reworded",
+      "expected": "sql_json",
+      "text": "For a SQLite database, return only one JSON object with \"sql\" and \"params\". Look up user id and name using a bound parameter for the supplied name. Use params [\"$input\"].",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": 0.3577021360397339,
+          "similarity": 0.6422978639602661
+        },
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 0.9914355874061584,
+          "similarity": 0.008564412593841553
+        },
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 0.9922945499420166,
+          "similarity": 0.0077054500579833984
+        },
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 1.0548264980316162,
+          "similarity": -0.05482649803161621
+        },
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 1.0730271339416504,
+          "similarity": -0.07302713394165039
+        }
+      ],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": false
+    },
+    {
+      "id": "control_python_format",
+      "expected": "python_format",
+      "text": "Write a Python function to sum the even numbers in a list.",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 0.5577976703643799,
+          "similarity": 0.4422023296356201
+        },
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 0.8651720285415649,
+          "similarity": 0.13482797145843506
+        },
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 0.9346649646759033,
+          "similarity": 0.06533503532409668
+        },
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": 1.0420454740524292,
+          "similarity": -0.0420454740524292
+        },
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 1.0434983968734741,
+          "similarity": -0.04349839687347412
+        }
+      ],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": false
+    },
+    {
+      "id": "control_math_steps",
+      "expected": "math_steps",
+      "text": "Solve an algebra equation and explain each step of the derivation.",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 0.43144160509109497,
+          "similarity": 0.568558394908905
+        },
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 0.8727613091468811,
+          "similarity": 0.1272386908531189
+        },
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 0.9896116852760315,
+          "similarity": 0.010388314723968506
+        },
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": 0.996412992477417,
+          "similarity": 0.003587007522583008
+        },
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 1.0337119102478027,
+          "similarity": -0.033711910247802734
+        }
+      ],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": false
+    },
+    {
+      "id": "control_ui_html",
+      "expected": "ui_html",
+      "text": "Create a responsive HTML landing page with inline CSS.",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 0.31024354696273804,
+          "similarity": 0.689756453037262
+        },
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 0.9723171591758728,
+          "similarity": 0.027682840824127197
+        },
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": 1.016689658164978,
+          "similarity": -0.016689658164978027
+        },
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 1.0376737117767334,
+          "similarity": -0.0376737117767334
+        },
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 1.0569416284561157,
+          "similarity": -0.05694162845611572
+        }
+      ],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": false
+    },
+    {
+      "id": "control_phishing",
+      "expected": "phishing",
+      "text": "How should I handle and report a suspicious phishing email?",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 0.12935030460357666,
+          "similarity": 0.8706496953964233
+        },
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 0.9406123757362366,
+          "similarity": 0.05938762426376343
+        },
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 0.9518466591835022,
+          "similarity": 0.0481533408164978
+        },
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": 0.9630471467971802,
+          "similarity": 0.036952853202819824
+        },
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 0.9921992421150208,
+          "similarity": 0.007800757884979248
+        }
+      ],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": false
+    },
+    {
+      "id": "poem_same_scope",
+      "expected": null,
+      "text": "Write a short poem about a quiet forest.",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 0.9797002673149109,
+          "similarity": 0.02029973268508911
+        },
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 0.9932923913002014,
+          "similarity": 0.006707608699798584
+        },
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 1.0400021076202393,
+          "similarity": -0.04000210762023926
+        },
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 1.0461994409561157,
+          "similarity": -0.04619944095611572
+        },
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": 1.0687909126281738,
+          "similarity": -0.06879091262817383
+        }
+      ],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": true
+    },
+    {
+      "id": "poem_no_scope",
+      "expected": null,
+      "text": "Write a short poem about a quiet forest.",
+      "scope": null,
+      "ranked": [],
+      "retrieved_id": null,
+      "retrieved": [],
+      "tag": "",
+      "matches_expected": true
+    },
+    {
+      "id": "exact_sql_key",
+      "expected": "sql_json",
+      "text": "SQLite security database query response with SQL parameters in JSON",
+      "scope": "similarity_gate_test",
+      "ranked": [
+        {
+          "id": "sql_json",
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "distance": -4.76837158203125e-07,
+          "similarity": 1.0
+        },
+        {
+          "id": "phishing",
+          "task": "Assess a suspicious email for phishing and report safely",
+          "distance": 0.9375422596931458,
+          "similarity": 0.06245774030685425
+        },
+        {
+          "id": "ui_html",
+          "task": "Create a responsive HTML web page or user interface",
+          "distance": 1.0089075565338135,
+          "similarity": -0.008907556533813477
+        },
+        {
+          "id": "python_format",
+          "task": "Implement Python programming functions and return source code",
+          "distance": 1.0386757850646973,
+          "similarity": -0.038675785064697266
+        },
+        {
+          "id": "math_steps",
+          "task": "Solve a mathematics algebra problem and show working",
+          "distance": 1.0716620683670044,
+          "similarity": -0.0716620683670044
+        }
+      ],
+      "retrieved_id": "sql_json",
+      "retrieved": [
+        {
+          "task": "SQLite security database query response with SQL parameters in JSON",
+          "mistake": "Cyber task repeated prior Python code",
+          "rule": "For this task, output only a JSON object with \"sql\" and \"params\".",
+          "scope": "similarity_gate_test",
+          "tier": 2,
+          "created_at": 1793359430.7783923,
+          "expires_at": 1793363030.7783923,
+          "distance": -4.76837158203125e-07,
+          "similarity": 1.0
+        }
+      ],
+      "tag": "[SYSTEM MEMORY: For this task, output only a JSON object with \"sql\" and \"params\".]",
+      "matches_expected": true
+    }
+  ],
+  "limitations": [
+    "The gate is cosine similarity, not a calibrated confidence probability.",
+    "Threshold chosen by user, not calibrated on a validation set.",
+    "Previously inspected development tasks; no broad generalization or safety claim.",
+    "A scope is manually supplied; the gate does not infer it.",
+    "No model outputs were generated in this gate-only check."
+  ]
+}
